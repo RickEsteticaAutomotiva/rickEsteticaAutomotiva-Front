@@ -32,6 +32,10 @@ app.get('/cadastrar', (req, res) => {
   res.sendFile(path.join(__dirname, 'public/pages/cadastrar.html'));
 });
 
+app.get('/veiculo', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/pages/veiculo.html'));
+});
+
 app.listen(port, () => {
   console.log(`Frontend rodando em http://localhost:${port}`);
 });
