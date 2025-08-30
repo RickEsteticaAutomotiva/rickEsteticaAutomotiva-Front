@@ -20,6 +20,7 @@ window.cadastrar = async function cadastrar() {
 
     if (resultado) {
         console.log("Veículo cadastrado com sucesso");
+        listarVeiculos();
     } else {
         console.log("Erro ao cadastrar veículo");
     }
@@ -30,8 +31,33 @@ window.listarVeiculos = async function listarVeiculos() {
     const veiculos = await veiculoService.listarByCliente(clienteId);
 
     if (veiculos && veiculos.length > 0) {
-        console.log("Veículos encontrados:", veiculos);
+        veiculosList.innerHTML = veiculos.map(veiculo => {
+            return `Veículo: ${veiculo.placa}, Modelo: ${veiculo.modelo}, Marca: ${veiculo.marca}, Porte: ${veiculo.porte}, Cor: ${veiculo.cor}, Ano: ${veiculo.ano} <button onclick="deletarVeiculo(${veiculo.id})">Deletar</button>`;
+        }).join("<br>");
+
     } else {
-        console.log("Nenhum veículo encontrado");
+        veiculosList.innerHTML = "Nenhum veículo encontrado";
+    }
+}
+
+window.deletarVeiculo = async function deletarVeiculo(veiculoId) {
+    const resultado = await veiculoService.deletar(veiculoId);
+
+    if (resultado) {
+        console.log("Veículo deletado com sucesso");
+        listarVeiculos();
+    } else {
+        console.log("Erro ao deletar veículo");
+    }
+}
+
+window.atualizarVeiculo = async function atualizarVeiculo(veiculo) {
+    const resultado = await veiculoService.atualizar(veiculo.id, veiculo);
+
+    if (resultado) {
+        console.log("Veículo atualizado com sucesso");
+        listarVeiculos();
+    } else {
+        console.log("Erro ao atualizar veículo");
     }
 }

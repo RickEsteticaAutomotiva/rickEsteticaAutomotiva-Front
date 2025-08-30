@@ -5,20 +5,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastrar</title>
+    <link rel="stylesheet" href="../css/cadastrar.css">
 </head>
 
 <body>
-    <input type="text" placeholder="Nome" id="input_nome" onfocus="validarCampos()">
-    <input type="text" placeholder="Cpf" id="input_cpf" onfocus="validarCampos()" maxlength="11">
-    <br>
-    <input type="email" placeholder="Email" id="input_email" onfocus="validarCampos()">
-    <input type="text" placeholder="Telefone" id="input_telefone" onfocus="validarCampos()" maxlength="11">
-    <br>
-    <input type="password" placeholder="Senha" id="input_senha" onfocus="validarCampos()">
-    <input type="password" placeholder="Repetir Senha" id="input_senhaRepetir" onfocus="validarCampos()">
-    <br>
-    <button onclick="handleCadastrar()">Cadastrar</button>
-    <a href="/login"><button>Login</button></a>
+    <div class="img">
+
+    </div>
+
+    <div class="cadastrar-container">
+        <h1>CADASTRAR</h1>
+
+        <div class="input-container">
+            <label for="input_nome">Nome</label>
+            <input type="text" placeholder="Nome completo" id="input_nome">
+        </div>
+
+        <div class="input-container">
+            <label for="input_cpf">CPF</label>
+            <input type="text" placeholder="000.000.000-00" id="input_cpf" maxlength="14">
+        </div>
+
+        <div class="input-container">
+            <label for="input_email">Email</label>
+            <input type="email" placeholder="Email" id="input_email" onfocus="validarCampos()">
+        </div>
+
+        <div class="input-container">
+            <label for="input_telefone">Telefone</label>
+            <input type="text" placeholder="Telefone" id="input_telefone" onfocus="validarCampos()" maxlength="11">
+        </div>
+
+        <div class="input-container">
+            <label for="input_senha">Senha</label>
+            <input type="password" placeholder="Senha" id="input_senha" onfocus="validarCampos()">
+        </div>
+
+        <button onclick="handleCadastrar()">Cadastrar</button>
+        <span>Já possui cadastro? <a href="/login">Entrar</a></span>
+    </div>
 </body>
 
 </html>

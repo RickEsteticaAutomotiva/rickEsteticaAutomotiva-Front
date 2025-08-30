@@ -5,13 +5,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
+    <link rel="stylesheet" href="../css/login.css">
 </head>
 
 <body>
-    <input type="text" placeholder="Email" id="input_email">
-    <input type="password" placeholder="Senha" id="input_senha">
-    <button onclick="handleLogin()">Login</button>
-    <a href="/cadastrar"><button>Cadastrar</button></a>
+    <div class="img">
+
+    </div>
+    <div class="login-container">
+        <h1>LOGIN</h1>
+
+        <div class="input-container">
+            <label for="input_email">E-mail</label>
+            <input type="text" placeholder="email@email.com" id="input_email">
+        </div>
+
+        <div class="input-container">
+            <div class="label-input">
+                <label for="input_senha">Senha</label>
+                <a href="#">Esqueceu?</a>
+            </div>
+            <input type="password" placeholder="********" id="input_senha">
+        </div>
+
+        <button onclick="handleLogin()">Entrar</button>
+
+        <span>Ainda não possui cadastro? <a href="/cadastrar">Cadastrar</a></span>
+    </div>
 </body>
 
 </html>
