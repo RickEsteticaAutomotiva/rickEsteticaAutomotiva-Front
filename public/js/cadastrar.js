@@ -34,7 +34,7 @@ window.validarCampos = function validarCampos() {
     const email = document.getElementById("input_email").value;
     const telefone = document.getElementById("input_telefone").value;
     const senha = document.getElementById("input_senha").value;
-    const senhaRepetir = document.getElementById("input_senhaRepetir").value;
+
 
     document.getElementById("input_nome").style.borderColor = "";
     document.getElementById("input_cpf").style.borderColor = "";
@@ -67,11 +67,6 @@ window.validarCampos = function validarCampos() {
         return false;
     }
 
-    if (senha !== senhaRepetir) {
-        document.getElementById("input_senha").style.borderColor = "red";
-        document.getElementById("input_senhaRepetir").style.borderColor = "red";
-        return false;
-    }
 
     return true;
 }

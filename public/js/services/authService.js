@@ -2,7 +2,7 @@ import { config } from "../config.js";
 
 export async function login(email, senha) {
     try {
-        const response = await fetch(`${config.api_url}/pessoas`, {
+        const response = await fetch(`${config.api_url}/pessoa`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -24,7 +24,7 @@ export async function cadastrar(nome, cpf, email, telefone, senha) {
     console.log(JSON.stringify({ nome, cpf, email, telefone, senha }));
 
     try {
-        const response = await fetch(`${config.api_url}/pessoas/cadastrar`, {
+        const response = await fetch(`${config.api_url}/pessoa`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
