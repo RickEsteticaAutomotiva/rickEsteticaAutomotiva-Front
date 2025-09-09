@@ -10,7 +10,7 @@ window.cadastrar = async function cadastrar() {
     const ano = document.getElementById("ano").value;
     const clienteId = sessionStorage.getItem("clienteId");
 
-    if (!placaCarroUtils.validarPlaca(placa)) {
+    if (!placaCarroUtils.isPlacaCarro(placa)) {
         console.log("Placa inválida");
         return;
     }
@@ -30,13 +30,29 @@ window.listarVeiculos = async function listarVeiculos() {
     const clienteId = sessionStorage.getItem("clienteId");
     const veiculos = await veiculoService.listarByCliente(clienteId);
 
-    if (veiculos && veiculos.length > 0) {
-        veiculosList.innerHTML = veiculos.map(veiculo => {
-            return `Veículo: ${veiculo.placa}, Modelo: ${veiculo.modelo}, Marca: ${veiculo.marca}, Porte: ${veiculo.porte}, Cor: ${veiculo.cor}, Ano: ${veiculo.ano} <button onclick="deletarVeiculo(${veiculo.id})">Deletar</button>`;
-        }).join("<br>");
+    veiculos_container.innerHTML = `
+        <div class="btn_veiculo" onclick="openModal()">
+                <div class="conteudo_adicionar">
+                    <span class="plus">+</span>
+                </div>
 
-    } else {
-        veiculosList.innerHTML = "Nenhum veículo encontrado";
+                <span class="adicionar">Adicionar</span>
+            </div>
+    `;
+
+    if (veiculos && veiculos.length > 0) {
+        veiculos.forEach(element => {
+            veiculos_container.innerHTML += `
+                <div class="btn_veiculo placa_veiculo" data-veiculo='${JSON.stringify(element)}' onclick='openModal(this)'>
+                    <div class="header_veiculo">
+                        <p>${element.marca} - ${element.modelo}</p>
+                    </div>
+                    <div class="info_veiculo">
+                        <p>${element.placa}</p>
+                    </div>
+                </div>
+            `;
+        });
     }
 }
 
@@ -52,6 +68,11 @@ window.deletarVeiculo = async function deletarVeiculo(veiculoId) {
 }
 
 window.atualizarVeiculo = async function atualizarVeiculo(veiculo) {
+    if (!placaCarroUtils.isPlacaCarro(veiculo.placa)) {
+        alert("Placa inválida");
+        return;
+    }
+
     const resultado = await veiculoService.atualizar(veiculo.id, veiculo);
 
     if (resultado) {
@@ -61,3 +82,56 @@ window.atualizarVeiculo = async function atualizarVeiculo(veiculo) {
         console.log("Erro ao atualizar veículo");
     }
 }
+
+window.openModal = function openModal(data) {
+    if (data) {
+        const veiculo = JSON.parse(data.dataset.veiculo);
+
+        veiculo_id.value = veiculo.id;
+        placa.value = veiculo.placa;
+        modelo.value = veiculo.modelo;
+        marca.value = veiculo.marca;
+        porte.value = veiculo.porte;
+        cor.value = veiculo.cor;
+        ano.value = veiculo.ano;
+    }
+
+    const modal = document.getElementById("modal_container");
+    modal.style.visibility = "visible";
+    modal.style.opacity = "1";
+    btn_excluir_veiculo.style.display = data ? "block" : "none";
+    btn_excluir_veiculo.onclick = data ? function () { deletarVeiculo(veiculo_id.value); closeModal(); } : null;
+}
+
+window.closeModal = function closeModal() {
+    const modal = document.getElementById("modal_container");
+    modal.style.visibility = "hidden";
+    modal.style.opacity = "0";
+    veiculo_form.reset();
+    veiculo_id.value = "";
+}
+
+function salvarModal() {
+    if (veiculo_id.value) {
+        const veiculo = {
+            id: veiculo_id.value,
+            placa: placa.value,
+            modelo: modelo.value,
+            marca: marca.value,
+            porte: porte.value,
+            cor: cor.value,
+            ano: ano.value,
+            clienteId: sessionStorage.getItem("clienteId")
+        }
+        atualizarVeiculo(veiculo);
+    } else {
+        cadastrar();
+    }
+
+    closeModal();
+}
+
+document.getElementById('veiculo_form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    salvarModal();
+});

@@ -13,6 +13,8 @@ window.handleLogin = async function handleLogin() {
             input_email.style.borderColor = "green";
             input_senha.style.borderColor = "green";
 
+            sessionStorage.setItem("clienteId", result.id);
+
             setTimeout(() => {
                 window.location.href = "/";
             }, 1000);
