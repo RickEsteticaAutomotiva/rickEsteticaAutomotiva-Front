@@ -1,3 +1,15 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+    background-color: #f4f4f4;
+    font-size: 16px;
+}
+
 @media (min-width: 768px) {
     body {
         display: flex;
@@ -65,5 +77,24 @@
         background: #ff0000;
         background: linear-gradient(90deg, rgba(255, 0, 0, 1) 0%, rgb(255, 81, 0) 100%);
         color: #fff !important;
+    }
+
+    #base_section {
+        width: 85%;
+        height: 100%;
+        padding: 1rem;
+    }
+
+    #header {
+        width: 100%;
+        padding: 1rem;
+        height: 10%;
+    }
+
+    #base_container {
+        padding: 1rem;
+        height: 90%;
+        width: 100%;
+        justify-content: flex-start;
     }
 }
