@@ -5,12 +5,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastrar</title>
+    <link rel="stylesheet" href="../css/cadastrar.css">
 </head>
 
 <body>
-    <input type="text" placeholder="Email" id="input_email">
-    <input type="password" placeholder="Senha" id="input_senha">
-    <button onclick="handleCadastrar()">Cadastrar</button>
+    <div class="img">
+        <img src="../assets/carro2.jpg" alt="carro">
+    </div>
+
+    <div class="cadastrar-container">
+        <h1>CADASTRAR</h1>
+
+        <div class="input-container">
+            <label for="input_nome">Nome</label>
+            <input type="text" placeholder="Nome completo" id="input_nome">
+        </div>
+
+        <div class="input-container">
+            <label for="input_cpf">CPF:</label>
+            <input type="text" placeholder="00000000000" id="input_cpf" maxlength="14" onblur="validarCpf(this)">
+        </div>
+
+        <div class="input-container">
+            <label for="input_email">Email</label>
+            <input type="email" placeholder="Email" id="input_email" onfocus="validarCampos()">
+        </div>
+
+        <div class="input-container">
+            <label for="input_telefone">Telefone</label>
+            <input type="text" placeholder="Telefone" id="input_telefone" onfocus="validarCampos()" maxlength="11">
+        </div>
+
+        <div class="input-container">
+            <label for="input_senha">Senha</label>
+            <input type="password" placeholder="Senha" id="input_senha" onfocus="validarCampos()">
+        </div>
+
+        <button onclick="handleCadastrar()">Cadastrar</button>
+        <span>Já possui cadastro? <a href="/login">Entrar</a></span>
+    </div>
 </body>
 
 </html>
