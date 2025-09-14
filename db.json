@@ -8,7 +8,7 @@
       "porte": "médio",
       "ano": 2020,
       "cor": "preto",
-      "clienteId": 2
+      "clienteId": 3
     },
     {
       "id": 3,
@@ -17,28 +17,8 @@
       "marca": "Ford",
       "porte": "grande",
       "cor": "Vermelho",
-      "ano": "2021",
-      "clienteId": "3"
-    },
-    {
-      "id": 4,
-      "placa": "LMN3O60",
-      "modelo": "Mustang",
-      "marca": "Ford",
-      "porte": "grande",
-      "cor": "Vermelho",
-      "ano": "2021",
-      "clienteId": "3"
-    },
-    {
-      "id": 5,
-      "placa": "LMN3O69",
-      "modelo": "Mustang",
-      "marca": "Ford",
-      "porte": "Grande",
-      "cor": "Vermelho",
-      "ano": "2021",
-      "clienteId": "4"
+      "ano": 2021,
+      "clienteId": 3
     }
   ]
 }
