@@ -10,7 +10,7 @@
 
 <body>
     <div class="img">
-
+        <img src="../assets/carro2.jpg" alt="carro">
     </div>
 
     <div class="cadastrar-container">
@@ -22,8 +22,8 @@
         </div>
 
         <div class="input-container">
-            <label for="input_cpf">CPF</label>
-            <input type="text" placeholder="000.000.000-00" id="input_cpf" maxlength="14">
+            <label for="input_cpf">CPF:</label>
+            <input type="text" placeholder="00000000000" id="input_cpf" maxlength="14" onblur="validarCpf(this)">
         </div>
 
         <div class="input-container">

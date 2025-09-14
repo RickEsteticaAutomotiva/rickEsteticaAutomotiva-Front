@@ -12,7 +12,24 @@ body {
 }
 
 .img {
-    height: 0vh;
+    height: 20vh;
+    position: relative;
+}
+
+.img::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(146, 15, 15, 0.4);
+}
+
+.img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .cadastrar-container {
@@ -103,7 +120,7 @@ body {
         height: 120vh;
         width: 40vw;
     }
-    
+
     .cadastrar-container {
         height: 120vh;
         width: 60vw;
@@ -115,7 +132,7 @@ body {
         width: 50%;
     }
 
-    .input-container input{
+    .input-container input {
         height: 2.5rem;
         width: 100%;
     }

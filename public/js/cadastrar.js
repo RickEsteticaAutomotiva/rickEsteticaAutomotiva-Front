@@ -1,6 +1,8 @@
 import * as authService from "./services/authService.js";
 import { cpfUtils, telefoneUtils } from "./utils/index.js";
 
+let cpfValido = false;
+
 window.handleCadastrar = async function handleCadastrar() {
     const nome = document.getElementById("input_nome").value;
     const cpf = document.getElementById("input_cpf").value;
@@ -28,6 +30,21 @@ window.handleCadastrar = async function handleCadastrar() {
     }
 }
 
+window.validarCpf = function validarCpf(input) {
+    const cpf = input.value;
+    const errorSpan = document.getElementById('cpf_error');
+    
+    cpfValido = cpfUtils.validaCpf(cpf);
+    
+    if (!cpfValido) {
+        input.style.borderColor = 'red';
+        errorSpan.style.display = 'block';
+    } else {
+        input.style.borderColor = 'green';
+        errorSpan.style.display = 'none';
+    }
+}
+
 window.validarCampos = function validarCampos() {
     const nome = document.getElementById("input_nome").value;
     const cpf = document.getElementById("input_cpf").value;
@@ -47,7 +64,7 @@ window.validarCampos = function validarCampos() {
         return false;
     }
 
-    if (!cpf || !cpfUtils.validaCpf(cpf)) {
+    if (!cpf || !cpfValido) {
         document.getElementById("input_cpf").style.borderColor = "red";
         return false;
     }

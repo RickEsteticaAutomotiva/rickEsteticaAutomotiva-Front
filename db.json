@@ -29,6 +29,16 @@
       "cor": "Vermelho",
       "ano": "2021",
       "clienteId": "3"
+    },
+    {
+      "id": 5,
+      "placa": "LMN3O69",
+      "modelo": "Mustang",
+      "marca": "Ford",
+      "porte": "Grande",
+      "cor": "Vermelho",
+      "ano": "2021",
+      "clienteId": "4"
     }
   ]
 }

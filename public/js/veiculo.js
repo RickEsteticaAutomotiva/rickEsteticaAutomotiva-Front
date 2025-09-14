@@ -1,6 +1,8 @@
 import * as veiculoService from "./services/veiculoService.js";
 import { placaCarroUtils } from "./utils/index.js";
 
+let placaValida = false;
+
 window.cadastrar = async function cadastrar() {
     const placa = document.getElementById("placa").value;
     const modelo = document.getElementById("modelo").value;
@@ -101,6 +103,8 @@ window.openModal = function openModal(data) {
     modal.style.opacity = "1";
     btn_excluir_veiculo.style.display = data ? "block" : "none";
     btn_excluir_veiculo.onclick = data ? function () { deletarVeiculo(veiculo_id.value); closeModal(); } : null;
+    document.getElementById('placa').style.borderColor = '';
+    document.getElementById('placa_error').style.display = 'none';
 }
 
 window.closeModal = function closeModal() {
@@ -131,7 +135,26 @@ function salvarModal() {
     closeModal();
 }
 
+window.validarPlaca = function validarPlaca(input) {
+    const placa = input.value;
+    const errorSpan = document.getElementById('placa_error');
+
+    placaValida = placaCarroUtils.isPlacaCarro(placa);
+
+    if (!placaValida) {
+        input.style.borderColor = 'red';
+        errorSpan.style.display = 'block';
+    } else {
+        input.style.borderColor = 'green';
+        errorSpan.style.display = 'none';
+    }
+}
+
+// Modify the form submit event listener
 document.getElementById('veiculo_form').addEventListener('submit', function (e) {
     e.preventDefault();
+    if (!placaValida) {
+        return;
+    }
     salvarModal();
 });
