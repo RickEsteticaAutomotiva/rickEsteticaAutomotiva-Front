@@ -1,0 +1,49 @@
+.favorito-item {
+    position: relative;
+    group: hover;
+}
+
+.favorito-item:hover .favorito-item-actions {
+    opacity: 1;
+}
+
+.favorito-item-actions {
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.dropdown-menu-favorito {
+    min-width: 20rem;
+}
+
+.dropdown-menu {
+    display: none;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.dropdown:hover .dropdown-menu {
+    display: block;
+}
+
+.dropdown-menu a {
+    display: flex;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.favorito-item:hover {
+    background-color: #f9fafb;
+}
+
+.favorito-item button {
+    transition: opacity 0.2s ease-in-out;
+}
