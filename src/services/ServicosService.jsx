@@ -1,9 +1,23 @@
 import { apiService } from './ApiService';
 
 export class ServicosService {
-    async buscarTodos(filtros = {}) {
+    async buscarTodos(parametros = {}) {
         try {
-            const response = await apiService.getWithParams('/servicos', filtros);
+            const {
+                pagina = 0,
+                tamanho = 20,
+                ordenarPor = 'nome',
+                filtro = ''
+            } = parametros;
+
+            const queryParams = new URLSearchParams({
+                pagina: pagina.toString(),
+                tamanho: tamanho.toString(),
+                ordenarPor,
+                filtro
+            });
+
+            const response = await apiService.get(`/servicos?${queryParams.toString()}`);
             return response;
         } catch (error) {
             throw new Error(error.message || 'Erro ao buscar serviços');
@@ -19,19 +33,44 @@ export class ServicosService {
         }
     }
 
-    async buscarPorCategoria(categoria, filtros = {}) {
+    async buscarPorCategoria(categoria, parametros = {}) {
         try {
-            const response = await apiService.getWithParams(`/servicos/categoria/${categoria}`, filtros);
+            const {
+                pagina = 0,
+                tamanho = 20,
+                ordenarPor = 'nome'
+            } = parametros;
+
+            const queryParams = new URLSearchParams({
+                pagina: pagina.toString(),
+                tamanho: tamanho.toString(),
+                ordenarPor,
+                filtro: categoria
+            });
+
+            const response = await apiService.get(`/servicos?${queryParams.toString()}`);
             return response;
         } catch (error) {
             throw new Error(error.message || 'Erro ao buscar serviços por categoria');
         }
     }
 
-    async pesquisar(termo, filtros = {}) {
+    async pesquisar(termo, parametros = {}) {
         try {
-            const params = { q: termo, ...filtros };
-            const response = await apiService.getWithParams('/servicos/busca', params);
+            const {
+                pagina = 0,
+                tamanho = 20,
+                ordenarPor = 'nome'
+            } = parametros;
+
+            const queryParams = new URLSearchParams({
+                pagina: pagina.toString(),
+                tamanho: tamanho.toString(),
+                ordenarPor,
+                filtro: termo
+            });
+
+            const response = await apiService.get(`/servicos?${queryParams.toString()}`);
             return response;
         } catch (error) {
             throw new Error(error.message || 'Erro ao pesquisar serviços');

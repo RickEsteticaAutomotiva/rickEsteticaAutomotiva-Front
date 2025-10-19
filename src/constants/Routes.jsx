@@ -6,4 +6,5 @@ export const ROUTES = {
   CARRINHO: '/carrinho',
   BUSCA: '/busca',
   SERVICO: '/servico/:id',
+  AGENDAMENTO: '/agendamento',
 };

@@ -7,6 +7,7 @@ import { Cadastrar } from "../pages/cadastrar/Cadastrar";
 import { Busca } from "../pages/busca/Busca";
 import { Servico } from "../pages/servico/Servico";
 import { Carrinho } from "../pages/carrinho/Carrinho";
+import { Agendamento } from "../pages/agendamento/Agendamento";
 
 export default function AppRoutes() {
   return (
@@ -19,6 +20,7 @@ export default function AppRoutes() {
         <Route path={ROUTES.BUSCA} element={<Busca />} />
         <Route path={ROUTES.SERVICO} element={<Servico />} />
         <Route path={ROUTES.CARRINHO} element={<Carrinho />} />
+        <Route path={ROUTES.AGENDAMENTO} element={<Agendamento />} />
       </Routes>
     </BrowserRouter>
   );

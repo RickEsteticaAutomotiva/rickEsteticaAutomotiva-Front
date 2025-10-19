@@ -13,7 +13,7 @@ export function Header() {
     const { isAuthenticated } = UseAuth();
 
     const habilitaPesquisa = () => {
-        if (window.location.pathname === ROUTES.LOGIN || window.location.pathname === ROUTES.CADASTRAR) {
+        if (window.location.pathname === ROUTES.LOGIN || window.location.pathname === ROUTES.CADASTRAR || window.location.pathname === ROUTES.VEICULOS) {
             return false;
         }
         return true;
@@ -45,7 +45,7 @@ export function Header() {
 
                     {isAuthenticated() && <PerfilDropdown />}
 
-                    {isAuthenticated() && <FavoritosDropdown />}
+                    {isAuthenticated() && habilitaPesquisa() && <FavoritosDropdown />}
 
                     {habilitaPesquisa() && (<Link className="cursor-pointer" to={isAuthenticated() ? ROUTES.CARRINHO : ROUTES.LOGIN}>
                         <i className="bi bi-cart3"></i>
