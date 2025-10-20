@@ -8,6 +8,7 @@ import { servicosService } from '../../services/ServicosService';
 import './Servico.css';
 import { LoadingState } from '../../components/loading-state/LoadingState';
 import localImage from '../../assets/local.png';
+import { CarrinhoService } from '../../services/CarrinhoService';
 
 export function Servico() {
     const { id } = useParams();
@@ -18,6 +19,7 @@ export function Servico() {
     const [error, setError] = useState(null);
     const [isFavorito, setIsFavorito] = useState(false);
     const [quantidade, setQuantidade] = useState(1);
+    const carrinhoService = new CarrinhoService();
 
     const breadcrumbItems = [
         {
@@ -86,7 +88,7 @@ export function Servico() {
             return;
         }
 
-        console.log(`Adicionando ${quantidade}x ${servico.nome} ao carrinho`);
+        carrinhoService.adicionarServicoCarrinho(user.id, servico.id)
     };
 
     const agendarServico = () => {

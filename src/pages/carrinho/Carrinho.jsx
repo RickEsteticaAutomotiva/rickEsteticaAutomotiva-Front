@@ -2,19 +2,53 @@ import { Header } from "../../components/header/Header";
 import { useNavigate, Link } from 'react-router-dom';
 import { ROUTES } from "../../constants/routes";
 import { LoadingState } from "../../components/loading-state/LoadingState";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { CarrinhoService } from "../../services/CarrinhoService";
 
 export function Carrinho() {
     const [loading, setLoading] = useState(true);
+    const [carrinho, setCarrinho] = useState([]);
+    const carrinhoService = new CarrinhoService();
+    const user = JSON.parse(sessionStorage.getItem('userData'));
+    const navigate = useNavigate();
 
-    setTimeout(() => {
-        setLoading(false);
-    }, 300);
+    const listarServicos = async () => {
+        try {
+            setLoading(true);
+            const data = await carrinhoService.buscarCarrinhoUsuario(user.id);
+            setCarrinho(data);
+            console.log('Carrinho carregado:', data);
+        } catch (error) {
+            console.error('Erro ao buscar serviços no carrinho:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const removerServicoCarrinho = async (idServico) => {
+        try {
+            await carrinhoService.removerItemCarrinho(user.id, idServico);
+            await listarServicos();
+        } catch (error) {
+            console.error('Erro ao remover serviço do carrinho:', error);
+        }
+    };
+
+    const calcularTotal = () => {
+        if (!carrinho || carrinho.length === 0) return 0;
+        return carrinho.reduce((total, item) => total + (item.preco || 0), 0);
+    };
+
+    useEffect(() => {
+        if (user?.id) {
+            listarServicos();
+        } else {
+            navigate(ROUTES.LOGIN);
+        }
+    }, []);
 
     if (loading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
 
     return (
@@ -32,33 +66,47 @@ export function Carrinho() {
                     </div>
 
                     <div className="carrinho-itens px-5">
-                        <ul>
-                            <li className="py-2 border-b border-gray-200 flex gap-3 items-start">
-                                <img src="" alt="" className="h-20 w-20" />
+                        {carrinho && carrinho.length > 0 ? (
+                            <ul>
+                                {carrinho.map((item) => (
+                                    <li key={item.id} className="py-2 border-b border-gray-200 flex gap-3 items-start">
+                                        <img 
+                                            src="" 
+                                            alt={item.nome} 
+                                            className="h-20 w-20 object-cover rounded"
+                                            onError={(e) => {
+                                                e.target.src = "/default-service.jpg";
+                                            }}
+                                        />
 
-                                <div className="flex flex-col gap-2 w-full">
-                                    <div className="flex justify-between w-full">
-                                        <p className="font-bold">Serviço 1</p>
-                                        <p>R$ 100,00</p>
-                                    </div>
+                                        <div className="flex flex-col gap-2 w-full">
+                                            <div className="flex justify-between w-full">
+                                                <p className="font-bold">{item.nome}</p>
+                                                <p>R$ {item.preco?.toFixed(2) || '0,00'}</p>
+                                            </div>
 
-                                    <button className="text-red-600 hover:text-red-800 cursor-pointer w-fit"><i class="bi bi-trash3"></i> Remover do carrinho</button>
-                                </div>
-                            </li>
-
-                            <li className="py-2 border-b border-gray-200 flex gap-3 items-start">
-                                <img src="" alt="" className="h-20 w-20" />
-
-                                <div className="flex flex-col gap-2 w-full">
-                                    <div className="flex justify-between w-full">
-                                        <p className="font-bold">Serviço 2</p>
-                                        <p>R$ 70,00</p>
-                                    </div>
-
-                                    <button className="text-red-600 hover:text-red-800 cursor-pointer w-fit"><i class="bi bi-trash3"></i> Remover do carrinho</button>
-                                </div>
-                            </li>
-                        </ul>
+                                            <button 
+                                                onClick={() => removerServicoCarrinho(item.id)}
+                                                className="text-red-600 hover:text-red-800 cursor-pointer w-fit transition-colors"
+                                            >
+                                                <i className="bi bi-trash3"></i> Remover do carrinho
+                                            </button>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <div className="text-center py-8">
+                                <i className="bi bi-cart-x text-4xl text-gray-400 mb-4"></i>
+                                <p className="text-gray-500 mb-4">Seu carrinho está vazio</p>
+                                <Link 
+                                    to={ROUTES.SERVICOS} 
+                                    className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors"
+                                >
+                                    Ver serviços disponíveis
+                                </Link>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -69,10 +117,25 @@ export function Carrinho() {
 
                     <div className="px-5 flex flex-col gap-4">
                         <div className="flex justify-between mb-2">
-                            <p>Valor mínimo:</p>
-                            <p className="font-bold">R$ 300,00</p>
+                            <p>Subtotal:</p>
+                            <p className="font-bold">R$ {calcularTotal().toFixed(2)}</p>
                         </div>
-                        <Link to={ROUTES.VEICULOS} className="bg-red-600 font-bold text-white py-2 px-4 rounded w-full hover:bg-red-700 cursor-pointer text-center">Agendar serviço</Link>
+                        
+                        {carrinho && carrinho.length > 0 ? (
+                            <Link 
+                                to={ROUTES.VEICULOS} 
+                                className="bg-red-600 font-bold text-white py-2 px-4 rounded w-full hover:bg-red-700 cursor-pointer text-center transition-colors"
+                            >
+                                Agendar serviço
+                            </Link>
+                        ) : (
+                            <button 
+                                disabled 
+                                className="bg-gray-400 font-bold text-white py-2 px-4 rounded w-full cursor-not-allowed"
+                            >
+                                Carrinho vazio
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>

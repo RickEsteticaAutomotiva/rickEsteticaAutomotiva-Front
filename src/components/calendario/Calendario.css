@@ -80,7 +80,9 @@
 }
 
 .dia-calendario:hover:not(.disabled):not(.outro-mes) {
+  border-color: #dc2626;
   background: #fef2f2;
+  color: #dc2626;
 }
 
 .dia-calendario.selected {
@@ -181,6 +183,7 @@
 .horario-button:hover:not(:disabled) {
   border-color: #dc2626;
   background: #fef2f2;
+  color: #dc2626;
 }
 
 .horario-button.selected {
