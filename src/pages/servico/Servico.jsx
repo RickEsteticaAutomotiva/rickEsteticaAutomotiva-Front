@@ -9,6 +9,7 @@ import './Servico.css';
 import { LoadingState } from '../../components/loading-state/LoadingState';
 import localImage from '../../assets/local.png';
 import { CarrinhoService } from '../../services/CarrinhoService';
+import { FavoritoService } from '../../services/FavoritoService';
 
 export function Servico() {
     const { id } = useParams();
@@ -18,8 +19,10 @@ export function Servico() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isFavorito, setIsFavorito] = useState(false);
-    const [quantidade, setQuantidade] = useState(1);
+    const [favoritos, setFavoritos] = useState([]);
+    const [loadingFavorito, setLoadingFavorito] = useState(false);
     const carrinhoService = new CarrinhoService();
+    const favoritoService = new FavoritoService();
 
     const breadcrumbItems = [
         {
@@ -55,14 +58,26 @@ export function Servico() {
             setServico(data);
         } catch (error) {
             console.error('Erro ao buscar serviço:', error);
+            setError('Não foi possível carregar o serviço');
         } finally {
             setLoading(false);
         }
     };
 
     const verificarFavorito = async () => {
-        // Colocar logica para verificar se o serviço está nos favoritos do usuário
-        setIsFavorito(false);
+        try {
+            const data = await favoritoService.buscarFavoritosUsuario(user.id);
+            setFavoritos(data);
+
+            const servicoEhFavorito = data.some(favorito => 
+                favorito.id === parseInt(servico.id) || 
+                favorito.id === servico.id
+            );
+            
+            setIsFavorito(servicoEhFavorito);
+        } catch (error) {
+            console.error('Erro ao verificar favoritos:', error);
+        }
     };
 
     const toggleFavorito = async () => {
@@ -71,36 +86,60 @@ export function Servico() {
             return;
         }
 
+        if (loadingFavorito) return;
+
+        setLoadingFavorito(true);
+
         try {
-            // Colocar logica para adicionar/remover serviços dos favoritos
+            if (isFavorito) {
+                await favoritoService.removerItemFavorito(user.id, servico.id);
+                console.log('Removido dos favoritos');
+            } else {
+                await favoritoService.adicionarServicoFavorito(user.id, servico.id);
+                console.log('Adicionado aos favoritos');
+            }
 
-            // Simulação
             setIsFavorito(!isFavorito);
-
+            
+            // Recarregar a lista de favoritos para garantir sincronização
+            await verificarFavorito();
+            
         } catch (error) {
             console.error('Erro ao alterar favorito:', error);
+            // Reverter o estado em caso de erro
+            setIsFavorito(isFavorito);
+        } finally {
+            setLoadingFavorito(false);
         }
     };
 
-    const adicionarAoCarrinho = () => {
+    const adicionarAoCarrinho = async () => {
         if (!isAuthenticated()) {
             navigate(ROUTES.LOGIN);
             return;
         }
 
-        carrinhoService.adicionarServicoCarrinho(user.id, servico.id)
+        try {
+            await carrinhoService.adicionarServicoCarrinho(user.id, servico.id);
+            console.log('Serviço adicionado ao carrinho');
+            // Opcionalmente, mostrar uma mensagem de sucesso
+        } catch (error) {
+            console.error('Erro ao adicionar ao carrinho:', error);
+        }
     };
 
-    const agendarServico = () => {
+    const agendarServico = async () => {
         if (!isAuthenticated()) {
             navigate(ROUTES.LOGIN);
             return;
         }
 
-        // Lógica para agendar serviço
-        // deve adicionar no carrinho e redirecionar para tela do carrinho
-
-        navigate(`/carrinho`);
+        try {
+            await carrinhoService.adicionarServicoCarrinho(user.id, servico.id);
+            navigate(`/carrinho`);
+        } catch (error) {
+            console.error('Erro ao agendar serviço:', error);
+        }
     };
 
     if (loading) {
@@ -139,8 +178,12 @@ export function Servico() {
             <main className='px-16 py-5'>
                 <div className="">
                     <div className="servico-detalhes flex flex-col md:flex-row justify-between h-80">
-                        <div className="servico-imagem w-2/4 flex-shrink-0">
-                            <img src={servico.imagemUrl} alt={servico.nome} className="w-full h-full rounded-lg shadow-md" />
+                        <div className="servico-imagem w-2/4 flex-shrink-0 bg-gray-200 rounded-lg shadow-md flex justify-center items-center overflow-hidden">
+                        {servico.imagem ? ( 
+                            <img src={servico.imagem} alt={servico.nome} className="w-full h-full" />
+                        ) : (
+                            <i className="bi bi-gear text-gray-400"></i>
+                        )}
                         </div>
                         <div className="servico-imagem-menor flex-shrink-0 grid grid-cols-2 gap-5">
                             <img src={servico.imagemUrl} alt={servico.nome} className="w-full h-full rounded-lg shadow-md" />
@@ -161,8 +204,22 @@ export function Servico() {
                                     <div><i className="bi bi-share"></i></div>
                                 </div>
 
-                                <div className='h-10 w-10 rounded-full bg-white flex justify-center items-center cursor-pointer shadow' onClick={toggleFavorito}>
-                                    <div><i className="bi bi-heart"></i></div>
+                                <div 
+                                    className={`h-10 w-10 rounded-full bg-white flex justify-center items-center cursor-pointer shadow transition-all duration-200 ${
+                                        loadingFavorito ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-50'
+                                    }`}
+                                    onClick={toggleFavorito}
+                                    disabled={loadingFavorito}
+                                >
+                                    <div>
+                                        {loadingFavorito ? (
+                                            <i className="bi bi-arrow-repeat animate-spin"></i>
+                                        ) : isFavorito ? (
+                                            <i className="bi bi-heart-fill text-red-500"></i>
+                                        ) : (
+                                            <i className="bi bi-heart text-gray-600"></i>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -214,7 +271,7 @@ export function Servico() {
                             </div>
                             <div className="acoes-servico flex flex-col gap-4 mt-6">
                                 <button
-                                    className="bg-red-600 text-white px-6 py-2 rounded-lg mr-py-2 px-4 rounded w-full hover:bg-red-700 cursor-pointer"
+                                    className="bg-red-600 text-white px-6 py-2 rounded-lg mr-py-2 px-4 rounded w-full hover:bg-red-700 cursor-pointer transition-colors"
                                     onClick={adicionarAoCarrinho}
                                 >
                                     Adicionar ao Carrinho

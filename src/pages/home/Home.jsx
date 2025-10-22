@@ -82,6 +82,7 @@ export function Home() {
                                         nome={servico.nome}
                                         preco={servico.preco}
                                         descricao={servico.descricao}
+                                        imagem={servico.imagem}
                                     />
                                 ))}
                             </div>

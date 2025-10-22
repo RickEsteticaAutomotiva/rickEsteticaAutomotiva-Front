@@ -5,6 +5,7 @@ import { Breadcrumb } from "../../components/breadcrumb/Breadcrumb";
 import { Calendario } from "../../components/calendario/Calendario";
 import { UseAuth } from "../../hooks/UseAuth";
 import { ROUTES } from "../../constants/routes";
+import { CarrinhoService } from '../../services/CarrinhoService';
 import "./Agendamento.css";
 
 export function Agendamento() {
@@ -12,9 +13,10 @@ export function Agendamento() {
     const [horarioSelecionado, setHorarioSelecionado] = useState(null);
     const [veiculoSelecionado, setVeiculoSelecionado] = useState(null);
     const [servicosCarrinho, setServicosCarrinho] = useState([]);
-
+    const carrinhoService = new CarrinhoService();
     const navigate = useNavigate();
-    const { isAuthenticated, user } = UseAuth();
+    const { isAuthenticated } = UseAuth();
+    const user = JSON.parse(sessionStorage.getItem('userData'));
 
     const smoothScrollTo = (targetPosition, duration = 800) => {
         const startPosition = window.pageYOffset;
@@ -39,11 +41,6 @@ export function Agendamento() {
         requestAnimationFrame(animation);
     };
 
-    const servicosMock = [
-        { id: 1, nome: "Lavagem Completa", preco: 25.00 },
-        { id: 2, nome: "Enceramento Premium", preco: 150.00 }
-    ];
-
     const breadcrumbItems = [
         { label: 'Início', href: ROUTES.HOME, icon: 'bi bi-house' },
         { label: 'Carrinho', href: ROUTES.CARRINHO, icon: 'bi bi-cart3' },
@@ -58,9 +55,8 @@ export function Agendamento() {
         //     return;
         // }
 
-        // Carregar dados do sessionStorage
         const veiculo = JSON.parse(sessionStorage.getItem('veiculoSelecionado') || 'null');
-        const servicos = JSON.parse(sessionStorage.getItem('servicosCarrinho') || '[]');
+        buscarServicosCarrinho();
         
         if (!veiculo) {
             navigate(ROUTES.VEICULOS);
@@ -68,8 +64,12 @@ export function Agendamento() {
         }
 
         setVeiculoSelecionado(veiculo);
-        setServicosCarrinho(servicos.length > 0 ? servicos : servicosMock);
     }, []);
+
+    const buscarServicosCarrinho = async () => {
+        const servicos = await carrinhoService.buscarCarrinhoUsuario(user.id);
+        setServicosCarrinho(servicos);
+    };
 
     const handleDateSelect = (date) => {
         setDataSelecionada(date);
@@ -120,10 +120,8 @@ export function Agendamento() {
 
             // Simular confirmação
             console.log('Agendamento confirmado:', agendamento);
-            
-            // Limpar dados temporários
-            sessionStorage.removeItem('veiculoSelecionado');
-            sessionStorage.removeItem('servicosCarrinho');
+
+
             
             alert('Agendamento confirmado com sucesso!');
             navigate(ROUTES.HOME);
@@ -214,7 +212,7 @@ export function Agendamento() {
                             {/* Serviços */}
                             <div className="servicos-lista">
                                 <h4 className="font-semibold mb-3 text-gray-800">Serviços</h4>
-                                {servicosCarrinho.map(servico => (
+                                {servicosCarrinho && servicosCarrinho.map(servico => (
                                     <div key={servico.id} className="servico-item">
                                         <span className="servico-nome">{servico.nome}</span>
                                         <span className="servico-preco">R$ {servico.preco.toFixed(2).replace('.', ',')}</span>

@@ -6,6 +6,7 @@ import { UseAuth } from "../../hooks/UseAuth";
 // import { usuariosService } from "../../services/UsuarioService";
 import { ROUTES } from "../../constants/routes";
 import "./Veiculos.css";
+import { VeiculoService } from '../../services/VeiculoService';
 
 export function Veiculos() {
   const [veiculos, setVeiculos] = useState([]);
@@ -13,10 +14,9 @@ export function Veiculos() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  
+  const veiculoService = new VeiculoService();
   const navigate = useNavigate();
   const { isAuthenticated, user } = UseAuth();
-
   const breadcrumbItems = [
     {
       label: 'Início',
@@ -34,59 +34,26 @@ export function Veiculos() {
     }
   ];
 
-  const veiculosMock = [
-    {
-      id: 1,
-      marca: "Toyota",
-      modelo: "Corolla",
-      ano: 2020,
-      cor: "Branco",
-      placa: "ABC-1234",
-      tipo: "Sedã"
-    },
-    {
-      id: 2,
-      marca: "Honda",
-      modelo: "Civic",
-      ano: 2019,
-      cor: "Preto",
-      placa: "XYZ-5678",
-      tipo: "Sedã"
-    },
-    {
-      id: 3,
-      marca: "Volkswagen",
-      modelo: "Golf",
-      ano: 2021,
-      cor: "Azul",
-      placa: "DEF-9012",
-      tipo: "Hatchback"
-    }
-  ];
-
   useEffect(() => {
     // if (!isAuthenticated()) {
     //   navigate(ROUTES.LOGIN);
     //   return;
     // }
     buscarVeiculos();
-  }, []);
+  }, [user]);
 
   const buscarVeiculos = async () => {
     setLoading(true);
     setError(null);
     
     try {
-      // Substitua por sua chamada da API
-      
-      // Simulação com mock
-      setTimeout(() => {
-        setVeiculos(veiculosMock);
-        setLoading(false);
-      }, 500);
+      const data = await veiculoService.buscarVeiculosPorUsuario(user.id);
+      setVeiculos(data);
       
     } catch (error) {
       setError(error.message);
+      setLoading(false);
+    } finally {
       setLoading(false);
     }
   };
@@ -203,7 +170,7 @@ export function Veiculos() {
                         </span>
                         <span className="detalhe-item">
                           <i className="bi bi-car-front-fill mr-1"></i>
-                          {veiculo.tipo}
+                          {veiculo.porte}
                         </span>
                       </div>
                     </div>

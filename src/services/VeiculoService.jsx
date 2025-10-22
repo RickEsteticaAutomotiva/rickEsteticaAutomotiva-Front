@@ -19,6 +19,15 @@ export class VeiculoService {
         }
     }
 
+    async atualizarVeiculo(veiculoData) {
+        try {
+            const response = await apiService.patch(`/veiculos`, veiculoData);
+            return response;
+        } catch (error) {
+            throw new Error(error.message || 'Erro ao atualizar veículo');
+        }
+    }
+
     async removerVeiculo(idVeiculo) {
         try {
             const response = await apiService.delete(`/veiculos/${idVeiculo}`);

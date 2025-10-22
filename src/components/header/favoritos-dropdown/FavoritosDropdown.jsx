@@ -2,36 +2,14 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { UseAuth } from "../../../hooks/UseAuth";
 import "./FavoritosDropdown.css";
+import { FavoritoService } from "../../../services/FavoritoService";
+import { LoadingState } from "../../loading-state/LoadingState";
 
 export function FavoritosDropdown() {
     const [favoritos, setFavoritos] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const { user, getToken } = UseAuth();
-
-    // trocar pela API
-    const favoritosMock = [
-        {
-            id: 1,
-            nome: "Lavagem Completa",
-            categoria: "Lavagem",
-            preco: 25.00,
-            imagem: "/images/lavagem-completa.jpg"
-        },
-        {
-            id: 3,
-            nome: "Detalhamento Interno",
-            categoria: "Detalhamento",
-            preco: 120.00,
-            imagem: "/images/detalhamento.jpg"
-        },
-        {
-            id: 7,
-            nome: "Enceramento Premium",
-            categoria: "Enceramento",
-            preco: 150.00,
-            imagem: "/images/enceramento.jpg"
-        }
-    ];
+    const favoritoService = new FavoritoService();
 
     useEffect(() => {
         if (user) {
@@ -40,32 +18,13 @@ export function FavoritosDropdown() {
     }, [user]);
 
     const buscarFavoritos = async () => {
-        setLoading(true);
-
         try {
-            // Colocar chamada da API aqui
-            /*
-            const response = await fetch(`/api/usuarios/${user.id}/favoritos`, {
-                headers: {
-                    'Authorization': `Bearer ${getToken()}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                setFavoritos(data);
-            }
-            */
-
-            // Simulação com timeout
-            setTimeout(() => {
-                setFavoritos(favoritosMock);
-                setLoading(false);
-            }, 500);
-
+            const data = await favoritoService.buscarFavoritosUsuario(user.id);
+            setFavoritos(data);
         } catch (error) {
             console.error('Erro ao buscar favoritos:', error);
+            setLoading(false);
+        } finally {
             setLoading(false);
         }
     };
@@ -87,12 +46,7 @@ export function FavoritosDropdown() {
                     </p>
                 </div>
 
-                {loading && (
-                    <div className="p-6 text-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto"></div>
-                        <p className="mt-2 text-sm text-gray-500">Carregando favoritos...</p>
-                    </div>
-                )}
+                {loading && <LoadingState />}
 
                 {!loading && favoritos.length === 0 && (
                     <div className="p-6 text-center">

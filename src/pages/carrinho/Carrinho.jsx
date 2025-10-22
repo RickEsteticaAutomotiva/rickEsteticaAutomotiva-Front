@@ -70,6 +70,7 @@ export function Carrinho() {
                             <ul>
                                 {carrinho.map((item) => (
                                     <li key={item.id} className="py-2 border-b border-gray-200 flex gap-3 items-start">
+                                        {item.imagem ? (
                                         <img 
                                             src="" 
                                             alt={item.nome} 
@@ -77,7 +78,11 @@ export function Carrinho() {
                                             onError={(e) => {
                                                 e.target.src = "/default-service.jpg";
                                             }}
-                                        />
+                                        /> ) : (
+                                        <div className="h-25 w-25 bg-gray-200 rounded flex items-center justify-center">
+                                            <i className="bi bi-gear text-4xl text-gray-400"></i>
+                                        </div>
+                                        )}
 
                                         <div className="flex flex-col gap-2 w-full">
                                             <div className="flex justify-between w-full">
@@ -100,7 +105,7 @@ export function Carrinho() {
                                 <i className="bi bi-cart-x text-4xl text-gray-400 mb-4"></i>
                                 <p className="text-gray-500 mb-4">Seu carrinho está vazio</p>
                                 <Link 
-                                    to={ROUTES.SERVICOS} 
+                                    to={ROUTES.HOME} 
                                     className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors"
                                 >
                                     Ver serviços disponíveis

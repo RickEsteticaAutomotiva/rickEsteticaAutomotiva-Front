@@ -1,4 +1,3 @@
-import { data } from 'react-router-dom';
 import { apiService } from './ApiService';
 
 export class CarrinhoService {
