@@ -265,11 +265,11 @@ export function Servico() {
                         <div className="px-5 flex flex-col gap-4">
                             <div className="flex flex-col">
                                 <p className="font-semibold">A partir de:</p>
-                                <p className="text-2xl font-semibold text-red-600 font-bold">R$ {servico.preco.toFixed(2)}</p>
+                                <p className="text-2xl font-semibold text-red-600">R$ {servico.preco.toFixed(2)}</p>
                             </div>
                             <div className="acoes-servico flex flex-col gap-4 mt-6">
                                 <button
-                                    className="bg-red-600 text-white px-6 py-2 rounded-lg mr-py-2 px-4 rounded w-full hover:bg-red-700 cursor-pointer transition-colors"
+                                    className="bg-red-600 text-white px-6 py-2 rounded-lg mr-py-2 w-full hover:bg-red-700 cursor-pointer transition-colors"
                                     onClick={adicionarAoCarrinho}
                                 >
                                     Adicionar ao Carrinho
