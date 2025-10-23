@@ -7,4 +7,5 @@ export const ROUTES = {
   BUSCA: '/busca',
   SERVICO: '/servico/:id',
   AGENDAMENTO: '/agendamento',
+  PERFIL: '/perfil',
 };
