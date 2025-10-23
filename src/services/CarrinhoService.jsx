@@ -20,10 +20,9 @@ export class CarrinhoService {
         }
     }
 
-    async removerItemCarrinho(idPessoa, idServico) {
+    async removerItemCarrinho(idCarrinho) {
         try {
-            const body = { idPessoa, idServico };
-            const response = await apiService.delete(`/carrinhos`, { data: body });
+            const response = await apiService.delete(`/carrinhos/${idCarrinho}`);
             return response;
         } catch (error) {
             throw new Error(error.message || 'Erro ao remover item do carrinho');

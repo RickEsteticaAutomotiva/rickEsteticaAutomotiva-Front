@@ -63,7 +63,7 @@ export function FavoritosDropdown() {
                         {favoritos.map((servico) => (
                             <div key={servico.id} className="favorito-item">
                                 <Link
-                                    to={`/servico/${servico.id}`}
+                                    to={`/servico/${servico.idServico}`}
                                     className="flex items-center p-3 hover:bg-gray-50 transition-colors"
                                 >
                                     <div className="w-15 h-15 bg-gray-200 rounded-lg flex items-center justify-center mr-3">

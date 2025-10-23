@@ -25,9 +25,9 @@ export function Carrinho() {
         }
     };
 
-    const removerServicoCarrinho = async (idServico) => {
+    const removerServicoCarrinho = async (idCarrinho) => {
         try {
-            await carrinhoService.removerItemCarrinho(user.id, idServico);
+            await carrinhoService.removerItemCarrinho(idCarrinho);
             await listarServicos();
         } catch (error) {
             console.error('Erro ao remover serviço do carrinho:', error);
@@ -91,7 +91,7 @@ export function Carrinho() {
                                             </div>
 
                                             <button 
-                                                onClick={() => removerServicoCarrinho(item.id)}
+                                                onClick={() => removerServicoCarrinho(item.idCarrinho)}
                                                 className="text-red-600 hover:text-red-800 cursor-pointer w-fit transition-colors"
                                             >
                                                 <i className="bi bi-trash3"></i> Remover do carrinho

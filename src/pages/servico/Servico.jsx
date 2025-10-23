@@ -70,8 +70,8 @@ export function Servico() {
             setFavoritos(data);
 
             const servicoEhFavorito = data.some(favorito => 
-                favorito.id === parseInt(servico.id) || 
-                favorito.id === servico.id
+                favorito.idServico === parseInt(servico.id) || 
+                favorito.idServico === servico.id
             );
             
             setIsFavorito(servicoEhFavorito);
@@ -92,21 +92,19 @@ export function Servico() {
 
         try {
             if (isFavorito) {
-                await favoritoService.removerItemFavorito(user.id, servico.id);
-                console.log('Removido dos favoritos');
+                await favoritoService.removerItemFavorito(favoritos.find(fav => 
+                    fav.idServico === parseInt(servico.id) || 
+                    fav.idServico === servico.id
+                ).idFavorito);
             } else {
                 await favoritoService.adicionarServicoFavorito(user.id, servico.id);
-                console.log('Adicionado aos favoritos');
             }
 
             setIsFavorito(!isFavorito);
             
-            // Recarregar a lista de favoritos para garantir sincronização
             await verificarFavorito();
-            
         } catch (error) {
             console.error('Erro ao alterar favorito:', error);
-            // Reverter o estado em caso de erro
             setIsFavorito(isFavorito);
         } finally {
             setLoadingFavorito(false);
