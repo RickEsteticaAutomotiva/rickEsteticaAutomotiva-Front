@@ -3,19 +3,24 @@ import { useNavigate } from 'react-router-dom';
 import { Header } from "../../components/header/Header";
 import { Breadcrumb } from "../../components/breadcrumb/Breadcrumb";
 import { Calendario } from "../../components/calendario/Calendario";
+import { ModalConfirmacao } from "../../components/modal-confirmacao/ModalConfirmacao";
 import { UseAuth } from "../../hooks/UseAuth";
 import { ROUTES } from "../../constants/routes";
 import { CarrinhoService } from '../../services/CarrinhoService';
 import "./Agendamento.css";
+import { Footer } from '../../components/footer/Footer';
 
 export function Agendamento() {
     const [dataSelecionada, setDataSelecionada] = useState(null);
     const [horarioSelecionado, setHorarioSelecionado] = useState(null);
     const [veiculoSelecionado, setVeiculoSelecionado] = useState(null);
     const [servicosCarrinho, setServicosCarrinho] = useState([]);
+    const [showModalConfirmacao, setShowModalConfirmacao] = useState(false);
+    const [loadingConfirmacao, setLoadingConfirmacao] = useState(false);
     const carrinhoService = new CarrinhoService();
     const navigate = useNavigate();
     const { isAuthenticated } = UseAuth();
+    
     const user = JSON.parse(sessionStorage.getItem('userData'));
 
     const smoothScrollTo = (targetPosition, duration = 800) => {
@@ -103,11 +108,16 @@ export function Agendamento() {
         return servicosCarrinho.reduce((total, servico) => total + servico.preco, 0);
     };
 
-    const confirmarAgendamento = async () => {
+    const abrirModalConfirmacao = () => {
         if (!dataSelecionada || !horarioSelecionado) {
             alert('Por favor, selecione uma data e horário');
             return;
         }
+        setShowModalConfirmacao(true);
+    };
+
+    const confirmarAgendamento = async () => {
+        setLoadingConfirmacao(true);
 
         try {
             const agendamento = {
@@ -118,18 +128,28 @@ export function Agendamento() {
                 total: calcularTotal()
             };
 
-            // Simular confirmação
+            // Simular chamada da API
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
             console.log('Agendamento confirmado:', agendamento);
-
-
             
+            // Limpar carrinho após confirmação
+            // await carrinhoService.limparCarrinho(user.id);
+            
+            setShowModalConfirmacao(false);
             alert('Agendamento confirmado com sucesso!');
             navigate(ROUTES.HOME);
 
         } catch (error) {
             console.error('Erro ao confirmar agendamento:', error);
             alert('Erro ao confirmar agendamento. Tente novamente.');
+        } finally {
+            setLoadingConfirmacao(false);
         }
+    };
+
+    const cancelarConfirmacao = () => {
+        setShowModalConfirmacao(false);
     };
 
     if (!veiculoSelecionado) {
@@ -232,7 +252,7 @@ export function Agendamento() {
                         <div className="resumo-footer">
                             <button
                                 className="btn-confirmar"
-                                onClick={confirmarAgendamento}
+                                onClick={abrirModalConfirmacao}
                                 disabled={!dataSelecionada || !horarioSelecionado}  
                             >
                                 Confirmar Agendamento
@@ -241,6 +261,135 @@ export function Agendamento() {
                     </div>
                 </div>
             </div>
+
+            <Footer />
+
+            {/* Modal de Confirmação */}
+            <ModalConfirmacao
+                isOpen={showModalConfirmacao}
+                onClose={cancelarConfirmacao}
+                onConfirm={confirmarAgendamento}
+                titulo="Confirmar Agendamento"
+                tipo="success"
+                icone="bi bi-calendar-check"
+                textoBotaoConfirmar="Confirmar"
+                textoBotaoCancelar="Cancelar"
+                loading={loadingConfirmacao}
+            >
+                <div style={{ textAlign: 'left' }}>
+                    <div style={{ 
+                        background: '#f8fafc', 
+                        border: '1px solid #e2e8f0', 
+                        borderRadius: '8px', 
+                        padding: '1rem', 
+                        marginBottom: '1rem' 
+                    }}>
+                        <h4 style={{ 
+                            margin: '0 0 0.5rem 0', 
+                            fontSize: '1rem', 
+                            fontWeight: '600',
+                            color: '#1e293b'
+                        }}>
+                            <i className="bi bi-car-front" style={{ marginRight: '0.5rem' }}></i>
+                            Veículo
+                        </h4>
+                        <p style={{ 
+                            margin: '0', 
+                            color: '#475569',
+                            fontSize: '0.875rem'
+                        }}>
+                            {veiculoSelecionado.marca} {veiculoSelecionado.modelo} - {veiculoSelecionado.ano}
+                        </p>
+                    </div>
+
+                    {dataSelecionada && horarioSelecionado && (
+                        <div style={{ 
+                            background: '#f0f9ff', 
+                            border: '1px solid #bae6fd', 
+                            borderRadius: '8px', 
+                            padding: '1rem', 
+                            marginBottom: '1rem' 
+                        }}>
+                            <h4 style={{ 
+                                margin: '0 0 0.5rem 0', 
+                                fontSize: '1rem', 
+                                fontWeight: '600',
+                                color: '#0c4a6e'
+                            }}>
+                                <i className="bi bi-calendar-check" style={{ marginRight: '0.5rem' }}></i>
+                                Data e Horário
+                            </h4>
+                            <p style={{ 
+                                margin: '0', 
+                                color: '#0369a1',
+                                fontSize: '0.875rem'
+                            }}>
+                                {formatarData(dataSelecionada)} às {horarioSelecionado}
+                            </p>
+                        </div>
+                    )}
+
+                    <div style={{ 
+                        background: '#f0fdf4', 
+                        border: '1px solid #bbf7d0', 
+                        borderRadius: '8px', 
+                        padding: '1rem' 
+                    }}>
+                        <h4 style={{ 
+                            margin: '0 0 0.75rem 0', 
+                            fontSize: '1rem', 
+                            fontWeight: '600',
+                            color: '#14532d'
+                        }}>
+                            <i className="bi bi-list-check" style={{ marginRight: '0.5rem' }}></i>
+                            Serviços ({servicosCarrinho.length})
+                        </h4>
+                        
+                        {servicosCarrinho.map((servico, index) => (
+                            <div key={servico.id} style={{ 
+                                display: 'flex', 
+                                justifyContent: 'space-between', 
+                                alignItems: 'center',
+                                fontSize: '0.875rem',
+                                color: '#166534',
+                                paddingBottom: index < servicosCarrinho.length - 1 ? '0.5rem' : '0',
+                                marginBottom: index < servicosCarrinho.length - 1 ? '0.5rem' : '0',
+                                borderBottom: index < servicosCarrinho.length - 1 ? '1px solid #dcfce7' : 'none'
+                            }}>
+                                <span>{servico.nome}</span>
+                                <span style={{ fontWeight: '600' }}>
+                                    R$ {servico.preco.toFixed(2).replace('.', ',')}
+                                </span>
+                            </div>
+                        ))}
+                        
+                        <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            alignItems: 'center',
+                            marginTop: '0.75rem',
+                            paddingTop: '0.75rem',
+                            borderTop: '2px solid #16a34a',
+                            fontSize: '1rem',
+                            fontWeight: '700',
+                            color: '#14532d'
+                        }}>
+                            <span>Total Mínimo:</span>
+                            <span>R$ {calcularTotal().toFixed(2).replace('.', ',')}</span>
+                        </div>
+                    </div>
+
+                    <p style={{ 
+                        marginTop: '1rem',
+                        fontSize: '0.875rem', 
+                        color: '#64748b',
+                        textAlign: 'center',
+                        fontStyle: 'italic'
+                    }}>
+                        Tem certeza que deseja confirmar este agendamento?
+                    </p>
+                </div>
+            </ModalConfirmacao>
         </>
     );
 }

@@ -7,6 +7,7 @@ import { usuarioService } from "../../services/UsuarioService";
 import { ROUTES } from "../../constants/routes";
 import { LoadingState } from "../../components/loading-state/LoadingState";
 import "./Perfil.css";
+import { Footer } from '../../components/footer/Footer';
 
 export function Perfil() {
   const [formData, setFormData] = useState({
@@ -404,6 +405,8 @@ export function Perfil() {
           </div>
         </div>
       </div>
+
+      <Footer />
     </>
   );
 }

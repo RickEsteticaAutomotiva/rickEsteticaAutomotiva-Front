@@ -31,8 +31,7 @@ export function Calendario({
         '13:00', '14:00', '15:00', '16:00', '17:00'
       ];
 
-      // Simular alguns horários ocupados
-      const occupiedTimes = ['09:00', '14:00', '16:00'];
+      const occupiedTimes = [];
       const freeTimes = times.filter(t => !occupiedTimes.includes(t));
 
       setAvailableTimes(freeTimes);
@@ -42,6 +41,27 @@ export function Calendario({
     } finally {
       setLoadingTimes(false);
     }
+  };
+
+  const isTimePassed = (time, date) => {
+    const now = new Date();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const selectedDateOnly = new Date(date);
+    selectedDateOnly.setHours(0, 0, 0, 0);
+    
+    if (selectedDateOnly.getTime() !== today.getTime()) {
+      return false;
+    }
+    
+    const [hours, minutes] = time.split(':').map(Number);
+    const timeDate = new Date();
+    timeDate.setHours(hours, minutes, 0, 0);
+    
+    const currentTimeWithMargin = new Date(now.getTime() + (60 * 60 * 1000));
+    
+    return timeDate <= currentTimeWithMargin;
   };
 
   const getDaysInMonth = (date) => {
@@ -113,7 +133,7 @@ export function Calendario({
   };
 
   const selectTime = (time) => {
-    if (disabled) return;
+    if (disabled || isTimePassed(time, selectedDate)) return;
     onTimeSelect(time);
   };
 
@@ -202,18 +222,28 @@ export function Calendario({
             </div>
           ) : availableTimes.length > 0 ? (
             <div className="horarios-grid">
-              {availableTimes.map(time => (
-                <button
-                  key={time}
-                  className={`horario-button ${
-                    selectedTime === time ? 'selected' : ''
-                  }`}
-                  onClick={() => selectTime(time)}
-                  disabled={disabled}
-                >
-                  {time}
-                </button>
-              ))}
+              {availableTimes.map(time => {
+                const timePassed = isTimePassed(time, selectedDate);
+                
+                return (
+                  <button
+                    key={time}
+                    className={`horario-button ${
+                      selectedTime === time ? 'selected' : ''
+                    } ${
+                      timePassed ? 'time-passed' : ''
+                    }`}
+                    onClick={() => selectTime(time)}
+                    disabled={disabled || timePassed}
+                    title={timePassed ? 'Horário já passou' : ''}
+                  >
+                    {time}
+                    {timePassed && (
+                      <i className="bi bi-clock-history ml-1 text-xs"></i>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           ) : (
             <div className="sem-horarios">

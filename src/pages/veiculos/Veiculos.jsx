@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from "../../components/header/Header";
+import { Footer } from "../../components/footer/Footer";
 import { Breadcrumb } from "../../components/breadcrumb/Breadcrumb";
+import { ModalVeiculo } from "../../components/modal-veiculo/ModalVeiculo";
+import { ModalConfirmacao } from "../../components/modal-confirmacao/ModalConfirmacao";
 import { UseAuth } from "../../hooks/UseAuth";
-// import { usuariosService } from "../../services/UsuarioService";
 import { ROUTES } from "../../constants/routes";
 import "./Veiculos.css";
 import { VeiculoService } from '../../services/VeiculoService';
@@ -14,9 +16,18 @@ export function Veiculos() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [veiculoParaEditar, setVeiculoParaEditar] = useState(null);
+  const [modoModal, setModoModal] = useState('adicionar');
+  
+  // Estados para o modal de confirmação
+  const [showModalConfirmacao, setShowModalConfirmacao] = useState(false);
+  const [veiculoParaExcluir, setVeiculoParaExcluir] = useState(null);
+  const [loadingExclusao, setLoadingExclusao] = useState(false);
+  
   const veiculoService = new VeiculoService();
   const navigate = useNavigate();
   const { isAuthenticated, user } = UseAuth();
+  
   const breadcrumbItems = [
     {
       label: 'Início',
@@ -52,7 +63,6 @@ export function Veiculos() {
       
     } catch (error) {
       setError(error.message);
-      setLoading(false);
     } finally {
       setLoading(false);
     }
@@ -76,7 +86,59 @@ export function Veiculos() {
   };
 
   const handleAdicionarVeiculo = () => {
+    setModoModal('adicionar');
+    setVeiculoParaEditar(null);
     setShowModal(true);
+  };
+
+  const handleEditarVeiculo = (veiculo) => {
+    setModoModal('editar');
+    setVeiculoParaEditar(veiculo);
+    setShowModal(true);
+  };
+
+  const handleModalSuccess = () => {
+    buscarVeiculos();
+    setShowModal(false);
+    setVeiculoParaEditar(null);
+  };
+
+  const handleModalClose = () => {
+    setShowModal(false);
+    setVeiculoParaEditar(null);
+  };
+
+  const handleDeletarVeiculo = (veiculo) => {
+    setVeiculoParaExcluir(veiculo);
+    setShowModalConfirmacao(true);
+  };
+
+  const confirmarExclusao = async () => {
+    if (!veiculoParaExcluir) return;
+
+    setLoadingExclusao(true);
+
+    try {
+      await veiculoService.removerVeiculo(veiculoParaExcluir.id);
+      
+      if (veiculoSelecionado === veiculoParaExcluir.id) {
+        setVeiculoSelecionado(null);
+      }
+      
+      await buscarVeiculos();
+      setShowModalConfirmacao(false);
+      setVeiculoParaExcluir(null);
+      
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoadingExclusao(false);
+    }
+  };
+
+  const cancelarExclusao = () => {
+    setShowModalConfirmacao(false);
+    setVeiculoParaExcluir(null);
   };
 
   if (loading) {
@@ -181,10 +243,20 @@ export function Veiculos() {
                         title="Editar veículo"
                         onClick={(e) => {
                           e.stopPropagation();
-                          // Implementar edição
+                          handleEditarVeiculo(veiculo);
                         }}
                       >
                         <i className="bi bi-pencil"></i>
+                      </button>
+                      <button 
+                        className="btn-icon btn-danger"
+                        title="Excluir veículo"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeletarVeiculo(veiculo);
+                        }}
+                      >
+                        <i className="bi bi-trash"></i>
                       </button>
                     </div>
                   </div>
@@ -214,16 +286,53 @@ export function Veiculos() {
         </div>
       </div>
 
-      {/* Modal para adicionar veículo (implementar depois) */}
-      {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h2>Adicionar Novo Veículo</h2>
-            <p>Modal para cadastro de veículo (implementar formulário)</p>
-            <button onClick={() => setShowModal(false)}>Fechar</button>
+      <Footer />
+
+      <ModalVeiculo
+        isOpen={showModal}
+        onClose={handleModalClose}
+        onSuccess={handleModalSuccess}
+        veiculo={veiculoParaEditar}
+        modo={modoModal}
+      />
+
+      <ModalConfirmacao
+        isOpen={showModalConfirmacao}
+        onClose={cancelarExclusao}
+        onConfirm={confirmarExclusao}
+        titulo="Excluir Veículo"
+        tipo="danger"
+        textoBotaoConfirmar="Excluir"
+        textoBotaoCancelar="Cancelar"
+        loading={loadingExclusao}
+      >
+        {veiculoParaExcluir && (
+          <div>
+            <p className="modal-confirmacao-mensagem">
+              Tem certeza que deseja excluir o veículo <strong>{veiculoParaExcluir.marca} {veiculoParaExcluir.modelo}</strong>?
+            </p>
+            <div style={{ 
+              marginTop: '1rem', 
+              padding: '0.75rem', 
+              backgroundColor: '#fef2f2', 
+              borderRadius: '8px',
+              border: '1px solid #fecaca'
+            }}>
+              <p style={{ 
+                fontSize: '0.875rem', 
+                color: '#dc2626', 
+                margin: 0,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}>
+                <i className="bi bi-exclamation-triangle"></i>
+                Esta ação não pode ser desfeita.
+              </p>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </ModalConfirmacao>
     </>
   );
 }

@@ -21,7 +21,7 @@ export function Header() {
 
     return (
         <>
-            <header className="w-full h-20 py-3.5 px-16 flex justify-between bg-red-600 shadow">
+            <header className="w-full h-20 py-3.5 px-16 flex justify-between shadow" style={{backgroundColor: '#B30000'}}>
                 <Link className="cursor-pointer" to={ROUTES.HOME}>
                     <img src={logo} alt="Rick Logo" className="h-full" />
                 </Link>

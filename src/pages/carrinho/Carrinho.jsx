@@ -4,6 +4,7 @@ import { ROUTES } from "../../constants/routes";
 import { LoadingState } from "../../components/loading-state/LoadingState";
 import { useEffect, useState } from "react";
 import { CarrinhoService } from "../../services/CarrinhoService";
+import { Footer } from "../../components/footer/Footer";
 
 export function Carrinho() {
     const [loading, setLoading] = useState(true);
@@ -144,6 +145,8 @@ export function Carrinho() {
                     </div>
                 </div>
             </div>
+
+            <Footer />
         </>
     );
 }

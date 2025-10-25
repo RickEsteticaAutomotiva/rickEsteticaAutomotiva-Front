@@ -125,7 +125,7 @@ html {
 
 .servico-preco {
     font-weight: 600;
-    color: #dc2626;
+    color: #B30000;
 }
 
 .total-agendamento {
@@ -145,7 +145,7 @@ html {
 }
 
 .btn-confirmar {
-    background-color: #dc2626;
+    background-color: #B30000;
     color: white;
     border: none;
     padding: 1rem;
@@ -158,7 +158,7 @@ html {
 }
 
 .btn-confirmar:hover:not(:disabled) {
-    background-color: #b91c1c;
+    background-color: #990000;
     transform: translateY(-1px);
 }
 

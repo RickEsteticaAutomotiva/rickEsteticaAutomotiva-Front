@@ -5,6 +5,7 @@ import { authService } from "../../services/AuthService";
 import { UseAuth } from "../../hooks/UseAuth";
 import { ROUTES } from "../../constants/routes";
 import "./Cadastrar.css";
+import { Footer } from "../../components/footer/Footer";
 
 export function Cadastrar() {
   const [formData, setFormData] = useState({
@@ -406,6 +407,8 @@ export function Cadastrar() {
           </form>
         </div>
       </div>
+
+      <Footer />
     </>
   );
 }

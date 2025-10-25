@@ -29,7 +29,7 @@ export function PerfilDropdown() {
                     Meus Veículos
                 </Link>
                 <hr className="my-1 border-gray-200" />
-                <button onClick={handleLogout} className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-b-lg text-red-600 font-medium text-sm">
+                <button onClick={handleLogout} className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-b-lg text-red-600 font-medium text-sm cursor-pointer">
                     <i className="bi bi-box-arrow-right mr-2"></i>
                     Sair
                 </button>

@@ -69,8 +69,8 @@
 
 .form-input:focus {
   outline: none;
-  border-color: #dc2626;
-  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+  border-color: #B30000;
+  box-shadow: 0 0 0 3px rgba(179, 0, 0, 0.1);
 }
 
 .form-input.error {
@@ -102,7 +102,7 @@
 }
 
 .password-toggle:hover {
-  color: #dc2626;
+  color: #B30000;
 }
 
 .password-toggle:disabled {
@@ -123,7 +123,7 @@
   border-radius: 8px;
   padding: 1rem;
   margin-bottom: 1.5rem;
-  color: #dc2626;
+  color: #B30000;
   display: flex;
   align-items: center;
 }
@@ -140,7 +140,7 @@
 
 .submit-button {
   width: 100%;
-  background-color: #dc2626;
+  background-color: #B30000;
   color: white;
   border: none;
   padding: 1rem;
@@ -156,9 +156,9 @@
 }
 
 .submit-button:hover:not(:disabled) {
-  background-color: #b91c1c;
+  background-color: #990000;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+  box-shadow: 0 4px 12px rgba(179, 0, 0, 0.3);
 }
 
 .submit-button:disabled {
@@ -195,14 +195,14 @@
 }
 
 .link {
-  color: #dc2626;
+  color: #B30000;
   text-decoration: none;
   font-weight: 600;
   transition: color 0.3s ease;
 }
 
 .link:hover {
-  color: #b91c1c;
+  color: #990000;
   text-decoration: underline;
 }
 
@@ -247,12 +247,12 @@
     padding: 1rem;
   }
 
-  .cadastro-form {
-    padding: 1rem;
-  }
-
   .cadastro-title {
     font-size: 1.25rem;
+  }
+
+  .cadastro-form {
+    padding: 1rem;
   }
 
   .form-input {

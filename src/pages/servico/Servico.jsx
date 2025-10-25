@@ -10,6 +10,7 @@ import { LoadingState } from '../../components/loading-state/LoadingState';
 import localImage from '../../assets/local.png';
 import { CarrinhoService } from '../../services/CarrinhoService';
 import { FavoritoService } from '../../services/FavoritoService';
+import { Footer } from '../../components/footer/Footer';
 
 export function Servico() {
     const { id } = useParams();
@@ -285,6 +286,8 @@ export function Servico() {
                     </div>
                 </div>
             </main>
+
+            <Footer />
         </>
     );
 }

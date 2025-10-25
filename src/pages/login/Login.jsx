@@ -4,6 +4,7 @@ import { Header } from "../../components/header/Header";
 import { UseAuth } from "../../hooks/UseAuth";
 import { ROUTES } from "../../constants/Routes";
 import "./Login.css";
+import { Footer } from "../../components/footer/Footer";
 
 export function Login() {
   const [formData, setFormData] = useState({
@@ -230,6 +231,8 @@ export function Login() {
           </form>
         </div>
       </div>
+
+      <Footer />
     </>
   );
 }
