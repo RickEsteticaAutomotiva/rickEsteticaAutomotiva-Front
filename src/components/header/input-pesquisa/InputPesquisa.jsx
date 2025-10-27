@@ -213,13 +213,12 @@ export function InputPesquisa() {
                     value={termoBusca}
                     onChange={handleInputChange}
                     onKeyDown={handleKeyDown}
-                    onFocus={handleFocus}
-                    className="w-full h-full rounded-lg px-5 pr-12 bg-white border border-gray-300 focus:outline-none"
-                    style={{'--focus-border-color': '#B30000'}}
                     onFocus={(e) => {
                         e.target.style.borderColor = '#B30000';
                         handleFocus();
                     }}
+                    className="w-full h-full rounded-lg px-5 pr-12 bg-white border border-gray-300 focus:outline-none"
+                    style={{'--focus-border-color': '#B30000'}}
                     onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
                 />
                 <button

@@ -217,7 +217,7 @@ export function Cadastrar() {
 
             <div className="form-group">
               <label htmlFor="nome" className="form-label">
-                Nome completo *
+                Nome completo
               </label>
               <input
                 type="text"
@@ -238,7 +238,7 @@ export function Cadastrar() {
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="cpf" className="form-label">
-                  CPF *
+                  CPF
                 </label>
                 <input
                   type="text"
@@ -258,7 +258,7 @@ export function Cadastrar() {
 
               <div className="form-group">
                 <label htmlFor="dataNascimento" className="form-label">
-                  Data de nascimento *
+                  Data de nascimento
                 </label>
                 <input
                   type="date"
@@ -279,7 +279,7 @@ export function Cadastrar() {
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="email" className="form-label">
-                  Email *
+                  Email
                 </label>
                 <input
                   type="email"
@@ -298,7 +298,7 @@ export function Cadastrar() {
 
               <div className="form-group">
                 <label htmlFor="telefone" className="form-label">
-                  Telefone *
+                  Telefone
                 </label>
                 <input
                   type="tel"
@@ -320,7 +320,7 @@ export function Cadastrar() {
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="senha" className="form-label">
-                  Senha *
+                  Senha
                 </label>
                 <div className="password-input-container">
                   <input
@@ -350,7 +350,7 @@ export function Cadastrar() {
 
               <div className="form-group">
                 <label htmlFor="confirmarSenha" className="form-label">
-                  Confirmar senha *
+                  Confirmar senha
                 </label>
                 <div className="password-input-container">
                   <input

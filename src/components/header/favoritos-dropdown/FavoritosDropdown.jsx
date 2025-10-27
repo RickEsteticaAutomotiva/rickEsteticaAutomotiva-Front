@@ -84,7 +84,7 @@ export function FavoritosDropdown() {
                                         </h4>
                                         <p className="text-xs text-gray-500">A partir de</p>
                                         <p className="text-sm font-semibold text-red-600">
-                                            R$ {servico.preco.toFixed(2)}
+                                            R$ {servico.preco.toFixed(2).replace('.', ',')}
                                         </p>
                                     </div>
                                 </Link>

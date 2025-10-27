@@ -266,7 +266,7 @@ export function Servico() {
                         <div className="px-5 flex flex-col gap-4">
                             <div className="flex flex-col">
                                 <p className="font-semibold">A partir de:</p>
-                                <p className="text-2xl font-semibold text-red-600">R$ {servico.preco.toFixed(2)}</p>
+                                <p className="text-2xl font-semibold text-red-600">R$ {servico.preco.toFixed(2).replace('.', ',')}</p>
                             </div>
                             <div className="acoes-servico flex flex-col gap-4 mt-6">
                                 <button

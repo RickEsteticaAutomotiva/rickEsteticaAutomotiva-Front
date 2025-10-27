@@ -16,7 +16,7 @@ export function CardServico({ id, nome, preco, imagem }) {
                 <h2 className="text-lg font-semibold mb-3">{nome}</h2>
 
                 <span className="text-gray-500">A partir de</span>
-                <p className="text-2xl font-semibold">R$ {preco.toFixed(2)}</p>
+                <p className="text-2xl font-semibold">R$ {preco.toFixed(2).replace('.', ',')}</p>
             </Link>
         </>
     );

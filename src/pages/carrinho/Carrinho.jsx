@@ -88,7 +88,7 @@ export function Carrinho() {
                                         <div className="flex flex-col gap-2 w-full">
                                             <div className="flex justify-between w-full">
                                                 <p className="font-bold">{item.nome}</p>
-                                                <p>R$ {item.preco?.toFixed(2) || '0,00'}</p>
+                                                <p>R$ {item.preco?.toFixed(2).replace('.', ',') || '0,00'}</p>
                                             </div>
 
                                             <button 
@@ -123,8 +123,8 @@ export function Carrinho() {
 
                     <div className="px-5 flex flex-col gap-4">
                         <div className="flex justify-between mb-2">
-                            <p>Subtotal:</p>
-                            <p className="font-bold">R$ {calcularTotal().toFixed(2)}</p>
+                            <p>Valor mínimo:</p>
+                            <p className="font-bold">R$ {calcularTotal().toFixed(2).replace('.', ',')}</p>
                         </div>
                         
                         {carrinho && carrinho.length > 0 ? (
