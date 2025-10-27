@@ -70,11 +70,11 @@ export function Servico() {
             const data = await favoritoService.buscarFavoritosUsuario(user.id);
             setFavoritos(data);
 
-            const servicoEhFavorito = data.some(favorito => 
-                favorito.idServico === parseInt(servico.id) || 
+            const servicoEhFavorito = data.some(favorito =>
+                favorito.idServico === parseInt(servico.id) ||
                 favorito.idServico === servico.id
             );
-            
+
             setIsFavorito(servicoEhFavorito);
         } catch (error) {
             console.error('Erro ao verificar favoritos:', error);
@@ -93,8 +93,8 @@ export function Servico() {
 
         try {
             if (isFavorito) {
-                await favoritoService.removerItemFavorito(favoritos.find(fav => 
-                    fav.idServico === parseInt(servico.id) || 
+                await favoritoService.removerItemFavorito(favoritos.find(fav =>
+                    fav.idServico === parseInt(servico.id) ||
                     fav.idServico === servico.id
                 ).idFavorito);
             } else {
@@ -102,7 +102,7 @@ export function Servico() {
             }
 
             setIsFavorito(!isFavorito);
-            
+
             await verificarFavorito();
         } catch (error) {
             console.error('Erro ao alterar favorito:', error);
@@ -178,17 +178,41 @@ export function Servico() {
                 <div className="">
                     <div className="servico-detalhes flex flex-col md:flex-row justify-between h-80">
                         <div className="servico-imagem w-2/4 flex-shrink-0 bg-gray-200 rounded-lg shadow-md flex justify-center items-center overflow-hidden">
-                        {servico.imagem ? ( 
-                            <img src={servico.imagem} alt={servico.nome} className="w-full h-full" />
-                        ) : (
-                            <i className="bi bi-gear text-gray-400"></i>
-                        )}
+                            {servico.imagem ? (
+                                <img src={servico.imagem} alt={servico.nome} className="w-full h-full" />
+                            ) : (
+                                <i className="bi bi-gear text-gray-400"></i>
+                            )}
                         </div>
                         <div className="servico-imagem-menor flex-shrink-0 grid grid-cols-2 gap-5">
-                            <img src={servico.imagemUrl} alt={servico.nome} className="w-full h-full rounded-lg shadow-md" />
-                            <img src={servico.imagemUrl} alt={servico.nome} className="w-full h-full rounded-lg shadow-md" />
-                            <img src={servico.imagemUrl} alt={servico.nome} className="w-full h-full rounded-lg shadow-md" />
-                            <img src={servico.imagemUrl} alt={servico.nome} className="w-full h-full rounded-lg shadow-md" />
+                            <div className='w-full h-full rounded-lg shadow-md flex justify-center items-center overflow-hidden bg-gray-200'>
+                                {servico.imagem ? (
+                                    <img src={servico.imagemUrl} alt={servico.nome} className="w-full h-full rounded-lg" />
+                                ) : (
+                                    <i className="bi bi-gear text-gray-400"></i>
+                                )}
+                            </div>
+                            <div className='w-full h-full rounded-lg shadow-md flex justify-center items-center overflow-hidden bg-gray-200'>
+                                {servico.imagem ? (
+                                    <img src={servico.imagemUrl} alt={servico.nome} className="w-full h-full rounded-lg" />
+                                ) : (
+                                    <i className="bi bi-gear text-gray-400"></i>
+                                )}
+                            </div>
+                            <div className='w-full h-full rounded-lg shadow-md flex justify-center items-center overflow-hidden bg-gray-200'>
+                                {servico.imagem ? (
+                                    <img src={servico.imagemUrl} alt={servico.nome} className="w-full h-full rounded-lg" />
+                                ) : (
+                                    <i className="bi bi-gear text-gray-400"></i>
+                                )}
+                            </div>
+                            <div className='w-full h-full rounded-lg shadow-md flex justify-center items-center overflow-hidden bg-gray-200'>
+                                {servico.imagem ? (
+                                    <img src={servico.imagemUrl} alt={servico.nome} className="w-full h-full rounded-lg" />
+                                ) : (
+                                    <i className="bi bi-gear text-gray-400"></i>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -203,10 +227,9 @@ export function Servico() {
                                     <div><i className="bi bi-share"></i></div>
                                 </div>
 
-                                <div 
-                                    className={`h-10 w-10 rounded-full bg-white flex justify-center items-center cursor-pointer shadow transition-all duration-200 ${
-                                        loadingFavorito ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-50'
-                                    }`}
+                                <div
+                                    className={`h-10 w-10 rounded-full bg-white flex justify-center items-center cursor-pointer shadow transition-all duration-200 ${loadingFavorito ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-50'
+                                        }`}
                                     onClick={toggleFavorito}
                                     disabled={loadingFavorito}
                                 >
@@ -230,7 +253,7 @@ export function Servico() {
                         <div className="sobre-local mt-8 flex gap-5">
                             <div className="w-90">
                                 <h1 className="text-xl font-bold"><i className="bi bi-house mr-3"></i>Sobre o local</h1>
-                                <p className="mt-2">Estamos localizados na Av. Corinthians, a oficina Rick Estética Automotiva é referência em cuidados automotivos, oferecendo serviços especializados que vão desde lavagens técnicas até vitrificação e revitalização completa de veículos. Nosso objetivo é proporcionar não apenas limpeza, mas também proteção, valorização e durabilidade para cada carro que passa por aqui.</p>
+                                <p className="mt-2">Estamos localizados na R. Alcatifa, a oficina Rick Estética Automotiva é referência em cuidados automotivos, oferecendo serviços especializados que vão desde lavagens técnicas até vitrificação e revitalização completa de veículos. Nosso objetivo é proporcionar não apenas limpeza, mas também proteção, valorização e durabilidade para cada carro que passa por aqui.</p>
                             </div>
 
                             <img src={localImage} alt="Imagem do local" className="w-100 object-cover rounded-lg" />

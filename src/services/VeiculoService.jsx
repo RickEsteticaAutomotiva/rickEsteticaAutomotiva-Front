@@ -21,7 +21,7 @@ export class VeiculoService {
 
     async atualizarVeiculo(veiculoData) {
         try {
-            const response = await apiService.patch(`/veiculos`, veiculoData);
+            const response = await apiService.patch(`/veiculos/${veiculoData.id}`, veiculoData);
             return response;
         } catch (error) {
             throw new Error(error.message || 'Erro ao atualizar veículo');

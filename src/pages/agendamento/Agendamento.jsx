@@ -9,6 +9,7 @@ import { ROUTES } from "../../constants/routes";
 import { CarrinhoService } from '../../services/CarrinhoService';
 import "./Agendamento.css";
 import { Footer } from '../../components/footer/Footer';
+import { OrdemServico } from '../../services/OrdemServico';
 
 export function Agendamento() {
     const [dataSelecionada, setDataSelecionada] = useState(null);
@@ -19,8 +20,9 @@ export function Agendamento() {
     const [loadingConfirmacao, setLoadingConfirmacao] = useState(false);
     const carrinhoService = new CarrinhoService();
     const navigate = useNavigate();
+    const ordenServico = new OrdemServico();
     const { isAuthenticated } = UseAuth();
-    
+
     const user = JSON.parse(sessionStorage.getItem('userData'));
 
     const smoothScrollTo = (targetPosition, duration = 800) => {
@@ -62,7 +64,7 @@ export function Agendamento() {
 
         const veiculo = JSON.parse(sessionStorage.getItem('veiculoSelecionado') || 'null');
         buscarServicosCarrinho();
-        
+
         if (!veiculo) {
             navigate(ROUTES.VEICULOS);
             return;
@@ -74,12 +76,13 @@ export function Agendamento() {
     const buscarServicosCarrinho = async () => {
         const servicos = await carrinhoService.buscarCarrinhoUsuario(user.id);
         setServicosCarrinho(servicos);
+        console.log('Serviços no carrinho:', servicos);
     };
 
     const handleDateSelect = (date) => {
         setDataSelecionada(date);
         setHorarioSelecionado(null); // Reset horário quando mudar data
-        
+
         // Scroll suave para horários após selecionar data
         setTimeout(() => {
             const horariosSection = document.querySelector('.horarios-container');
@@ -119,23 +122,37 @@ export function Agendamento() {
     const confirmarAgendamento = async () => {
         setLoadingConfirmacao(true);
 
+        const [horas, minutos] = horarioSelecionado.split(':');
+        
+        const ano = dataSelecionada.getFullYear();
+        const mes = String(dataSelecionada.getMonth() + 1).padStart(2, '0');
+        const dia = String(dataSelecionada.getDate()).padStart(2, '0');
+        const horasFormatadas = String(horas).padStart(2, '0');
+        const minutosFormatados = String(minutos).padStart(2, '0');
+        
+        const dataISO = `${ano}-${mes}-${dia}T${horasFormatadas}:${minutosFormatados}:00.000Z`;
+
         try {
             const agendamento = {
-                veiculo: veiculoSelecionado,
-                servicos: servicosCarrinho,
-                data: dataSelecionada,
-                horario: horarioSelecionado,
-                total: calcularTotal()
+                // id: 0,
+                dataAgendamento: dataISO,
+                servicos: servicosCarrinho.map(servico => servico.idServico),
+                precoMinimo: calcularTotal(),
+                veiculo: veiculoSelecionado.id,
+                // status: 0,
+                // observacoes: "",
+                // dtConclusao: null,
+                // motivo: 0
             };
 
             // Simular chamada da API
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            await ordenServico.criarOrdemServico(agendamento);
 
             console.log('Agendamento confirmado:', agendamento);
-            
+
             // Limpar carrinho após confirmação
             // await carrinhoService.limparCarrinho(user.id);
-            
+
             setShowModalConfirmacao(false);
             alert('Agendamento confirmado com sucesso!');
             navigate(ROUTES.HOME);
@@ -253,7 +270,7 @@ export function Agendamento() {
                             <button
                                 className="btn-confirmar"
                                 onClick={abrirModalConfirmacao}
-                                disabled={!dataSelecionada || !horarioSelecionado}  
+                                disabled={!dataSelecionada || !horarioSelecionado}
                             >
                                 Confirmar Agendamento
                             </button>
@@ -277,24 +294,24 @@ export function Agendamento() {
                 loading={loadingConfirmacao}
             >
                 <div style={{ textAlign: 'left' }}>
-                    <div style={{ 
-                        background: '#f8fafc', 
-                        border: '1px solid #e2e8f0', 
-                        borderRadius: '8px', 
-                        padding: '1rem', 
-                        marginBottom: '1rem' 
+                    <div style={{
+                        background: '#f8fafc',
+                        border: '1px solid #e2e8f0',
+                        borderRadius: '8px',
+                        padding: '1rem',
+                        marginBottom: '1rem'
                     }}>
-                        <h4 style={{ 
-                            margin: '0 0 0.5rem 0', 
-                            fontSize: '1rem', 
+                        <h4 style={{
+                            margin: '0 0 0.5rem 0',
+                            fontSize: '1rem',
                             fontWeight: '600',
                             color: '#1e293b'
                         }}>
                             <i className="bi bi-car-front" style={{ marginRight: '0.5rem' }}></i>
                             Veículo
                         </h4>
-                        <p style={{ 
-                            margin: '0', 
+                        <p style={{
+                            margin: '0',
                             color: '#475569',
                             fontSize: '0.875rem'
                         }}>
@@ -303,24 +320,24 @@ export function Agendamento() {
                     </div>
 
                     {dataSelecionada && horarioSelecionado && (
-                        <div style={{ 
-                            background: '#f0f9ff', 
-                            border: '1px solid #bae6fd', 
-                            borderRadius: '8px', 
-                            padding: '1rem', 
-                            marginBottom: '1rem' 
+                        <div style={{
+                            background: '#f0f9ff',
+                            border: '1px solid #bae6fd',
+                            borderRadius: '8px',
+                            padding: '1rem',
+                            marginBottom: '1rem'
                         }}>
-                            <h4 style={{ 
-                                margin: '0 0 0.5rem 0', 
-                                fontSize: '1rem', 
+                            <h4 style={{
+                                margin: '0 0 0.5rem 0',
+                                fontSize: '1rem',
                                 fontWeight: '600',
                                 color: '#0c4a6e'
                             }}>
                                 <i className="bi bi-calendar-check" style={{ marginRight: '0.5rem' }}></i>
                                 Data e Horário
                             </h4>
-                            <p style={{ 
-                                margin: '0', 
+                            <p style={{
+                                margin: '0',
                                 color: '#0369a1',
                                 fontSize: '0.875rem'
                             }}>
@@ -329,26 +346,26 @@ export function Agendamento() {
                         </div>
                     )}
 
-                    <div style={{ 
-                        background: '#f0fdf4', 
-                        border: '1px solid #bbf7d0', 
-                        borderRadius: '8px', 
-                        padding: '1rem' 
+                    <div style={{
+                        background: '#f0fdf4',
+                        border: '1px solid #bbf7d0',
+                        borderRadius: '8px',
+                        padding: '1rem'
                     }}>
-                        <h4 style={{ 
-                            margin: '0 0 0.75rem 0', 
-                            fontSize: '1rem', 
+                        <h4 style={{
+                            margin: '0 0 0.75rem 0',
+                            fontSize: '1rem',
                             fontWeight: '600',
                             color: '#14532d'
                         }}>
                             <i className="bi bi-list-check" style={{ marginRight: '0.5rem' }}></i>
                             Serviços ({servicosCarrinho.length})
                         </h4>
-                        
+
                         {servicosCarrinho.map((servico, index) => (
-                            <div key={servico.id} style={{ 
-                                display: 'flex', 
-                                justifyContent: 'space-between', 
+                            <div key={servico.id} style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
                                 alignItems: 'center',
                                 fontSize: '0.875rem',
                                 color: '#166534',
@@ -362,10 +379,10 @@ export function Agendamento() {
                                 </span>
                             </div>
                         ))}
-                        
-                        <div style={{ 
-                            display: 'flex', 
-                            justifyContent: 'space-between', 
+
+                        <div style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
                             alignItems: 'center',
                             marginTop: '0.75rem',
                             paddingTop: '0.75rem',
@@ -379,9 +396,9 @@ export function Agendamento() {
                         </div>
                     </div>
 
-                    <p style={{ 
+                    <p style={{
                         marginTop: '1rem',
-                        fontSize: '0.875rem', 
+                        fontSize: '0.875rem',
                         color: '#64748b',
                         textAlign: 'center',
                         fontStyle: 'italic'
