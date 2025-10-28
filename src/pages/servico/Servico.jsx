@@ -120,8 +120,6 @@ export function Servico() {
 
         try {
             await carrinhoService.adicionarServicoCarrinho(user.id, servico.id);
-            console.log('Serviço adicionado ao carrinho');
-            // Opcionalmente, mostrar uma mensagem de sucesso
         } catch (error) {
             console.error('Erro ao adicionar ao carrinho:', error);
         }

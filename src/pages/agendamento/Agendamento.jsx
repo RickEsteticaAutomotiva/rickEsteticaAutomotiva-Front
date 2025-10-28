@@ -76,7 +76,6 @@ export function Agendamento() {
     const buscarServicosCarrinho = async () => {
         const servicos = await carrinhoService.buscarCarrinhoUsuario(user.id);
         setServicosCarrinho(servicos);
-        console.log('Serviços no carrinho:', servicos);
     };
 
     const handleDateSelect = (date) => {
@@ -148,7 +147,6 @@ export function Agendamento() {
             // Simular chamada da API
             await ordenServico.criarOrdemServico(agendamento);
 
-            console.log('Agendamento confirmado:', agendamento);
 
             // Limpar carrinho após confirmação
             // await carrinhoService.limparCarrinho(user.id);

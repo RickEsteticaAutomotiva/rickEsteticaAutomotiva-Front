@@ -181,7 +181,6 @@ export function Cadastrar() {
       // Fazer login automático após cadastro
       await login(userData.email, userData.senha);
       
-      console.log("Cadastro bem-sucedido:", response);
       navigate(ROUTES.HOME);
       
     } catch (error) {

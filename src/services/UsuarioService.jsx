@@ -12,7 +12,7 @@ export class UsuarioService {
 
     async atualizarPerfil(id, dadosAtualizados) {
         try {
-            const response = await apiService.put(`/pessoas/${id}`, dadosAtualizados);
+            const response = await apiService.patch(`/pessoas/${id}`, dadosAtualizados);
             return response;
         } catch (error) {
             throw new Error(error.message || 'Erro ao atualizar informações do usuário');

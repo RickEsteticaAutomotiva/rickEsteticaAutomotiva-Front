@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Header } from "../../components/header/Header";
 import { UseAuth } from "../../hooks/UseAuth";
-import { ROUTES } from "../../constants/Routes";
+import { ROUTES } from "../../constants/routes";
 import "./Login.css";
 import { Footer } from "../../components/footer/Footer";
 
@@ -81,7 +81,6 @@ export function Login() {
         localStorage.removeItem('userEmail');
       }
       
-      console.log("Login bem-sucedido");
       navigate(ROUTES.HOME);
       
     } catch (error) {

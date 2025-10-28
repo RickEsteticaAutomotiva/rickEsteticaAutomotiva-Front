@@ -8,16 +8,41 @@ class ApiService {
             baseURL: API_BASE_URL,
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json',
             },
+            timeout: 10000, // 10 segundos de timeout
         });
 
         // Interceptor para adicionar token automaticamente
         this.api.interceptors.request.use(
             (config) => {
                 const token = sessionStorage.getItem('token');
-                if (token) {
-                    config.headers.Authorization = `Bearer ${token}`;
+                
+                // Endpoints públicos que não precisam de token (incluindo versões com barra)
+                const isLoginRequest = config.url === '/pessoas/login';
+                const isCadastroRequest = (config.url === '/pessoas' || config.url === '/pessoas/') && config.method === 'post';
+                const isPublicEndpoint = isLoginRequest || isCadastroRequest;
+                
+                // Só adicionar token se:
+                // 1. Token existe
+                // 2. Não é um endpoint público
+                // 3. Token não expirou
+                if (token && !isPublicEndpoint) {
+                    try {
+                        const payload = JSON.parse(atob(token.split('.')[1]));
+                        if (payload.exp && payload.exp < Date.now() / 1000) {
+                            // Token expirado, limpar e não enviar
+                            sessionStorage.clear();
+                            return config;
+                        }
+                        
+                        config.headers.Authorization = `Bearer ${token}`;
+                    } catch (error) {
+                        console.error('Erro ao validar token:', error);
+                        // Se erro na validação, não adicionar token
+                    }
                 }
+                
                 return config;
             },
             (error) => {
@@ -33,50 +58,53 @@ class ApiService {
             async (error) => {
                 const originalRequest = error.config;
                 
-                if (error.response?.status === 401 && !originalRequest._retry) {
-                    originalRequest._retry = true;
-                    
-                    try {
-                        // Tentar renovar o token
-                        const { authService } = await import('./AuthService');
-                        const response = await authService.refreshToken();
-                        
-                        sessionStorage.setItem('token', response.token);
-                        originalRequest.headers.Authorization = `Bearer ${response.token}`;
-                        
-                        return this.api(originalRequest);
-                    } catch (refreshError) {
-                        // Se não conseguir renovar, fazer logout
-                        sessionStorage.clear();
-                        window.location.href = '/login';
-                        return Promise.reject(refreshError);
-                    }
-                }
-                
                 if (error.response) {
                     const { status, data } = error.response;
                     
                     switch (status) {
                         case 401:
-                            sessionStorage.clear();
-                            window.location.href = '/login';
-                            break;
+                            // Para login/cadastro, retornar erro específico
+                            if (originalRequest.url?.includes('/login')) {
+                                throw new Error(data?.message || 'Credenciais inválidas');
+                            }
+                            
+                            if (originalRequest.url?.includes('/pessoas') && originalRequest.method === 'post') {
+                                throw new Error(data?.message || 'Erro ao cadastrar usuário');
+                            }
+                            
+                            // Para outras requisições, token expirado
+                            if (!originalRequest._retry) {
+                                originalRequest._retry = true;
+                                
+                                // Limpar dados de autenticação
+                                sessionStorage.clear();
+                                
+                                // Redirecionar apenas se necessário
+                                if (window.location.pathname !== '/login' && 
+                                    window.location.pathname !== '/' &&
+                                    window.location.pathname !== '/cadastrar') {
+                                    window.location.href = '/login';
+                                }
+                            }
+                            throw new Error('Sessão expirada. Faça login novamente.');
+                            
                         case 403:
                             throw new Error('Acesso negado');
+                            
                         case 404:
                             throw new Error('Recurso não encontrado');
+                            
                         case 500:
                             throw new Error('Erro interno do servidor');
+                            
                         default:
-                            throw new Error(data?.message || 'Erro na requisição');
+                            throw new Error(data?.message || `Erro ${status}`);
                     }
                 } else if (error.request) {
                     throw new Error('Erro de conexão com o servidor');
                 } else {
                     throw new Error('Erro inesperado');
                 }
-                
-                return Promise.reject(error);
             }
         );
     }

@@ -18,7 +18,6 @@ export function Carrinho() {
             setLoading(true);
             const data = await carrinhoService.buscarCarrinhoUsuario(user.id);
             setCarrinho(data);
-            console.log('Carrinho carregado:', data);
         } catch (error) {
             console.error('Erro ao buscar serviços no carrinho:', error);
         } finally {

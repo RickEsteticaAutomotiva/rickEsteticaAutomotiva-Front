@@ -2,105 +2,137 @@ import { apiService } from './ApiService';
 
 export class AuthService {
     async login(email, senha) {
-        try {
-            const response = await apiService.post('/pessoas/login', { email, senha });
+        try {            
+            // Garantir que os dados estão no formato correto
+            const loginData = {
+                email: email.trim(),
+                senha: senha
+            };
+                        
+            const response = await apiService.post('/pessoas/login', loginData);
             
-            // Simulação temporária até a API implementar JWT
-            if (response && !response.token) {
-                // Simular token JWT para desenvolvimento
-                const mockToken = this.generateMockJWT(response);
+            
+            if (response && response.token) {
+                const userData = {
+                    id: response.userId,
+                    email: response.email,
+                    // nome: response.nome,
+                };
+                
                 return {
-                    token: mockToken,
-                    user: response,
-                    expiresIn: 3600 // 1 hora em segundos
+                    token: response.token,
+                    user: userData,
+                    expiresIn: this.getTokenExpirationTime(response.token)
                 };
             }
             
-            // Quando a API retornar token real, usar diretamente
-            return response;
+            throw new Error('Token não encontrado na resposta');
         } catch (error) {
+            console.error('Erro no login:', error);
             throw new Error(error.message || 'Erro ao fazer login');
         }
     }
 
     async cadastrar(userData) {
         try {
-            const response = await apiService.post('/pessoas', userData);
+            // MUDANÇA: Adicionar barra no final da URL
+            const response = await apiService.post('/pessoas/', userData);
             
-            // Simulação temporária - após cadastro, fazer login automático
-            if (response && !response.token) {
-                const mockToken = this.generateMockJWT(response);
+            // Se o backend retorna token após cadastro
+            if (response && response.token) {
+                const user = {
+                    id: response.userId,
+                    email: response.email,
+                };
+                
                 return {
-                    token: mockToken,
-                    user: response,
-                    expiresIn: 3600
+                    token: response.token,
+                    user: user,
+                    expiresIn: this.getTokenExpirationTime(response.token)
                 };
             }
             
-            return response;
+            // Se não retorna token, retornar apenas os dados do usuário
+            return {
+                user: response || userData
+            };
         } catch (error) {
             throw new Error(error.message || 'Erro ao cadastrar');
         }
     }
 
     async verificarToken() {
+        // Como o endpoint /auth/verify não existe, verificar localmente
+        const token = sessionStorage.getItem('token');
+        const userData = sessionStorage.getItem('userData');
+        
+        if (!token || !userData) {
+            throw new Error('Token ou dados do usuário não encontrados');
+        }
+
         try {
-            const response = await apiService.get('/auth/verify');
-            return response;
-        } catch (error) {
-            // Se não existir endpoint ainda, simular verificação local
-            const token = sessionStorage.getItem('token');
-            const userData = sessionStorage.getItem('userData');
+            const user = JSON.parse(userData);
             
-            if (token && userData) {
-                const user = JSON.parse(userData);
-                // Verificar se token não expirou (simulação)
-                const tokenData = this.decodeToken(token);
-                if (tokenData && tokenData.exp > Date.now() / 1000) {
-                    return user;
-                }
+            // Verificar se token não expirou
+            if (this.isTokenExpired(token)) {
+                throw new Error('Token expirado');
             }
+            
+            return user;
+        } catch (error) {
             throw new Error('Token inválido ou expirado');
         }
     }
 
     async refreshToken() {
         try {
-            const response = await apiService.post('/auth/refresh');
-            return response;
+            throw new Error('Token expirado, faça login novamente');
         } catch (error) {
             throw new Error('Erro ao renovar token');
         }
     }
 
-    // Métodos auxiliares para simulação (remover quando API implementar JWT)
-    generateMockJWT(userData) {
-        const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
-        const payload = btoa(JSON.stringify({
-            sub: userData.id,
-            email: userData.email,
-            nome: userData.nome,
-            iat: Math.floor(Date.now() / 1000),
-            exp: Math.floor(Date.now() / 1000) + 3600 // 1 hora
-        }));
-        const signature = btoa('mock-signature-' + Math.random());
-        
-        return `${header}.${payload}.${signature}`;
-    }
-
+    // Métodos auxiliares para JWT
     decodeToken(token) {
         try {
-            const payload = token.split('.')[1];
+            if (!token || typeof token !== 'string') {
+                return null;
+            }
+            
+            const parts = token.split('.');
+            if (parts.length !== 3) {
+                return null;
+            }
+            
+            const payload = parts[1];
             return JSON.parse(atob(payload));
-        } catch {
+        } catch (error) {
+            console.error('Erro ao decodificar token:', error);
             return null;
         }
     }
 
     isTokenExpired(token) {
         const decoded = this.decodeToken(token);
-        if (!decoded || !decoded.exp) return true;
+        if (!decoded || !decoded.exp) {
+            return true;
+        }
         return decoded.exp < Date.now() / 1000;
+    }
+
+    getTokenExpirationTime(token) {
+        const decoded = this.decodeToken(token);
+        if (!decoded || !decoded.exp || !decoded.iat) {
+            return 3600; // 1 hora como padrão
+        }
+        return decoded.exp - decoded.iat;
+    }
+
+    // Método para limpar dados de autenticação
+    clearAuthData() {
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('userData');
+        sessionStorage.removeItem('tokenExpiry');
     }
 }
 
