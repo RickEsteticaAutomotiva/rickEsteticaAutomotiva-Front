@@ -1,9 +1,16 @@
 import "./CategoriasMenu.css";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { CategoriaService } from "../../../services/CategoriaService";
 
 export function CategoriasMenu() {
     const [menuCategoriaAberto, setMenuCategoriaAberto] = useState(false);
+    const [categorias, setCategorias] = useState([]);
+    const categoriaService = new CategoriaService();
+
+    useEffect(() => {
+        buscarCategorias();
+    }, []);
 
     const abrirMenuCategoria = () => {
         setMenuCategoriaAberto(true);
@@ -13,17 +20,14 @@ export function CategoriasMenu() {
         setMenuCategoriaAberto(false);
     }
 
-    // Lista de categorias (temporária)
-    const categorias = [
-        { id: 1, nome: "Lavagem" },
-        { id: 2, nome: "Enceramento" },
-        { id: 3, nome: "Detalhamento" },
-        { id: 4, nome: "Pintura" },
-        { id: 5, nome: "Mecânica" },
-        { id: 6, nome: "Pneus" },
-        { id: 7, nome: "Insulfilm" },
-        { id: 8, nome: "Som e Acessórios" }
-    ];
+    const buscarCategorias = async () => {
+        try {
+            const data = await categoriaService.buscarTodas();
+            setCategorias(data);
+        } catch (error) {
+            console.error('Erro ao buscar categorias:', error);
+        }
+    }
 
     return (
         <>
@@ -43,7 +47,7 @@ export function CategoriasMenu() {
                         </div>
 
                         <div className="sidebar-content">
-                            {categorias.map((categoria) => (
+                            {categorias && categorias.map((categoria) => (
                                 <Link
                                     key={categoria.id}
                                     to={`/busca?pesquisa=${categoria.nome}`}

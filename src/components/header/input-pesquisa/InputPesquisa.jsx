@@ -11,15 +11,115 @@ export function InputPesquisa() {
     const [searchParams] = useSearchParams();
 
     const servicosMock = [
-        { id: 1, nome: "Lavagem Completa", categoria: "Lavagem", preco: 25.00 },
-        { id: 2, nome: "Enceramento Automotivo", categoria: "Enceramento", preco: 80.00 },
-        { id: 3, nome: "Lavagem Simples", categoria: "Lavagem", preco: 15.00 },
-        { id: 4, nome: "Detalhamento Interno", categoria: "Detalhamento", preco: 120.00 },
-        { id: 5, nome: "Lavagem a Seco", categoria: "Lavagem", preco: 35.00 },
-        { id: 6, nome: "Pintura Automotiva", categoria: "Pintura", preco: 500.00 },
-        { id: 7, nome: "Enceramento Premium", categoria: "Enceramento", preco: 150.00 },
-        { id: 8, nome: "Detalhamento Completo", categoria: "Detalhamento", preco: 250.00 }
-    ];
+        {
+            "id": 8,
+            "categoria": "Polimentos e Proteções",
+            "descricao": "Proteção da pintura com camada de cristalização para maior brilho.",
+            "nome": "Cristalização de Pintura"
+        },
+        {
+            "id": 3,
+            "categoria": "Polimentos e Proteções",
+            "descricao": "Aplicação de cera técnica para proteção e brilho duradouro.",
+            "nome": "Enceramento Técnico"
+        },
+        {
+            "id": 15,
+            "categoria": "Higienizações",
+            "descricao": "Limpeza e tratamento especializado para bancos de couro ou tecido.",
+            "nome": "Higienização Bancos Couro / Tecido"
+        },
+        {
+            "id": 13,
+            "categoria": "Higienizações",
+            "descricao": "Limpeza profunda de todo o interior do veículo.",
+            "nome": "Higienização Interna Completa"
+        },
+        {
+            "id": 14,
+            "categoria": "Higienizações",
+            "descricao": "Limpeza técnica do teto e das colunas internas do veículo.",
+            "nome": "Higienização Teto e Colunas"
+        },
+        {
+            "id": 2,
+            "categoria": "Lavagem",
+            "descricao": "Lavagem detalhada com acabamento premium e proteção adicional.",
+            "nome": "Lavagem Premium"
+        },
+        {
+            "id": 1,
+            "categoria": "Lavagem",
+            "descricao": "Lavagem completa com produtos específicos e técnicas detalhadas.",
+            "nome": "Lavagem Técnica Carro"
+        },
+        {
+            "id": 5,
+            "categoria": "Lavagem",
+            "descricao": "Limpeza profunda do chassi e parte inferior do veículo.",
+            "nome": "Limpeza Técnica de Chassi"
+        },
+        {
+            "id": 4,
+            "categoria": "Lavagem",
+            "descricao": "Limpeza detalhada do compartimento do motor com produtos específicos.",
+            "nome": "Limpeza Técnica de Motor"
+        },
+        {
+            "id": 16,
+            "categoria": "Higienizações",
+            "descricao": "Eliminação de odores e bactérias por meio da aplicação de ozônio.",
+            "nome": "Oxi Sanitização (Aplicação Ozônio)"
+        },
+        {
+            "id": 7,
+            "categoria": "Polimentos e Proteções",
+            "descricao": "Polimento completo da pintura com correção de imperfeições.",
+            "nome": "Polimento Técnico"
+        },
+        {
+            "id": 6,
+            "categoria": "Polimentos e Proteções",
+            "descricao": "Polimento técnico para recuperação da transparência dos faróis.",
+            "nome": "Polimento de Farol"
+        },
+        {
+            "id": 17,
+            "categoria": "Higienizações",
+            "descricao": "Remoção de manchas causadas por chuva ácida nos vidros.",
+            "nome": "Remoção de Chuva Ácida Vidros"
+        },
+        {
+            "id": 18,
+            "categoria": "Higienizações",
+            "descricao": "Recuperação do brilho e aparência dos plásticos internos.",
+            "nome": "Revitalização de Plásticos Internos"
+        },
+        {
+            "id": 12,
+            "categoria": "Higienizações",
+            "descricao": "Revestimento protetor que melhora a repelência à água no para-brisa.",
+            "nome": "Vitrificação Para-brisa"
+        },
+        {
+            "id": 10,
+            "categoria": "Vitrificações",
+            "descricao": "Aplicação de vitrificador para proteção e brilho dos plásticos.",
+            "nome": "Vitrificação Plásticos"
+        },
+        {
+            "id": 11,
+            "categoria": "Vitrificações",
+            "descricao": "Proteção do couro contra desgaste e manchas com produto vitrificador.",
+            "nome": "Vitrificação de Couro"
+        },
+        {
+            "id": 9,
+            "categoria": "Vitrificações",
+            "descricao": "Proteção avançada da pintura com tecnologia de vitrificação.",
+            "nome": "Vitrificação de Pintura"
+        }
+    ]
 
     useEffect(() => {
         const termoDaUrl = searchParams.get('pesquisa');
@@ -46,7 +146,7 @@ export function InputPesquisa() {
 
     useEffect(() => {
         const termoDaUrl = searchParams.get('pesquisa');
-        
+
         if (termoBusca && termoBusca !== termoDaUrl) {
             const timeoutId = setTimeout(() => {
                 buscarServicos(termoBusca);
@@ -98,7 +198,7 @@ export function InputPesquisa() {
     const handleFocus = () => {
         const termoDaUrl = searchParams.get('pesquisa');
         const estaNaPaginaDeBusca = window.location.pathname === '/busca';
-        
+
         if (termoBusca.length >= 2 && (!estaNaPaginaDeBusca || termoBusca !== termoDaUrl)) {
             buscarServicos(termoBusca);
         }
@@ -113,15 +213,23 @@ export function InputPesquisa() {
                     value={termoBusca}
                     onChange={handleInputChange}
                     onKeyDown={handleKeyDown}
-                    onFocus={handleFocus}
-                    className="w-full h-full rounded-lg px-5 pr-12 bg-white border border-gray-300 focus:border-red-500 focus:outline-none"
+                    onFocus={(e) => {
+                        e.target.style.borderColor = '#B30000';
+                        handleFocus();
+                    }}
+                    className="w-full h-full rounded-lg px-5 pr-12 bg-white border border-gray-300 focus:outline-none"
+                    style={{'--focus-border-color': '#B30000'}}
+                    onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
                 />
-                <button 
+                <button
                     type="submit"
                     className="absolute right-0 top-0 h-full flex items-center cursor-pointer"
                 >
                     <div className="border-l border-gray-300 h-2/3 mx-3"></div>
-                    <i className="bi bi-search text-gray-500 mr-4 hover:text-red-600 transition-colors"></i>
+                    <i className="bi bi-search text-gray-500 mr-4 transition-colors" 
+                       style={{'--hover-color': '#B30000'}}
+                       onMouseEnter={(e) => e.target.style.color = '#B30000'}
+                       onMouseLeave={(e) => e.target.style.color = '#6b7280'}></i>
                 </button>
             </form>
 
@@ -133,24 +241,12 @@ export function InputPesquisa() {
                             className="search-result-item"
                             onClick={() => handleSelectServico(servico)}
                         >
-                            <div className="flex justify-between items-center">
-                                <div>
-                                    <div className="font-medium">{servico.nome}</div>
-                                    <div className="text-sm text-gray-500">{servico.categoria}</div>
-                                </div>
-                            </div>
+                            <div className="font-medium text-gray-900">{servico.nome}</div>
+                            <div className="text-sm text-gray-500">{servico.categoria}</div>
                         </div>
                     ))}
                 </div>
             )}
-
-            {mostrarResultados && termoBusca.length >= 2 && resultados.length === 0 && (
-                <div className="search-results">
-                    <div className="search-result-item text-gray-500 text-center">
-                        Nenhum serviço encontrado para "{termoBusca}"
-                    </div>
-                </div>
-            )}
         </div>
-    )
+    );
 }

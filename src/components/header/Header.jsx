@@ -13,7 +13,7 @@ export function Header() {
     const { isAuthenticated } = UseAuth();
 
     const habilitaPesquisa = () => {
-        if (window.location.pathname === ROUTES.LOGIN || window.location.pathname === ROUTES.CADASTRAR) {
+        if (window.location.pathname === ROUTES.LOGIN || window.location.pathname === ROUTES.CADASTRAR || window.location.pathname === ROUTES.VEICULOS) {
             return false;
         }
         return true;
@@ -21,7 +21,7 @@ export function Header() {
 
     return (
         <>
-            <header className="w-full h-20 py-3.5 px-16 flex justify-between bg-red-600 shadow">
+            <header className="w-full h-20 py-3.5 px-16 flex justify-between shadow" style={{backgroundColor: '#B30000'}}>
                 <Link className="cursor-pointer" to={ROUTES.HOME}>
                     <img src={logo} alt="Rick Logo" className="h-full" />
                 </Link>
@@ -45,7 +45,7 @@ export function Header() {
 
                     {isAuthenticated() && <PerfilDropdown />}
 
-                    {isAuthenticated() && <FavoritosDropdown />}
+                    {isAuthenticated() && habilitaPesquisa() && <FavoritosDropdown />}
 
                     {habilitaPesquisa() && (<Link className="cursor-pointer" to={isAuthenticated() ? ROUTES.CARRINHO : ROUTES.LOGIN}>
                         <i className="bi bi-cart3"></i>

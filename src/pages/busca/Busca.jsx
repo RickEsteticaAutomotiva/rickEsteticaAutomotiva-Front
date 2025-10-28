@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Header } from "../../components/header/Header";
+import { CardServico } from '../../components/card-servico/CardServico';
+import { Footer } from '../../components/footer/Footer';
 
 export function Busca() {
     const [searchParams] = useSearchParams();
@@ -10,14 +12,114 @@ export function Busca() {
 
     // Api aqui
     const servicosMock = [
-        { id: 1, nome: "Lavagem Completa", categoria: "Lavagem", preco: 25.00, descricao: "Lavagem completa externa e interna" },
-        { id: 2, nome: "Enceramento Automotivo", categoria: "Enceramento", preco: 80.00, descricao: "Enceramento profissional" },
-        { id: 3, nome: "Lavagem Simples", categoria: "Lavagem", preco: 15.00, descricao: "Lavagem externa básica" },
-        { id: 4, nome: "Detalhamento Interno", categoria: "Detalhamento", preco: 120.00, descricao: "Limpeza detalhada do interior" },
-        { id: 5, nome: "Lavagem a Seco", categoria: "Lavagem", preco: 35.00, descricao: "Lavagem sem uso de água" },
-        { id: 6, nome: "Pintura Automotiva", categoria: "Pintura", preco: 500.00, descricao: "Pintura completa do veículo" },
-        { id: 7, nome: "Enceramento Premium", categoria: "Enceramento", preco: 150.00, descricao: "Enceramento com produtos premium" },
-        { id: 8, nome: "Detalhamento Completo", categoria: "Detalhamento", preco: 250.00, descricao: "Detalhamento interno e externo" }
+        {
+            "id": 8,
+            "preco": 250,
+            "descricao": "Proteção da pintura com camada de cristalização para maior brilho.",
+            "nome": "Cristalização de Pintura"
+        },
+        {
+            "id": 3,
+            "preco": 200,
+            "descricao": "Aplicação de cera técnica para proteção e brilho duradouro.",
+            "nome": "Enceramento Técnico"
+        },
+        {
+            "id": 15,
+            "preco": 180,
+            "descricao": "Limpeza e tratamento especializado para bancos de couro ou tecido.",
+            "nome": "Higienização Bancos Couro / Tecido"
+        },
+        {
+            "id": 13,
+            "preco": 350,
+            "descricao": "Limpeza profunda de todo o interior do veículo.",
+            "nome": "Higienização Interna Completa"
+        },
+        {
+            "id": 14,
+            "preco": 150,
+            "descricao": "Limpeza técnica do teto e das colunas internas do veículo.",
+            "nome": "Higienização Teto e Colunas"
+        },
+        {
+            "id": 2,
+            "preco": 100,
+            "descricao": "Lavagem detalhada com acabamento premium e proteção adicional.",
+            "nome": "Lavagem Premium"
+        },
+        {
+            "id": 1,
+            "preco": 90,
+            "descricao": "Lavagem completa com produtos específicos e técnicas detalhadas.",
+            "nome": "Lavagem Técnica Carro"
+        },
+        {
+            "id": 5,
+            "preco": 400,
+            "descricao": "Limpeza profunda do chassi e parte inferior do veículo.",
+            "nome": "Limpeza Técnica de Chassi"
+        },
+        {
+            "id": 4,
+            "preco": 120,
+            "descricao": "Limpeza detalhada do compartimento do motor com produtos específicos.",
+            "nome": "Limpeza Técnica de Motor"
+        },
+        {
+            "id": 16,
+            "preco": 120,
+            "descricao": "Eliminação de odores e bactérias por meio da aplicação de ozônio.",
+            "nome": "Oxi Sanitização (Aplicação Ozônio)"
+        },
+        {
+            "id": 7,
+            "preco": 800,
+            "descricao": "Polimento completo da pintura com correção de imperfeições.",
+            "nome": "Polimento Técnico"
+        },
+        {
+            "id": 6,
+            "preco": 200,
+            "descricao": "Polimento técnico para recuperação da transparência dos faróis.",
+            "nome": "Polimento de Farol"
+        },
+        {
+            "id": 17,
+            "preco": 100,
+            "descricao": "Remoção de manchas causadas por chuva ácida nos vidros.",
+            "nome": "Remoção de Chuva Ácida Vidros"
+        },
+        {
+            "id": 18,
+            "preco": 50,
+            "descricao": "Recuperação do brilho e aparência dos plásticos internos.",
+            "nome": "Revitalização de Plásticos Internos"
+        },
+        {
+            "id": 12,
+            "preco": 150,
+            "descricao": "Revestimento protetor que melhora a repelência à água no para-brisa.",
+            "nome": "Vitrificação Para-brisa"
+        },
+        {
+            "id": 10,
+            "preco": 350,
+            "descricao": "Aplicação de vitrificador para proteção e brilho dos plásticos.",
+            "nome": "Vitrificação Plásticos"
+        },
+        {
+            "id": 11,
+            "preco": 300,
+            "descricao": "Proteção do couro contra desgaste e manchas com produto vitrificador.",
+            "nome": "Vitrificação de Couro"
+        },
+        {
+            "id": 9,
+            "preco": 1250,
+            "descricao": "Proteção avançada da pintura com tecnologia de vitrificação.",
+            "nome": "Vitrificação de Pintura"
+        }
     ];
 
     useEffect(() => {
@@ -32,7 +134,6 @@ export function Busca() {
         setTimeout(() => {
             const resultadosFiltrados = servicosMock.filter(servico =>
                 servico.nome.toLowerCase().includes(termo.toLowerCase()) ||
-                servico.categoria.toLowerCase().includes(termo.toLowerCase()) ||
                 servico.descricao.toLowerCase().includes(termo.toLowerCase())
             );
 
@@ -77,25 +178,22 @@ export function Busca() {
                 )}
 
                 {!loading && resultados.length > 0 && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 justify-items-start">
                         {resultados.map((servico) => (
-                            <div key={servico.id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-                                <div className="flex justify-between items-start mb-3">
-                                    <h3 className="text-lg font-semibold text-gray-800">{servico.nome}</h3>
-                                    <span className="text-xl font-bold text-red-600">
-                                        R$ {servico.preco.toFixed(2)}
-                                    </span>
-                                </div>
-                                <p className="text-sm text-gray-500 mb-2">{servico.categoria}</p>
-                                <p className="text-gray-600 mb-4">{servico.descricao}</p>
-                                <button className="w-full bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition-colors">
-                                    Agendar Serviço
-                                </button>
-                            </div>
+                            <CardServico
+                                key={servico.id}
+                                id={servico.id}
+                                nome={servico.nome}
+                                preco={servico.preco}
+                                descricao={servico.descricao}
+                                imagem={servico.imagem}
+                            />
                         ))}
                     </div>
                 )}
             </div>
+
+            <Footer />
         </>
     );
 }
