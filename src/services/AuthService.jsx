@@ -14,9 +14,9 @@ export class AuthService {
             
             if (response && response.token) {
                 const userData = {
-                    id: response.userId,
+                    id: response.id,
                     email: response.email,
-                    // nome: response.nome,
+                    nome: response.nome,
                 };
                 
                 return {
@@ -35,7 +35,6 @@ export class AuthService {
 
     async cadastrar(userData) {
         try {
-            // MUDANÇA: Adicionar barra no final da URL
             const response = await apiService.post('/pessoas/', userData);
             
             // Se o backend retorna token após cadastro
@@ -52,7 +51,6 @@ export class AuthService {
                 };
             }
             
-            // Se não retorna token, retornar apenas os dados do usuário
             return {
                 user: response || userData
             };
@@ -62,7 +60,6 @@ export class AuthService {
     }
 
     async verificarToken() {
-        // Como o endpoint /auth/verify não existe, verificar localmente
         const token = sessionStorage.getItem('token');
         const userData = sessionStorage.getItem('userData');
         
