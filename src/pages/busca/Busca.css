@@ -1,0 +1,116 @@
+.busca-container {
+    min-height: calc(100vh - 160px);
+    background-color: #f9fafb;
+}
+
+.busca-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.busca-header {
+    margin-bottom: 2rem;
+}
+
+.busca-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 0.5rem;
+}
+
+.busca-subtitle {
+    color: #6b7280;
+    margin-bottom: 0.5rem;
+}
+
+.busca-results-info {
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.servicos-grid-busca {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 2 colunas por padrão */
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 3rem 0;
+}
+
+.loading-spinner {
+    width: 3rem;
+    height: 3rem;
+    border: 4px solid #f3f4f6;
+    border-top: 4px solid #dc2626;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.empty-state i {
+    display: block;
+    font-size: 4rem;
+    color: #d1d5db;
+    margin-bottom: 1rem;
+}
+
+.empty-state h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #4b5563;
+    margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+    color: #6b7280;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .busca-content {
+        padding: 1rem;
+    }
+
+    .busca-title {
+        font-size: 1.5rem;
+    }
+
+    .servicos-grid-busca {
+        grid-template-columns: repeat(2, 1fr); /* Mantém 2 colunas em tablets */
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 375px) {
+    .busca-title {
+        font-size: 1.25rem;
+    }
+
+    .servicos-grid-busca {
+        grid-template-columns: 1fr; /* 1 coluna apenas em telas muito pequenas */
+        gap: 1rem;
+    }
+}
+
+/* Para telas maiores (desktops) - opcional */
+@media (min-width: 1200px) {
+    .servicos-grid-busca {
+        grid-template-columns: repeat(4, 1fr); /* 3 colunas em telas grandes */
+    }
+}

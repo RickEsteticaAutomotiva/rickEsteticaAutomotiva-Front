@@ -147,14 +147,14 @@ export function Servico() {
 
     if (error) {
         return (
-            <div className="container mx-auto px-4 py-8">
-                <div className="text-center">
-                    <i className="bi bi-exclamation-triangle text-6xl text-gray-300 mb-4 block"></i>
-                    <h2 className="text-2xl font-semibold text-gray-600 mb-2">Ops! Algo deu errado</h2>
-                    <p className="text-gray-500 mb-4">{error}</p>
+            <div className="servico-error-container">
+                <div className="servico-error-content">
+                    <i className="bi bi-exclamation-triangle servico-error-icon"></i>
+                    <h2 className="servico-error-title">Ops! Algo deu errado</h2>
+                    <p className="servico-error-message">{error}</p>
                     <Link
                         to={ROUTES.HOME}
-                        className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors"
+                        className="servico-error-button"
                     >
                         Voltar para início
                     </Link>
@@ -172,99 +172,106 @@ export function Servico() {
             <Header />
             <Breadcrumb items={breadcrumbItems} />
 
-            <main className='px-16 py-5'>
-                <div className="">
-                    <div className="servico-detalhes flex flex-col md:flex-row justify-between h-80">
-                        <div className="servico-imagem w-2/4 flex-shrink-0 bg-gray-200 rounded-lg shadow-md flex justify-center items-center overflow-hidden">
+            <main className='servico-main'>
+                <div className="servico-container">
+                    <div className="servico-detalhes">
+                        <div className="servico-imagem-principal">
                             {servico.imagem ? (
-                                <img src={servico.imagem} alt={servico.nome} className="w-full h-full" />
+                                <img src={servico.imagem} alt={servico.nome} className="servico-imagem-img" />
                             ) : (
-                                <i className="bi bi-gear text-gray-400"></i>
+                                <i className="bi bi-gear servico-imagem-placeholder"></i>
                             )}
                         </div>
-                        <div className="servico-imagem-menor flex-shrink-0 grid grid-cols-2 gap-5">
-                            <div className='w-full h-full rounded-lg shadow-md flex justify-center items-center overflow-hidden bg-gray-200'>
+                        <div className="servico-galeria">
+                            <div className='servico-galeria-item'>
                                 {servico.imagem ? (
-                                    <img src={servico.imagemUrl} alt={servico.nome} className="w-full h-full rounded-lg" />
+                                    <img src={servico.imagemUrl} alt={servico.nome} className="servico-galeria-img" />
                                 ) : (
-                                    <i className="bi bi-gear text-gray-400"></i>
+                                    <i className="bi bi-gear servico-galeria-placeholder"></i>
                                 )}
                             </div>
-                            <div className='w-full h-full rounded-lg shadow-md flex justify-center items-center overflow-hidden bg-gray-200'>
+                            <div className='servico-galeria-item'>
                                 {servico.imagem ? (
-                                    <img src={servico.imagemUrl} alt={servico.nome} className="w-full h-full rounded-lg" />
+                                    <img src={servico.imagemUrl} alt={servico.nome} className="servico-galeria-img" />
                                 ) : (
-                                    <i className="bi bi-gear text-gray-400"></i>
+                                    <i className="bi bi-gear servico-galeria-placeholder"></i>
                                 )}
                             </div>
-                            <div className='w-full h-full rounded-lg shadow-md flex justify-center items-center overflow-hidden bg-gray-200'>
+                            <div className='servico-galeria-item'>
                                 {servico.imagem ? (
-                                    <img src={servico.imagemUrl} alt={servico.nome} className="w-full h-full rounded-lg" />
+                                    <img src={servico.imagemUrl} alt={servico.nome} className="servico-galeria-img" />
                                 ) : (
-                                    <i className="bi bi-gear text-gray-400"></i>
+                                    <i className="bi bi-gear servico-galeria-placeholder"></i>
                                 )}
                             </div>
-                            <div className='w-full h-full rounded-lg shadow-md flex justify-center items-center overflow-hidden bg-gray-200'>
+                            <div className='servico-galeria-item'>
                                 {servico.imagem ? (
-                                    <img src={servico.imagemUrl} alt={servico.nome} className="w-full h-full rounded-lg" />
+                                    <img src={servico.imagemUrl} alt={servico.nome} className="servico-galeria-img" />
                                 ) : (
-                                    <i className="bi bi-gear text-gray-400"></i>
+                                    <i className="bi bi-gear servico-galeria-placeholder"></i>
                                 )}
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div className='flex justify-between gap-5'>
-                    <div className="servico-informacoes mt-8">
-                        <div className='flex gap-4 justify-between items-center mb-4 border-b-2 pb-4 border-gray-200'>
-                            <h1 className="text-3xl font-bold">{servico.nome}</h1>
+                <div className='servico-content'>
+                    <div className="servico-informacoes">
+                        <div className='servico-header'>
+                            <h1 className="servico-titulo">{servico.nome}</h1>
 
-                            <div className='flex gap-4'>
-                                <div className='h-10 w-10 rounded-full bg-white flex justify-center items-center cursor-pointer shadow'>
-                                    <div><i className="bi bi-share"></i></div>
+                            <div className='servico-acoes-rapidas'>
+                                <div className='servico-acao-item'>
+                                    <i className="bi bi-share"></i>
                                 </div>
 
                                 <div
-                                    className={`h-10 w-10 rounded-full bg-white flex justify-center items-center cursor-pointer shadow transition-all duration-200 ${loadingFavorito ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-50'
-                                        }`}
+                                    className={`servico-acao-item servico-favorito-btn ${loadingFavorito ? 'loading' : ''}`}
                                     onClick={toggleFavorito}
                                     disabled={loadingFavorito}
                                 >
-                                    <div>
-                                        {loadingFavorito ? (
-                                            <i className="bi bi-arrow-repeat animate-spin"></i>
-                                        ) : isFavorito ? (
-                                            <i className="bi bi-heart-fill text-red-500"></i>
-                                        ) : (
-                                            <i className="bi bi-heart text-gray-600"></i>
-                                        )}
-                                    </div>
+                                    {loadingFavorito ? (
+                                        <i className="bi bi-arrow-repeat animate-spin"></i>
+                                    ) : isFavorito ? (
+                                        <i className="bi bi-heart-fill servico-favorito-ativo"></i>
+                                    ) : (
+                                        <i className="bi bi-heart"></i>
+                                    )}
                                 </div>
                             </div>
                         </div>
 
-                        <div>
-                            <p className="mt-4">{servico.descricao}</p>
+                        <div className="servico-descricao">
+                            <p>{servico.descricao}</p>
                         </div>
 
-                        <div className="sobre-local mt-8 flex gap-5">
-                            <div className="w-90">
-                                <h1 className="text-xl font-bold"><i className="bi bi-house mr-3"></i>Sobre o local</h1>
-                                <p className="mt-2">Estamos localizados na R. Alcatifa, a oficina Rick Estética Automotiva é referência em cuidados automotivos, oferecendo serviços especializados que vão desde lavagens técnicas até vitrificação e revitalização completa de veículos. Nosso objetivo é proporcionar não apenas limpeza, mas também proteção, valorização e durabilidade para cada carro que passa por aqui.</p>
+                        <div className="sobre-local">
+                            <div className="sobre-local-texto">
+                                <h2 className="sobre-local-titulo">
+                                    <i className="bi bi-house"></i>
+                                    Sobre o local
+                                </h2>
+                                <p className="sobre-local-descricao">
+                                    Estamos localizados na R. Alcatifa, a oficina Rick Estética Automotiva é referência em cuidados automotivos, oferecendo serviços especializados que vão desde lavagens técnicas até vitrificação e revitalização completa de veículos. Nosso objetivo é proporcionar não apenas limpeza, mas também proteção, valorização e durabilidade para cada carro que passa por aqui.
+                                </p>
                             </div>
 
-                            <img src={localImage} alt="Imagem do local" className="w-100 object-cover rounded-lg" />
+                            <div className="sobre-local-imagem">
+                                <img src={localImage} alt="Imagem do local" />
+                            </div>
                         </div>
 
-                        <div className="como-chegar mt-15 flex gap-5">
-                            <div className="w-90">
-                                <h1 className="text-xl font-bold"><i className="bi bi-geo-alt mr-3"></i>Como chegar?</h1>
-                                <h2 className="mt-3 text-lg font-semibold" href="#">Rick Estética Automotiva</h2>
-                                <p className='mt-3'>R. Alcatifa, 81 - Jardim Brasilia (Zona Leste), São Paulo, 03583-030</p>
+                        <div className="como-chegar">
+                            <div className="como-chegar-texto">
+                                <h2 className="como-chegar-titulo">
+                                    <i className="bi bi-geo-alt"></i>
+                                    Como chegar?
+                                </h2>
+                                <h3 className="como-chegar-nome">Rick Estética Automotiva</h3>
+                                <p className='como-chegar-endereco'>R. Alcatifa, 81 - Jardim Brasilia (Zona Leste), São Paulo, 03583-030</p>
                             </div>
 
-                            <div className="w-100 rounded-lg overflow-hidden">
+                            <div className="como-chegar-mapa">
                                 <iframe
                                     src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3658.2486944757753!2d-46.51234178502112!3d-23.53453698467894!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94ce5f0a5c5c5c5c%3A0x1234567890abcdef!2sR.%20Alcatifa%2C%2081%20-%20Jardim%20Brasilia%2C%20S%C3%A3o%20Paulo%20-%20SP%2C%2003583-030!5e0!3m2!1spt-BR!2sbr!4v1234567890123!5m2!1spt-BR!2sbr"
                                     width="100%"
@@ -279,25 +286,25 @@ export function Servico() {
                         </div>
                     </div>
 
-                    <div className="resumo-pedido py-5 mt-8 bg-white rounded shadow-md w-1/3 h-fit">
-                        <div className="flex justify-between items-center mb-4 border-b border-gray-300 pb-2 px-5">
-                            <h1 className="font-bold text-lg">{servico.nome}</h1>
+                    <div className="resumo-pedido">
+                        <div className="resumo-pedido-header">
+                            <h2 className="resumo-pedido-titulo">{servico.nome}</h2>
                         </div>
 
-                        <div className="px-5 flex flex-col gap-4">
-                            <div className="flex flex-col">
-                                <p className="font-semibold">A partir de:</p>
-                                <p className="text-2xl font-semibold text-red-600">R$ {servico.preco.toFixed(2).replace('.', ',')}</p>
+                        <div className="resumo-pedido-content">
+                            <div className="resumo-preco">
+                                <p className="resumo-preco-label">A partir de:</p>
+                                <p className="resumo-preco-valor">R$ {servico.preco.toFixed(2).replace('.', ',')}</p>
                             </div>
-                            <div className="acoes-servico flex flex-col gap-4 mt-6">
+                            <div className="resumo-acoes">
                                 <button
-                                    className="bg-red-600 text-white px-6 py-2 rounded-lg mr-py-2 w-full hover:bg-red-700 cursor-pointer transition-colors"
+                                    className="btn-adicionar-carrinho"
                                     onClick={adicionarAoCarrinho}
                                 >
                                     Adicionar ao Carrinho
                                 </button>
                                 <button
-                                    className="border border-green-600 text-green-600 px-6 py-2 rounded-lg hover:bg-green-700 hover:text-white transition-colors cursor-pointer"
+                                    className="btn-agendar-servico"
                                     onClick={agendarServico}
                                 >
                                     Agendar Serviço

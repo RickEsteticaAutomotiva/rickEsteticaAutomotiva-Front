@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { Header } from "../../components/header/Header";
 import { CardServico } from '../../components/card-servico/CardServico';
 import { Footer } from '../../components/footer/Footer';
+import "./Busca.css"; // Adicionar import do CSS
 
 export function Busca() {
     const [searchParams] = useSearchParams();
@@ -146,51 +147,51 @@ export function Busca() {
         <>
             <Header />
 
-            <div className="container mx-auto px-4 py-8">
-                <div className="mb-6">
-                    <h1 className="text-2xl font-bold text-gray-800 mb-2">
-                        Resultados da busca
-                    </h1>
-                    <p className="text-gray-600">
-                        Mostrando resultados para: <span className="font-semibold text-red-600">"{termoPesquisa}"</span>
-                    </p>
-                    <p className="text-sm text-gray-500 mt-1">
-                        {loading ? 'Buscando...' : `${resultados.length} resultado(s) encontrado(s)`}
-                    </p>
-                </div>
-
-                {loading && (
-                    <div className="flex justify-center items-center py-12">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
-                    </div>
-                )}
-
-                {!loading && resultados.length === 0 && termoPesquisa && (
-                    <div className="text-center py-12">
-                        <i className="bi bi-search text-6xl text-gray-300 mb-4 block"></i>
-                        <h3 className="text-xl font-semibold text-gray-600 mb-2">
-                            Nenhum resultado encontrado
-                        </h3>
-                        <p className="text-gray-500">
-                            Tente buscar com outras palavras-chave ou verifique a categoria desejada.
+            <div className="busca-container">
+                <div className="busca-content">
+                    <div className="busca-header">
+                        <h1 className="busca-title">
+                            Resultados da busca
+                        </h1>
+                        <p className="busca-subtitle">
+                            Mostrando resultados para: <span className="font-semibold text-red-600">"{termoPesquisa}"</span>
+                        </p>
+                        <p className="busca-results-info">
+                            {loading ? 'Buscando...' : `${resultados.length} resultado(s) encontrado(s)`}
                         </p>
                     </div>
-                )}
 
-                {!loading && resultados.length > 0 && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 justify-items-start">
-                        {resultados.map((servico) => (
-                            <CardServico
-                                key={servico.id}
-                                id={servico.id}
-                                nome={servico.nome}
-                                preco={servico.preco}
-                                descricao={servico.descricao}
-                                imagem={servico.imagem}
-                            />
-                        ))}
-                    </div>
-                )}
+                    {loading && (
+                        <div className="loading-container">
+                            <div className="loading-spinner"></div>
+                        </div>
+                    )}
+
+                    {!loading && resultados.length === 0 && termoPesquisa && (
+                        <div className="empty-state">
+                            <i className="bi bi-search"></i>
+                            <h3>Nenhum resultado encontrado</h3>
+                            <p>
+                                Tente buscar com outras palavras-chave ou verifique a categoria desejada.
+                            </p>
+                        </div>
+                    )}
+
+                    {!loading && resultados.length > 0 && (
+                        <div className="servicos-grid-busca">
+                            {resultados.map((servico) => (
+                                <CardServico
+                                    key={servico.id}
+                                    id={servico.id}
+                                    nome={servico.nome}
+                                    preco={servico.preco}
+                                    descricao={servico.descricao}
+                                    imagem={servico.imagem}
+                                />
+                            ))}
+                        </div>
+                    )}
+                </div>
             </div>
 
             <Footer />
