@@ -3,7 +3,7 @@ import { PerfilDropdown } from "./perfil-dropdown/PerfilDropdown";
 import { CategoriasMenu } from "./categorias-menu/CategoriasMenu";
 import { InputPesquisa } from "./input-pesquisa/InputPesquisa";
 import { UseAuth } from "../../hooks/UseAuth";
-import { ROUTES } from "../../constants/routes";
+import { ROUTES } from "../../constants/Routes";
 
 import "./Header.css";
 import logo from "../../assets/rick_logo.png";

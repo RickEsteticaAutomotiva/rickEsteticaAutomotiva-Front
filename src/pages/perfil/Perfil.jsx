@@ -4,7 +4,7 @@ import { Header } from "../../components/header/Header";
 import { Breadcrumb } from "../../components/breadcrumb/Breadcrumb";
 import { UseAuth } from "../../hooks/UseAuth";
 import { usuarioService } from "../../services/UsuarioService";
-import { ROUTES } from "../../constants/routes";
+import { ROUTES } from "../../constants/Routes";
 import { LoadingState } from "../../components/loading-state/LoadingState";
 import "./Perfil.css";
 import { Footer } from '../../components/footer/Footer';
@@ -29,7 +29,7 @@ export function Perfil() {
   });
   const [showPasswordForm, setShowPasswordForm] = useState(false);
 
-  const { user, logout } = UseAuth();
+  const { user, logout, isAuthenticated } = UseAuth();
 
   const breadcrumbItems = [
     {
@@ -44,10 +44,11 @@ export function Perfil() {
   ];
 
   useEffect(() => {
-    // if (!isAuthenticated()) {
-    //   navigate(ROUTES.LOGIN);
-    //   return;
-    // }
+    if (!isAuthenticated()) {
+      navigate(ROUTES.LOGIN);
+      return;
+    }
+    
     buscarPerfil();
   }, [user]);
 

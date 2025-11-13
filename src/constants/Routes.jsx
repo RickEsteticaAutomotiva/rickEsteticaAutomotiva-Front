@@ -8,4 +8,5 @@ export const ROUTES = {
   SERVICO: '/servico/:id',
   AGENDAMENTO: '/agendamento',
   PERFIL: '/perfil',
+  HISTORICO: '/historico',
 };

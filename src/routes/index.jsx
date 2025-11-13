@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ROUTES } from "../constants/routes";
+import { ROUTES } from "../constants/Routes";
 import { Home } from "../pages/home/Home";
 import { Veiculos } from "../pages/veiculos/Veiculos";
 import { Login } from "../pages/login/Login";
@@ -9,6 +9,7 @@ import { Servico } from "../pages/servico/Servico";
 import { Carrinho } from "../pages/carrinho/Carrinho";
 import { Agendamento } from "../pages/agendamento/Agendamento";
 import { Perfil } from "../pages/perfil/Perfil";
+import { Historico } from "../pages/historico/Historico";
 
 export default function AppRoutes() {
   return (
@@ -23,6 +24,7 @@ export default function AppRoutes() {
         <Route path={ROUTES.CARRINHO} element={<Carrinho />} />
         <Route path={ROUTES.AGENDAMENTO} element={<Agendamento />} />
         <Route path={ROUTES.PERFIL} element={<Perfil />} />
+        <Route path={ROUTES.HISTORICO} element={<Historico />} />
       </Routes>
     </BrowserRouter>
   );
