@@ -5,11 +5,11 @@ import { Breadcrumb } from "../../components/breadcrumb/Breadcrumb";
 import { Calendario } from "../../components/calendario/Calendario";
 import { ModalConfirmacao } from "../../components/modal-confirmacao/ModalConfirmacao";
 import { UseAuth } from "../../hooks/UseAuth";
-import { ROUTES } from "../../constants/routes";
+import { ROUTES } from "../../constants/Routes";
 import { CarrinhoService } from '../../services/CarrinhoService';
 import "./Agendamento.css";
 import { Footer } from '../../components/footer/Footer';
-import { OrdemServico } from '../../services/OrdemServico';
+import { OrdemServicoService } from '../../services/OrdemServicoService';
 
 export function Agendamento() {
     const [dataSelecionada, setDataSelecionada] = useState(null);
@@ -20,10 +20,8 @@ export function Agendamento() {
     const [loadingConfirmacao, setLoadingConfirmacao] = useState(false);
     const carrinhoService = new CarrinhoService();
     const navigate = useNavigate();
-    const ordenServico = new OrdemServico();
-    const { isAuthenticated } = UseAuth();
-
-    const user = JSON.parse(sessionStorage.getItem('userData'));
+    const ordemServicoService = new OrdemServicoService();
+    const { isAuthenticated, user } = UseAuth();
 
     const smoothScrollTo = (targetPosition, duration = 800) => {
         const startPosition = window.pageYOffset;
@@ -56,11 +54,10 @@ export function Agendamento() {
     ];
 
     useEffect(() => {
-        // Verificar autenticação
-        // if (!isAuthenticated()) {
-        //     navigate(ROUTES.LOGIN);
-        //     return;
-        // }
+        if (!isAuthenticated()) {
+            navigate(ROUTES.LOGIN);
+            return;
+        }
 
         const veiculo = JSON.parse(sessionStorage.getItem('veiculoSelecionado') || 'null');
         buscarServicosCarrinho();
@@ -71,7 +68,7 @@ export function Agendamento() {
         }
 
         setVeiculoSelecionado(veiculo);
-    }, []);
+    }, [user]);
 
     const buscarServicosCarrinho = async () => {
         const servicos = await carrinhoService.buscarCarrinhoUsuario(user.id);
@@ -144,17 +141,11 @@ export function Agendamento() {
                 // motivo: 0
             };
 
-            // Simular chamada da API
-            await ordenServico.criarOrdemServico(agendamento);
-
-
-            // Limpar carrinho após confirmação
-            // await carrinhoService.limparCarrinho(user.id);
+            await ordemServicoService.criarOrdemServico(agendamento);
 
             setShowModalConfirmacao(false);
             alert('Agendamento confirmado com sucesso!');
             navigate(ROUTES.HOME);
-
         } catch (error) {
             console.error('Erro ao confirmar agendamento:', error);
             alert('Erro ao confirmar agendamento. Tente novamente.');

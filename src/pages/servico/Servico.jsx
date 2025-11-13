@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { UseAuth } from '../../hooks/UseAuth';
-import { ROUTES } from '../../constants/routes';
+import { ROUTES } from '../../constants/Routes';
 import { Header } from '../../components/header/Header';
 import { Breadcrumb } from "../../components/breadcrumb/Breadcrumb";
 import { servicosService } from '../../services/ServicosService';

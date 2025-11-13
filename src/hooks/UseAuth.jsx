@@ -63,7 +63,6 @@ export function UseAuth() {
         authService.clearAuthData();
         setUser(null);
         
-        // Recarregar a página apenas se não estivermos já na home
         if (window.location.pathname !== '/') {
             window.location.href = '/';
         }
@@ -78,11 +77,10 @@ export function UseAuth() {
     const isAuthenticated = () => {
         const token = sessionStorage.getItem("token");
         
-        if (!token || !user) {
+        if (!token) {
             return false;
         }
         
-        // Verificar se token não expirou
         if (authService.isTokenExpired(token)) {
             logout();
             return false;

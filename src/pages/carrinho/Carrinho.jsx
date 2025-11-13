@@ -1,16 +1,17 @@
 import { Header } from "../../components/header/Header";
 import { useNavigate, Link } from 'react-router-dom';
-import { ROUTES } from "../../constants/routes";
+import { ROUTES } from "../../constants/Routes";
 import { LoadingState } from "../../components/loading-state/LoadingState";
 import { useEffect, useState } from "react";
 import { CarrinhoService } from "../../services/CarrinhoService";
 import { Footer } from "../../components/footer/Footer";
+import { UseAuth } from "../../hooks/UseAuth";
 
 export function Carrinho() {
     const [loading, setLoading] = useState(true);
     const [carrinho, setCarrinho] = useState([]);
     const carrinhoService = new CarrinhoService();
-    const user = JSON.parse(sessionStorage.getItem('userData'));
+    const { isAuthenticated, user } = UseAuth();
     const navigate = useNavigate();
 
     const listarServicos = async () => {
@@ -40,12 +41,13 @@ export function Carrinho() {
     };
 
     useEffect(() => {
-        if (user?.id) {
-            listarServicos();
-        } else {
+        if (!isAuthenticated()) {
             navigate(ROUTES.LOGIN);
+            return;
         }
-    }, []);
+
+        listarServicos();
+    }, [user]);
 
     if (loading) {
         return <LoadingState />;
@@ -71,17 +73,17 @@ export function Carrinho() {
                                 {carrinho.map((item) => (
                                     <li key={item.id} className="py-2 border-b border-gray-200 flex gap-3 items-start">
                                         {item.imagem ? (
-                                        <img 
-                                            src="" 
-                                            alt={item.nome} 
-                                            className="h-20 w-20 object-cover rounded"
-                                            onError={(e) => {
-                                                e.target.src = "/default-service.jpg";
-                                            }}
-                                        /> ) : (
-                                        <div className="h-25 w-25 bg-gray-200 rounded flex items-center justify-center">
-                                            <i className="bi bi-gear text-4xl text-gray-400"></i>
-                                        </div>
+                                            <img
+                                                src=""
+                                                alt={item.nome}
+                                                className="h-20 w-20 object-cover rounded"
+                                                onError={(e) => {
+                                                    e.target.src = "/default-service.jpg";
+                                                }}
+                                            />) : (
+                                            <div className="h-25 w-25 bg-gray-200 rounded flex items-center justify-center">
+                                                <i className="bi bi-gear text-4xl text-gray-400"></i>
+                                            </div>
                                         )}
 
                                         <div className="flex flex-col gap-2 w-full">
@@ -90,7 +92,7 @@ export function Carrinho() {
                                                 <p>R$ {item.preco?.toFixed(2).replace('.', ',') || '0,00'}</p>
                                             </div>
 
-                                            <button 
+                                            <button
                                                 onClick={() => removerServicoCarrinho(item.idCarrinho)}
                                                 className="text-red-600 hover:text-red-800 cursor-pointer w-fit transition-colors"
                                             >
@@ -104,8 +106,8 @@ export function Carrinho() {
                             <div className="text-center py-8">
                                 <i className="bi bi-cart-x text-4xl text-gray-400 mb-4"></i>
                                 <p className="text-gray-500 mb-4">Seu carrinho está vazio</p>
-                                <Link 
-                                    to={ROUTES.HOME} 
+                                <Link
+                                    to={ROUTES.HOME}
                                     className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors"
                                 >
                                     Ver serviços disponíveis
@@ -125,17 +127,17 @@ export function Carrinho() {
                             <p>Valor mínimo:</p>
                             <p className="font-bold">R$ {calcularTotal().toFixed(2).replace('.', ',')}</p>
                         </div>
-                        
+
                         {carrinho && carrinho.length > 0 ? (
-                            <Link 
-                                to={ROUTES.VEICULOS} 
+                            <Link
+                                to={ROUTES.VEICULOS}
                                 className="bg-red-600 font-bold text-white py-2 px-4 rounded w-full hover:bg-red-700 cursor-pointer text-center transition-colors"
                             >
                                 Agendar serviço
                             </Link>
                         ) : (
-                            <button 
-                                disabled 
+                            <button
+                                disabled
                                 className="bg-gray-400 font-bold text-white py-2 px-4 rounded w-full cursor-not-allowed"
                             >
                                 Carrinho vazio

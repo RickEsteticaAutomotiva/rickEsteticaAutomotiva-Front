@@ -1,7 +1,7 @@
 import "./PerfilDropdown.css";
 import { Link, useNavigate } from "react-router-dom";
 import { UseAuth } from "../../../hooks/UseAuth";
-import { ROUTES } from "../../../constants/routes";
+import { ROUTES } from "../../../constants/Routes";
 
 export function PerfilDropdown() {
     const navigate = useNavigate();
@@ -27,6 +27,10 @@ export function PerfilDropdown() {
                 <Link to={ROUTES.VEICULOS} className="block px-4 py-2 hover:bg-gray-100 font-medium text-gray-800 text-sm">
                     <i className="bi bi-car-front mr-2"></i>
                     Meus Veículos
+                </Link>
+                <Link to={ROUTES.HISTORICO} className="block px-4 py-2 hover:bg-gray-100 font-medium text-gray-800 text-sm">
+                    <i className="bi bi-clock-history mr-2"></i>
+                    Meus Agendamentos
                 </Link>
                 <hr className="my-1 border-gray-200" />
                 <button onClick={handleLogout} className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-b-lg text-red-600 font-medium text-sm cursor-pointer">

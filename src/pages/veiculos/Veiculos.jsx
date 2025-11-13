@@ -6,7 +6,7 @@ import { Breadcrumb } from "../../components/breadcrumb/Breadcrumb";
 import { ModalVeiculo } from "../../components/modal-veiculo/ModalVeiculo";
 import { ModalConfirmacao } from "../../components/modal-confirmacao/ModalConfirmacao";
 import { UseAuth } from "../../hooks/UseAuth";
-import { ROUTES } from "../../constants/routes";
+import { ROUTES } from "../../constants/Routes";
 import "./Veiculos.css";
 import { VeiculoService } from '../../services/VeiculoService';
 
@@ -46,10 +46,11 @@ export function Veiculos() {
   ];
 
   useEffect(() => {
-    // if (!isAuthenticated()) {
-    //   navigate(ROUTES.LOGIN);
-    //   return;
-    // }
+    if (!isAuthenticated()) {
+      navigate(ROUTES.LOGIN);
+      return;
+    }
+    
     buscarVeiculos();
   }, [user]);
 

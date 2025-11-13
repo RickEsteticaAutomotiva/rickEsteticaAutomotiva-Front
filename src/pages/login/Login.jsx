@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Header } from "../../components/header/Header";
 import { UseAuth } from "../../hooks/UseAuth";
-import { ROUTES } from "../../constants/routes";
+import { ROUTES } from "../../constants/Routes";
 import "./Login.css";
 import { Footer } from "../../components/footer/Footer";
 
