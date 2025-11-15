@@ -104,12 +104,12 @@
   position: relative;
 }
 
-.radio-input:checked + .radio-label {
+.radio-input:checked+.radio-label {
   border-color: #dc2626;
   background-color: #dc2626;
 }
 
-.radio-input:checked + .radio-label::after {
+.radio-input:checked+.radio-label::after {
   content: '';
   position: absolute;
   top: 50%;
@@ -166,6 +166,7 @@
   gap: 0.5rem;
   align-items: center;
   justify-content: center;
+  margin-left: 1.5rem;
 }
 
 .btn-icon {
