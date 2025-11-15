@@ -11,6 +11,7 @@ import localImage from '../../assets/local.png';
 import { CarrinhoService } from '../../services/CarrinhoService';
 import { FavoritoService } from '../../services/FavoritoService';
 import { Footer } from '../../components/footer/Footer';
+import { CarrinhoMenu } from '../../components/carrinho-menu/CarrinhoMenu';
 
 export function Servico() {
     const { id } = useParams();
@@ -112,16 +113,13 @@ export function Servico() {
         }
     };
 
-    const adicionarAoCarrinho = async () => {
-        if (!isAuthenticated()) {
-            navigate(ROUTES.LOGIN);
-            return;
-        }
-
+    const verificarServicoNoCarrinho = async () => {
         try {
-            await carrinhoService.adicionarServicoCarrinho(user.id, servico.id);
+            const carrinho = await carrinhoService.buscarCarrinhoUsuario(user.id);
+            return carrinho.some(item => item.idServico === servico.id);
         } catch (error) {
-            console.error('Erro ao adicionar ao carrinho:', error);
+            console.error('Erro ao verificar carrinho:', error);
+            return false;
         }
     };
 
@@ -132,6 +130,11 @@ export function Servico() {
         }
 
         try {
+            if (await verificarServicoNoCarrinho()) {
+                navigate(`/carrinho`);
+                return;
+            }
+            
             await carrinhoService.adicionarServicoCarrinho(user.id, servico.id);
             navigate(`/carrinho`);
         } catch (error) {
@@ -290,12 +293,11 @@ export function Servico() {
                                 <p className="text-2xl font-semibold text-red-600">R$ {servico.preco.toFixed(2).replace('.', ',')}</p>
                             </div>
                             <div className="acoes-servico flex flex-col gap-4 mt-6">
-                                <button
-                                    className="bg-red-600 text-white px-6 py-2 rounded-lg mr-py-2 w-full hover:bg-red-700 cursor-pointer transition-colors"
-                                    onClick={adicionarAoCarrinho}
-                                >
-                                    Adicionar ao Carrinho
-                                </button>
+                                <CarrinhoMenu 
+                                    idUsuario={user.id}
+                                    idServico={servico.id}
+                                />
+
                                 <button
                                     className="border border-green-600 text-green-600 px-6 py-2 rounded-lg hover:bg-green-700 hover:text-white transition-colors cursor-pointer"
                                     onClick={agendarServico}
