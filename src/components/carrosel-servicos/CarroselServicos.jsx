@@ -44,8 +44,10 @@ export function CarroselServicos({ categoria, titulo }) {
     };
 
     const nextSlide = () => {
-        const maxIndex = Math.max(0, servicos.length - itemsPerView);
-        setCurrentIndex(prev => Math.min(prev + 1, maxIndex));
+        setCurrentIndex(prev => {
+            const maxIndex = servicos.length - itemsPerView;
+            return Math.min(prev + 1, maxIndex);
+        });
     };
 
     const prevSlide = () => {
@@ -53,7 +55,7 @@ export function CarroselServicos({ categoria, titulo }) {
     };
 
     const goToSlide = (index) => {
-        const maxIndex = Math.max(0, servicos.length - itemsPerView);
+        const maxIndex = servicos.length - itemsPerView;
         setCurrentIndex(Math.min(index, maxIndex));
     };
 
@@ -81,7 +83,7 @@ export function CarroselServicos({ categoria, titulo }) {
     }
 
     const canGoPrev = currentIndex > 0;
-    const canGoNext = currentIndex < servicos.length - itemsPerView;
+    const canGoNext = currentIndex + itemsPerView < servicos.length;
 
     return (
         <div className="carrossel-container">
@@ -110,14 +112,16 @@ export function CarroselServicos({ categoria, titulo }) {
                     className="carrossel-track"
                     style={{
                         transform: `translateX(-${(currentIndex * 100) / itemsPerView}%)`,
-                        width: `${(servicos.length * 100) / itemsPerView}%`
                     }}
                 >
                     {servicos.map((servico) => (
                         <div 
                             key={servico.id} 
                             className="carrossel-item"
-                            style={{ width: `${100 / servicos.length}%` }}
+                            style={{ 
+                                width: `${100 / itemsPerView}%`,
+                                minWidth: `${100 / itemsPerView}%`
+                            }}
                         >
                             <CardServico
                                 id={servico.id}

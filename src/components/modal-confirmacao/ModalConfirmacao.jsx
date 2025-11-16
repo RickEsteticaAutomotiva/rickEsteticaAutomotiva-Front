@@ -11,6 +11,7 @@ export function ModalConfirmacao({
   tipo = "default", // "default", "danger", "warning", "success"
   icone = null,
   loading = false,
+  hideCancelButton = false,
   children = null // Para conteúdo customizado
 }) {
   
@@ -92,6 +93,7 @@ export function ModalConfirmacao({
         </div>
 
         <div className="modal-confirmacao-footer">
+          {!hideCancelButton &&
           <button
             type="button"
             onClick={handleClose}
@@ -100,6 +102,7 @@ export function ModalConfirmacao({
           >
             {textoBotaoCancelar}
           </button>
+          }
           
           <button
             type="button"

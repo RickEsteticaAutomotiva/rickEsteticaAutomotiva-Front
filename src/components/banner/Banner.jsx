@@ -1,7 +1,17 @@
 import './Banner.css';
 import imgCarro from '../../assets/carroBanner.png';
+import { smoothScrollTo } from '../../utils/scroll';
 
 export function Banner() {
+    const handleVerServicos = () => {
+        const homeContent = document.querySelector('.home-content');
+        if (homeContent) {
+            const rect = homeContent.getBoundingClientRect();
+            const offsetTop = window.pageYOffset + rect.top - 100;
+            smoothScrollTo(offsetTop, 1000);
+        }
+    };
+
     return (
         <>
             <div className="hero-banner">
@@ -17,13 +27,13 @@ export function Banner() {
                         <div className="hero-buttons">
                             <button
                                 className="btn-hero-primary"
-                                onClick={() => document.querySelector('.servicos-grid')?.scrollIntoView({ behavior: 'smooth' })}
+                                onClick={handleVerServicos}
                             >
                                 <i className="bi bi-search mr-2"></i>
                                 Ver Serviços
                             </button>
                             <a href="#contato" className="btn-hero-secondary">
-                                <i className="bi bi-phone mr-2"></i>
+                                <i className="bi bi-whatsapp mr-2"></i>
                                 Falar Conosco
                             </a>
                         </div>

@@ -54,6 +54,12 @@
   text-align: center;
 }
 
+.empty-state > button > i {
+  font-size: 1rem;
+  color: #fff;
+  margin-bottom: 1rem;
+}
+
 .veiculos-list {
   padding: 1.5rem;
 }
