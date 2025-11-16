@@ -3,6 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { CarrinhoService } from "../../services/CarrinhoService";
 import { ServicosService } from "../../services/ServicosService";
+import { formatarPreco } from "../../utils/index";
+import { CardServico } from '../../components/card-servico/CardServico';
 
 export function CarrinhoMenu({ idUsuario, idServico }) {
     const [menuAberto, setMenuAberto] = useState(false);
@@ -86,7 +88,7 @@ export function CarrinhoMenu({ idUsuario, idServico }) {
                         </div>
 
                         <div className="sidebar-content-right">
-                            <div className="px-6">
+                            <div className="px-6 flex flex-col items-center">
                                 <div className="flex justify-center mb-4">
                                     <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
                                         <i className="bi bi-check-circle-fill text-3xl text-green-600"></i>
@@ -100,36 +102,14 @@ export function CarrinhoMenu({ idUsuario, idServico }) {
 
                                 {/* Informações do serviço */}
                                 {servicoAdicionado && (
-                                    <div className="servico-adicionado-card">
-                                        <div className="flex gap-3 p-4 bg-gray-50 rounded-lg">
-                                            <div className="w-16 h-16 bg-gray-200 rounded-lg flex-shrink-0 flex items-center justify-center overflow-hidden">
-                                                {servicoAdicionado.imagem ? (
-                                                    <img 
-                                                        src={servicoAdicionado.imagem} 
-                                                        alt={servicoAdicionado.nome}
-                                                        className="w-full h-full object-cover rounded-lg"
-                                                    />
-                                                ) : (
-                                                    <i className="bi bi-gear text-gray-400 text-xl"></i>
-                                                )}
-                                            </div>
-                                            
-                                            <div className="flex-1 min-w-0">
-                                                <h4 className="font-semibold text-gray-800 text-sm mb-1 truncate">
-                                                    {servicoAdicionado.nome}
-                                                </h4>
-                                                <p className="text-xs text-gray-500 mb-2 line-clamp-2">
-                                                    {servicoAdicionado.descricao}
-                                                </p>
-                                                <div className="flex items-center gap-1">
-                                                    <span className="text-xs text-gray-400">A partir de</span>
-                                                    <span className="font-semibold text-red-600 text-sm">
-                                                        R$ {servicoAdicionado.preco?.toFixed(2).replace('.', ',') || '0,00'}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <CardServico
+                                        id={servicoAdicionado.id}
+                                        nome={servicoAdicionado.nome}
+                                        preco={servicoAdicionado.preco}
+                                        categoria={servicoAdicionado.categoria}
+                                        imagem={servicoAdicionado.imagem}
+                                        descricao={servicoAdicionado.descricao}
+                                    />
                                 )}
                             </div>
                         </div>

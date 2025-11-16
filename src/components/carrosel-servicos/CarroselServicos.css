@@ -53,6 +53,7 @@
     position: relative;
     overflow: hidden;
     border-radius: 12px;
+    padding: 1rem 0;
 }
 
 .carrossel-track {

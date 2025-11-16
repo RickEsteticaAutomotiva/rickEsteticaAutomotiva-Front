@@ -2,120 +2,54 @@ import { Footer } from "../../components/footer/Footer";
 import { Header } from "../../components/header/Header";
 import { servicosService } from '../../services/ServicosService';
 import { useState, useEffect } from 'react';
-import { CardServico } from "../../components/card-servico/CardServico";
 import "./Home.css";
 import { LoadingState } from "../../components/loading-state/LoadingState";
+import { Banner } from "../../components/banner/Banner";
+import { CarroselServicos } from "../../components/carrosel-servicos/CarroselServicos";
+import { CategoriaService } from "../../services/CategoriaService";
 
 export function Home() {
     const [loading, setLoading] = useState(true);
-    const [servicosData, setServicosData] = useState(null);
-    const [servicos, setServicos] = useState([]);
-    const [paginaAtual, setPaginaAtual] = useState(0);
-    const [carregandoMais, setCarregandoMais] = useState(false);
+    const [categorias, setCategorias] = useState([]);
+    const categoriaService = new CategoriaService();
 
     useEffect(() => {
-        listarServicos();
+        buscarCategorias();
     }, []);
 
-    const listarServicos = async (pagina = 0, manterExistentes = false) => {
-        if (pagina === 0) {
-            setLoading(true);
-        } else {
-            setCarregandoMais(true);
-        }
-
+    const buscarCategorias = async () => {
+        setLoading(true);
         try {
-            const parametros = {
-                pagina,
-                tamanho: 20,
-                ordenarPor: 'nome',
-                filtro: ''
-            };
-
-            const data = await servicosService.buscarTodos(parametros);
-
-            setServicosData(data);
-
-            if (manterExistentes && pagina > 0) {
-                setServicos(prev => [...prev, ...data.content]);
-            } else {
-                setServicos(data.content || []);
-            }
-
-            setPaginaAtual(pagina);
+            const data = await categoriaService.buscarTodas();
+            setCategorias(data || []);
         } catch (error) {
-            console.error('Erro ao buscar serviços:', error);
-            setServicos([]);
+            setCategorias([]);
         } finally {
             setLoading(false);
-            setCarregandoMais(false);
         }
     };
 
     if (loading) {
-        return (
-            <LoadingState />
-        );
+        return <LoadingState />;
     }
-
-    const carregarMaisServicos = () => {
-        if (servicosData && !servicosData.last && !carregandoMais) {
-            listarServicos(paginaAtual + 1, true);
-        }
-    };
-
-    const temMaisServicos = servicosData && !servicosData.last;
 
     return (
         <>
             <Header />
+            <Banner />
 
             <div className="home-container">
                 <div className="home-content">
-                    {servicos.length > 0 ? (
+                    {categorias.length > 0 ? (
                         <>
-                            <div className="servicos-grid">
-                                {servicos.map(servico => (
-                                    <CardServico
-                                        key={servico.id}
-                                        id={servico.id}
-                                        nome={servico.nome}
-                                        preco={servico.preco}
-                                        descricao={servico.descricao}
-                                        imagem={servico.imagem}
+                            {categorias.map((categoria) => (
+                                <div key={categoria.id} className="categoria-section">
+                                    <CarroselServicos
+                                        categoria={categoria.nome}
+                                        titulo={categoria.nome}
                                     />
-                                ))}
-                            </div>
-
-                            {servicosData && (
-                                <div className="pagination-info">
-                                    <p className="pagination-text">
-                                        Mostrando {servicos.length} de {servicosData.totalElements} serviços
-                                    </p>
                                 </div>
-                            )}
-
-                            {temMaisServicos && (
-                                <div className="load-more-container">
-                                    <button
-                                        onClick={carregarMaisServicos}
-                                        disabled={carregandoMais}
-                                        className="load-more-button"
-                                    >
-                                        {carregandoMais ? (
-                                            <>
-                                                <div className="button-spinner"></div>
-                                                Carregando...
-                                            </>
-                                        ) : (
-                                            <>
-                                                <i className="bi bi-plus-circle mr-2"></i>
-                                                Carregar Mais Serviços
-                                            </>
-                                        )}
-                                    </button>
-                                </div>
-                            )}
+                            ))}
                         </>
                     ) : (
                         <div className="empty-state">

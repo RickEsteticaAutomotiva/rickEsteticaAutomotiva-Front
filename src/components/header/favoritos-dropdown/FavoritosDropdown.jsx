@@ -4,6 +4,7 @@ import { UseAuth } from "../../../hooks/UseAuth";
 import "./FavoritosDropdown.css";
 import { FavoritoService } from "../../../services/FavoritoService";
 import { LoadingState } from "../../loading-state/LoadingState";
+import { formatarPreco } from "../../../utils/index";
 
 export function FavoritosDropdown() {
     const [favoritos, setFavoritos] = useState([]);
@@ -84,7 +85,7 @@ export function FavoritosDropdown() {
                                         </h4>
                                         <p className="text-xs text-gray-500">A partir de</p>
                                         <p className="text-sm font-semibold text-red-600">
-                                            R$ {servico.preco.toFixed(2).replace('.', ',')}
+                                            {formatarPreco(servico.preco)}
                                         </p>
                                     </div>
                                 </Link>

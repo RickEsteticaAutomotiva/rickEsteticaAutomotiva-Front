@@ -1,0 +1,162 @@
+.busca-container {
+    min-height: calc(100vh - 160px);
+    background-color: #f9fafb;
+    padding: 2rem 0;
+}
+
+.busca-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+.busca-header {
+    margin-bottom: 2rem;
+}
+
+.busca-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 0.5rem;
+}
+
+.busca-subtitle {
+    font-size: 1rem;
+    color: #6b7280;
+}
+
+.busca-subtitle .termo-destaque {
+    font-weight: 600;
+    color: #dc2626;
+}
+
+/* Grid de Serviços */
+.servicos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+/* Estado de Loading */
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+}
+
+.spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid #f3f4f6;
+    border-top: 4px solid #dc2626;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+    color: #6b7280;
+    font-size: 1rem;
+}
+
+/* Estado Vazio */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.empty-icon {
+    font-size: 4rem;
+    color: #d1d5db;
+    margin-bottom: 1.5rem;
+}
+
+.empty-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #4b5563;
+    margin-bottom: 0.75rem;
+}
+
+.empty-description {
+    color: #6b7280;
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.btn-voltar {
+    display: inline-block;
+    background-color: #dc2626;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+}
+
+.btn-voltar:hover {
+    background-color: #b91c1c;
+}
+
+/* Responsividade */
+@media (max-width: 1024px) {
+    .servicos-grid {
+        grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .busca-container {
+        padding: 1rem 0;
+    }
+
+    .busca-content {
+        padding: 0 1rem;
+    }
+
+    .busca-title {
+        font-size: 1.5rem;
+    }
+
+    .busca-subtitle {
+        font-size: 0.875rem;
+    }
+
+    .servicos-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .empty-state {
+        padding: 3rem 1rem;
+    }
+
+    .empty-icon {
+        font-size: 3rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .servicos-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .servicos-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
