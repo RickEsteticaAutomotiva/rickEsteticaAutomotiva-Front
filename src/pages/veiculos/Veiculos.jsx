@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Header } from "../../components/header/Header";
 import { Footer } from "../../components/footer/Footer";
 import { Breadcrumb } from "../../components/breadcrumb/Breadcrumb";
@@ -18,16 +18,18 @@ export function Veiculos() {
   const [showModal, setShowModal] = useState(false);
   const [veiculoParaEditar, setVeiculoParaEditar] = useState(null);
   const [modoModal, setModoModal] = useState('adicionar');
-  
+  const location = useLocation();
+  const fromHeader = location.state?.fromHeader || false;
+
   // Estados para o modal de confirmação
   const [showModalConfirmacao, setShowModalConfirmacao] = useState(false);
   const [veiculoParaExcluir, setVeiculoParaExcluir] = useState(null);
   const [loadingExclusao, setLoadingExclusao] = useState(false);
-  
+
   const veiculoService = new VeiculoService();
   const navigate = useNavigate();
   const { isAuthenticated, user } = UseAuth();
-  
+
   const breadcrumbItems = [
     {
       label: 'Início',
@@ -45,23 +47,35 @@ export function Veiculos() {
     }
   ];
 
+  const breadcrumbItemsFromHeader = [
+    {
+      label: 'Início',
+      href: ROUTES.HOME,
+      icon: 'bi bi-house'
+    },
+    {
+      label: 'Selecionar Veículo',
+      icon: 'bi bi-car-front'
+    }
+  ];
+
   useEffect(() => {
     if (!isAuthenticated()) {
       navigate(ROUTES.LOGIN);
       return;
     }
-    
+
     buscarVeiculos();
   }, [user]);
 
   const buscarVeiculos = async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const data = await veiculoService.buscarVeiculosPorUsuario(user.id);
       setVeiculos(data);
-      
+
     } catch (error) {
       setError(error.message);
     } finally {
@@ -80,9 +94,9 @@ export function Veiculos() {
     }
 
     const veiculo = veiculos.find(v => v.id === veiculoSelecionado);
-    
+
     sessionStorage.setItem('veiculoSelecionado', JSON.stringify(veiculo));
-    
+
     navigate('/agendamento');
   };
 
@@ -121,15 +135,15 @@ export function Veiculos() {
 
     try {
       await veiculoService.removerVeiculo(veiculoParaExcluir.id);
-      
+
       if (veiculoSelecionado === veiculoParaExcluir.id) {
         setVeiculoSelecionado(null);
       }
-      
+
       await buscarVeiculos();
       setShowModalConfirmacao(false);
       setVeiculoParaExcluir(null);
-      
+
     } catch (error) {
       setError(error.message);
     } finally {
@@ -159,13 +173,24 @@ export function Veiculos() {
   return (
     <>
       <Header />
-      <Breadcrumb items={breadcrumbItems} />
+      <Breadcrumb items={fromHeader ? breadcrumbItemsFromHeader : breadcrumbItems} />
 
       <div className="veiculos-container">
         <div className="veiculos-card">
           <div className="veiculos-header">
-            <h1 className="veiculos-title">Escolha um veículo que irá receber o serviço</h1>
-            <p className="veiculos-subtitle">Selecione o veículo e clique em avançar para continuar</p>
+            {!fromHeader && (
+              <>
+                <h1 className="veiculos-title">Escolha um veículo que irá receber o serviço</h1>
+                <p className="veiculos-subtitle">Selecione o veículo e clique em avançar para continuar</p>
+              </>
+            )}
+
+            {fromHeader && (
+              <>
+                <h1 className="veiculos-title">Meus Veículos Cadastrados</h1>
+                <p className="veiculos-subtitle">Visualize e cadastre seus veículos</p>
+              </>
+            )}
           </div>
 
           {error && (
@@ -179,8 +204,10 @@ export function Veiculos() {
             <div className="empty-state">
               <i className="bi bi-car-front text-6xl text-gray-300 mb-4"></i>
               <h3 className="text-xl font-semibold text-gray-600 mb-2">Nenhum veículo cadastrado</h3>
-              <p className="text-gray-500 mb-4">Você precisa cadastrar um veículo para continuar</p>
-              <button 
+              {!fromHeader && (
+                <p className="text-gray-500 mb-4">Você precisa cadastrar um veículo para continuar</p>
+              )}
+              <button
                 onClick={handleAdicionarVeiculo}
                 className="btn-primary"
               >
@@ -192,23 +219,25 @@ export function Veiculos() {
             <>
               <div className="veiculos-list">
                 {veiculos.map((veiculo) => (
-                  <div 
-                    key={veiculo.id} 
-                    className={`veiculo-item ${veiculoSelecionado === veiculo.id ? 'selected' : ''}`}
+                  <div
+                    key={veiculo.id}
+                    className={`veiculo-item ${fromHeader ? '' : veiculoSelecionado === veiculo.id ? 'selected' : ''}`}
                     onClick={() => handleVeiculoSelect(veiculo.id)}
                   >
-                    <div className="veiculo-radio">
-                      <input
-                        type="radio"
-                        id={`veiculo-${veiculo.id}`}
-                        name="veiculo"
-                        value={veiculo.id}
-                        checked={veiculoSelecionado === veiculo.id}
-                        onChange={() => handleVeiculoSelect(veiculo.id)}
-                        className="radio-input"
-                      />
-                      <label htmlFor={`veiculo-${veiculo.id}`} className="radio-label"></label>
-                    </div>
+                    {!fromHeader && (
+                      <div className="veiculo-radio">
+                        <input
+                          type="radio"
+                          id={`veiculo-${veiculo.id}`}
+                          name="veiculo"
+                          value={veiculo.id}
+                          checked={veiculoSelecionado === veiculo.id}
+                          onChange={() => handleVeiculoSelect(veiculo.id)}
+                          className="radio-input"
+                        />
+                        <label htmlFor={`veiculo-${veiculo.id}`} className="radio-label"></label>
+                      </div>
+                    )}
 
                     <div className="veiculo-icon">
                       <i className="bi bi-car-front text-3xl text-gray-400"></i>
@@ -239,7 +268,7 @@ export function Veiculos() {
                     </div>
 
                     <div className="veiculo-actions">
-                      <button 
+                      <button
                         className="btn-icon"
                         title="Editar veículo"
                         onClick={(e) => {
@@ -249,7 +278,7 @@ export function Veiculos() {
                       >
                         <i className="bi bi-pencil"></i>
                       </button>
-                      <button 
+                      <button
                         className="btn-icon btn-danger"
                         title="Excluir veículo"
                         onClick={(e) => {
@@ -265,7 +294,7 @@ export function Veiculos() {
               </div>
 
               <div className="veiculos-footer">
-                <button 
+                <button
                   onClick={handleAdicionarVeiculo}
                   className="btn-secondary"
                 >
@@ -273,14 +302,15 @@ export function Veiculos() {
                   Adicionar Novo Veículo
                 </button>
 
-                <button 
-                  onClick={handleAvancar}
-                  disabled={!veiculoSelecionado}
-                  className="btn-primary"
-                >
-                  Avançar
-                  <i className="bi bi-arrow-right ml-2"></i>
-                </button>
+                {!fromHeader && (
+                  <button
+                    onClick={handleAvancar}
+                    disabled={!veiculoSelecionado}
+                    className="btn-primary"
+                  >
+                    Avançar
+                    <i className="bi bi-arrow-right ml-2"></i>
+                  </button>)}
               </div>
             </>
           )}
@@ -312,16 +342,16 @@ export function Veiculos() {
             <p className="modal-confirmacao-mensagem">
               Tem certeza que deseja excluir o veículo <strong>{veiculoParaExcluir.marca} {veiculoParaExcluir.modelo}</strong>?
             </p>
-            <div style={{ 
-              marginTop: '1rem', 
-              padding: '0.75rem', 
-              backgroundColor: '#fef2f2', 
+            <div style={{
+              marginTop: '1rem',
+              padding: '0.75rem',
+              backgroundColor: '#fef2f2',
               borderRadius: '8px',
               border: '1px solid #fecaca'
             }}>
-              <p style={{ 
-                fontSize: '0.875rem', 
-                color: '#dc2626', 
+              <p style={{
+                fontSize: '0.875rem',
+                color: '#dc2626',
                 margin: 0,
                 display: 'flex',
                 alignItems: 'center',
