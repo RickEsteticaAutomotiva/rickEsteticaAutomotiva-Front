@@ -295,7 +295,7 @@ export function Servico() {
                             </div>
                             <div className="acoes-servico flex flex-col gap-4 mt-6">
                                 <CarrinhoMenu 
-                                    idUsuario={user.id}
+                                    idUsuario={user ? user.id : null}
                                     idServico={servico.id}
                                 />
 

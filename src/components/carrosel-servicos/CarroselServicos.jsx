@@ -33,9 +33,11 @@ export function CarroselServicos({ categoria, titulo }) {
         setLoading(true);
         try {
             const data = await servicosService.buscarPorCategoria(categoria);
-            setServicos(data);
+            const servicosArray = data?.content || [];
+            setServicos(servicosArray);
         } catch (error) {
             console.error('Erro ao buscar serviços:', error);
+            setServicos([]);
         } finally {
             setLoading(false);
         }
@@ -67,7 +69,7 @@ export function CarroselServicos({ categoria, titulo }) {
         );
     }
 
-    if (!servicos.length) {
+    if (!servicos) {
         return (
             <div className="carrossel-container">
                 <h2 className="carrossel-titulo">{titulo}</h2>
@@ -80,7 +82,6 @@ export function CarroselServicos({ categoria, titulo }) {
 
     const canGoPrev = currentIndex > 0;
     const canGoNext = currentIndex < servicos.length - itemsPerView;
-    const totalDots = Math.ceil(servicos.length / itemsPerView);
 
     return (
         <div className="carrossel-container">
@@ -130,19 +131,6 @@ export function CarroselServicos({ categoria, titulo }) {
                     ))}
                 </div>
             </div>
-
-            {/* Dots indicator */}
-            {totalDots > 1 && (
-                <div className="carrossel-dots">
-                    {Array.from({ length: totalDots }).map((_, index) => (
-                        <button
-                            key={index}
-                            className={`carrossel-dot ${Math.floor(currentIndex / itemsPerView) === index ? 'active' : ''}`}
-                            onClick={() => goToSlide(index * itemsPerView)}
-                        />
-                    ))}
-                </div>
-            )}
         </div>
     );
 }

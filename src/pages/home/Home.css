@@ -96,6 +96,31 @@
     padding: 4rem 2rem;
 }
 
+.empty-state i {
+    font-size: 4rem;
+    color: #d1d5db;
+    margin-bottom: 1rem;
+}
+
+.empty-state h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #4b5563;
+    margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+    color: #6b7280;
+}
+
+.categoria-section {
+    margin-bottom: 3rem;
+}
+
+.categoria-section:last-child {
+    margin-bottom: 0;
+}
+
 /* Responsividade */
 @media (max-width: 768px) {
     .home-container {
@@ -114,6 +139,10 @@
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: 1.5rem;
     }
+
+    .categoria-section {
+        margin-bottom: 2rem;
+    }
 }
 
 @media (max-width: 480px) {
@@ -124,5 +153,13 @@
     .servicos-grid {
         grid-template-columns: 1fr;
         gap: 1rem;
+    }
+
+    .empty-state {
+        padding: 3rem 1rem;
+    }
+
+    .empty-state i {
+        font-size: 3rem;
     }
 }
