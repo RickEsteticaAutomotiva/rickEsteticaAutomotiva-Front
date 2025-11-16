@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { CarrinhoService } from "../../services/CarrinhoService";
 import { ServicosService } from "../../services/ServicosService";
+import { formatarPreco } from "../../utils/index";
 
 export function CarrinhoMenu({ idUsuario, idServico }) {
     const [menuAberto, setMenuAberto] = useState(false);
@@ -124,7 +125,7 @@ export function CarrinhoMenu({ idUsuario, idServico }) {
                                                 <div className="flex items-center gap-1">
                                                     <span className="text-xs text-gray-400">A partir de</span>
                                                     <span className="font-semibold text-red-600 text-sm">
-                                                        R$ {servicoAdicionado.preco?.toFixed(2).replace('.', ',') || '0,00'}
+                                                        {formatarPreco(servicoAdicionado.preco)}
                                                     </span>
                                                 </div>
                                             </div>

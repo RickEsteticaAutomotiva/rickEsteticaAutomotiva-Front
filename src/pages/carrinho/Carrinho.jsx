@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { CarrinhoService } from "../../services/CarrinhoService";
 import { Footer } from "../../components/footer/Footer";
 import { UseAuth } from "../../hooks/UseAuth";
+import { formatarPreco } from "../../utils/index";
 
 export function Carrinho() {
     const [loading, setLoading] = useState(true);
@@ -125,7 +126,7 @@ export function Carrinho() {
                     <div className="px-5 flex flex-col gap-4">
                         <div className="flex justify-between mb-2">
                             <p>Valor mínimo:</p>
-                            <p className="font-bold">R$ {calcularTotal().toFixed(2).replace('.', ',')}</p>
+                            <p className="font-bold">{formatarPreco(calcularTotal())}</p>
                         </div>
 
                         {carrinho && carrinho.length > 0 ? (

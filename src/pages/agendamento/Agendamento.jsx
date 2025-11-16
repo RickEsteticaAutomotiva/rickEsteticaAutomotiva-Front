@@ -10,6 +10,7 @@ import { CarrinhoService } from '../../services/CarrinhoService';
 import "./Agendamento.css";
 import { Footer } from '../../components/footer/Footer';
 import { OrdemServicoService } from '../../services/OrdemServicoService';
+import { formatarPreco } from '../../utils/index';
 
 export function Agendamento() {
     const [dataSelecionada, setDataSelecionada] = useState(null);
@@ -241,7 +242,7 @@ export function Agendamento() {
                                 {servicosCarrinho && servicosCarrinho.map(servico => (
                                     <div key={servico.id} className="servico-item">
                                         <span className="servico-nome">{servico.nome}</span>
-                                        <span className="servico-preco">R$ {servico.preco.toFixed(2).replace('.', ',')}</span>
+                                        <span className="servico-preco">{formatarPreco(servico.preco)}</span>
                                     </div>
                                 ))}
                             </div>
@@ -250,7 +251,7 @@ export function Agendamento() {
                             <div className="total-agendamento">
                                 <div className="servico-nome">Valor mínimo:</div>
                                 <div className="servico-preco text-2xl">
-                                    R$ {calcularTotal().toFixed(2).replace('.', ',')}
+                                    {formatarPreco(calcularTotal())}
                                 </div>
                             </div>
                         </div>
@@ -364,7 +365,7 @@ export function Agendamento() {
                             }}>
                                 <span>{servico.nome}</span>
                                 <span style={{ fontWeight: '600' }}>
-                                    R$ {servico.preco.toFixed(2).replace('.', ',')}
+                                    {formatarPreco(servico.preco)}
                                 </span>
                             </div>
                         ))}
@@ -381,7 +382,7 @@ export function Agendamento() {
                             color: '#14532d'
                         }}>
                             <span>Total Mínimo:</span>
-                            <span>R$ {calcularTotal().toFixed(2).replace('.', ',')}</span>
+                            <span>{formatarPreco(calcularTotal())}</span>
                         </div>
                     </div>
 

@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { CardServico } from "../../components/card-servico/CardServico";
 import "./Home.css";
 import { LoadingState } from "../../components/loading-state/LoadingState";
+import { Banner } from "../../components/banner/Banner";
 
 export function Home() {
     const [loading, setLoading] = useState(true);
@@ -69,6 +70,8 @@ export function Home() {
     return (
         <>
             <Header />
+
+            <Banner />
 
             <div className="home-container">
                 <div className="home-content">

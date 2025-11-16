@@ -49,21 +49,21 @@
 .load-more-container {
     display: flex;
     justify-content: center;
-    margin: 2rem 0;
+    margin-top: 3rem;
 }
 
 .load-more-button {
-    display: flex;
-    align-items: center;
     background-color: #B30000;
     color: white;
     border: none;
-    padding: 0.75rem 2rem;
+    padding: 1rem 2rem;
     border-radius: 8px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .load-more-button:hover:not(:disabled) {
@@ -72,9 +72,8 @@
 }
 
 .load-more-button:disabled {
-    background-color: #9ca3af;
+    opacity: 0.6;
     cursor: not-allowed;
-    transform: none;
 }
 
 .button-spinner {

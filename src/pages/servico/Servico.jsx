@@ -12,6 +12,7 @@ import { CarrinhoService } from '../../services/CarrinhoService';
 import { FavoritoService } from '../../services/FavoritoService';
 import { Footer } from '../../components/footer/Footer';
 import { CarrinhoMenu } from '../../components/carrinho-menu/CarrinhoMenu';
+import { formatarPreco } from '../../utils/index';
 
 export function Servico() {
     const { id } = useParams();
@@ -290,7 +291,7 @@ export function Servico() {
                         <div className="px-5 flex flex-col gap-4">
                             <div className="flex flex-col">
                                 <p className="font-semibold">A partir de:</p>
-                                <p className="text-2xl font-semibold text-red-600">R$ {servico.preco.toFixed(2).replace('.', ',')}</p>
+                                <p className="text-2xl font-semibold text-red-600">{formatarPreco(servico.preco)}</p>
                             </div>
                             <div className="acoes-servico flex flex-col gap-4 mt-6">
                                 <CarrinhoMenu 
