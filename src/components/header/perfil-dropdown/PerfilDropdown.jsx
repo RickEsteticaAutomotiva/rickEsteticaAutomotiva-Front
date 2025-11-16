@@ -12,6 +12,10 @@ export function PerfilDropdown() {
         navigate("/");
     }
 
+    const handleVeiculos = () => {
+        navigate(ROUTES.VEICULOS, { state: { fromHeader: true } });
+    }
+
     if (!user) return null;
 
     return (
@@ -24,10 +28,10 @@ export function PerfilDropdown() {
                     <i className="bi bi-person mr-2"></i>
                     Meu Perfil
                 </Link>
-                <Link to={ROUTES.VEICULOS} className="block px-4 py-2 hover:bg-gray-100 font-medium text-gray-800 text-sm">
+                <button onClick={handleVeiculos} className="block px-4 py-2 hover:bg-gray-100 font-medium text-gray-800 text-sm cursor-pointer">
                     <i className="bi bi-car-front mr-2"></i>
                     Meus Veículos
-                </Link>
+                </button>
                 <Link to={ROUTES.HISTORICO} className="block px-4 py-2 hover:bg-gray-100 font-medium text-gray-800 text-sm">
                     <i className="bi bi-clock-history mr-2"></i>
                     Meus Agendamentos
