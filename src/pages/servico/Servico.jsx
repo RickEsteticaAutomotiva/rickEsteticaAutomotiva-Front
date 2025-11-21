@@ -219,7 +219,7 @@ export function Servico() {
                     </div>
                 </div>
 
-                <div className='flex justify-between gap-5'>
+                <div className='servico-content flex justify-between gap-5'>
                     <div className="servico-informacoes mt-8">
                         <div className='flex gap-4 justify-between items-center mb-4 border-b-2 pb-4 border-gray-200'>
                             <h1 className="text-3xl font-bold">{servico.nome}</h1>
@@ -283,7 +283,7 @@ export function Servico() {
                         </div>
                     </div>
 
-                    <div className="resumo-pedido py-5 mt-8 bg-white rounded shadow-md w-1/3 h-fit">
+                    <div className="resumo-servico resumo-servico-container py-5 mt-8 bg-white rounded shadow-md w-1/3 h-fit">
                         <div className="flex justify-between items-center mb-4 border-b border-gray-300 pb-2 px-5">
                             <h1 className="font-bold text-lg">{servico.nome}</h1>
                         </div>
