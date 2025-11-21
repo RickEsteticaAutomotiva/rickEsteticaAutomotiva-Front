@@ -206,7 +206,7 @@ export function InputPesquisa() {
 
     return (
         <div className="search-container h-full" ref={searchRef}>
-            <form onSubmit={handleSubmit} className="relative w-sm h-full">
+            <form onSubmit={handleSubmit} className="relative w-sm h-full formHeader">
                 <input
                     type="text"
                     placeholder="Buscar serviços"

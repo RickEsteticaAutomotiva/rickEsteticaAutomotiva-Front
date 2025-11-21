@@ -44,3 +44,10 @@
 .dropdown-menu button:last-child {
     border-radius: 0 0 0.5rem 0.5rem;
 }
+
+@media (max-width: 640px) {
+    .dropdown-menu-perfil {
+        width: 100%;
+        right: -60px;
+    }
+}

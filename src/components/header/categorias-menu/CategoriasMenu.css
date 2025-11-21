@@ -72,3 +72,13 @@
 .categoria-item i:last-child {
     font-size: 0.875rem;
 }
+
+@media (max-width: 768px) {
+    .sidebar-menu {
+        width: 90%;
+    }
+
+    .categoriaSpan {
+        display: none;
+    }
+}

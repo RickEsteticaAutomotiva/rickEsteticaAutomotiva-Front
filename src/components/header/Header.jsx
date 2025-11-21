@@ -21,13 +21,13 @@ export function Header() {
 
     return (
         <>
-            <header className="w-full h-20 py-3.5 px-16 flex justify-between shadow" style={{backgroundColor: '#B30000'}}>
-                <Link className="cursor-pointer" to={ROUTES.HOME}>
+            <header className="header w-full h-20 py-3.5 px-16 flex justify-between shadow" style={{backgroundColor: '#B30000'}}>
+                <Link className="header-logo cursor-pointer" to={ROUTES.HOME}>
                     <img src={logo} alt="Rick Logo" className="h-full" />
                 </Link>
 
                 {habilitaPesquisa() && (
-                    <div className="flex h-full items-center gap-3">
+                    <div className="flex h-full w-full items-center gap-3">
                         <InputPesquisa />
 
                         <CategoriasMenu />
@@ -38,7 +38,7 @@ export function Header() {
                     {!isAuthenticated() && (
                         <div className="flex gap-5 h-full items-center">
                             <Link className="cursor-pointer" to={ROUTES.CADASTRAR}>Cadastrar</Link>
-                            <span className="border h-2/3 border-white"></span>
+                            <span className="separador border h-2/3 border-white"></span>
                             <Link className="cursor-pointer" to={ROUTES.LOGIN}>Entrar</Link>
                         </div>
                     )}
