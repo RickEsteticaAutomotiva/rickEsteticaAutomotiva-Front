@@ -15,4 +15,9 @@
   .separador {
     height: 1rem;
   }
+
+  .header-search-area {
+    width: 100%;
+    justify-content: center;
+  }
 }
