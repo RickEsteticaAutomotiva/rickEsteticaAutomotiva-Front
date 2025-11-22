@@ -21,7 +21,6 @@ export function Veiculos() {
   const location = useLocation();
   const fromHeader = location.state?.fromHeader || false;
 
-  // Estados para o modal de confirmação
   const [showModalConfirmacao, setShowModalConfirmacao] = useState(false);
   const [veiculoParaExcluir, setVeiculoParaExcluir] = useState(null);
   const [loadingExclusao, setLoadingExclusao] = useState(false);
