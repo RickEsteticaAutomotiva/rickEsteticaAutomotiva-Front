@@ -33,7 +33,7 @@ export function CategoriasMenu() {
         <>
             <div className="text-white flex gap-2 cursor-pointer" onClick={abrirMenuCategoria}>
                 <i className="bi bi-grid ml-3"></i>
-                <span>Categorias</span>
+                <span className="categoriaSpan">Categorias</span>
             </div>
 
             {menuCategoriaAberto && (

@@ -62,7 +62,7 @@ export function FavoritosDropdown() {
                 {!loading && favoritos.length > 0 && (
                     <div className="py-2">
                         {favoritos.map((servico) => (
-                            <div key={servico.id} className="favorito-item">
+                            <div key={servico.id || servico.idServico} className="favorito-item">
                                 <Link
                                     to={`/servico/${servico.idServico}`}
                                     className="flex items-center p-3 hover:bg-gray-50 transition-colors"
