@@ -7,6 +7,7 @@ import { CarrinhoService } from "../../services/CarrinhoService";
 import { Footer } from "../../components/footer/Footer";
 import { UseAuth } from "../../hooks/UseAuth";
 import { formatarPreco } from "../../utils/index";
+import "./carrinho.css";
 
 export function Carrinho() {
     const [loading, setLoading] = useState(true);
@@ -58,7 +59,7 @@ export function Carrinho() {
         <>
             <Header />
 
-            <div className="flex px-16 py-10 justify-between gap-10">
+            <div className="flex carrinho-content px-16 py-10 justify-between gap-10">
                 <div className="carrinho py-5 bg-white rounded shadow-md w-3/5 h-fit">
                     <div className="flex flex-col items-start mb-4 border-b border-gray-300 pb-2 px-5">
                         <h1 className="font-bold text-lg">Carrinho de serviços</h1>
@@ -118,7 +119,7 @@ export function Carrinho() {
                     </div>
                 </div>
 
-                <div className="resumo-pedido py-5 bg-white rounded shadow-md w-1/3 h-fit">
+                <div className="resumo-pedido-carrinho py-5 bg-white rounded shadow-md w-1/3 h-fit">
                     <div className="flex justify-between items-center mb-4 border-b border-gray-300 pb-2 px-5">
                         <h1 className="font-bold text-lg">Resumo do pedido</h1>
                     </div>
