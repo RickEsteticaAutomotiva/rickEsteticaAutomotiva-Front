@@ -1,4 +1,4 @@
-import { Button } from "../../../components/Button/Button";
+import { Button } from "../../../components/button/Button";
 import { CardAgendamento } from "../../../components/gerente/card/card-agendamento/CardAgendamento";
 import { CardPequeno } from "../../../components/gerente/card/card-pequeno/CardPequeno";
 

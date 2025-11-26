@@ -1,4 +1,4 @@
-import { Button } from "../../../Button/Button";
+import { Button } from "../../../button/Button";
 
 export function CardAgendamento({ agendamento, onDetalhesClick }) {
     return (
