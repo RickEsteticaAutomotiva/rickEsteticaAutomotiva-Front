@@ -27,7 +27,7 @@ export function Header() {
                 </Link>
 
                 {habilitaPesquisa() && (
-                    <div className="flex h-full w-full items-center gap-3">
+                    <div className="header-search-area flex h-full items-center gap-3">
                         <InputPesquisa />
 
                         <CategoriasMenu />

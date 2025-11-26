@@ -10,6 +10,11 @@ import { Carrinho } from "../pages/carrinho/Carrinho";
 import { Agendamento } from "../pages/agendamento/Agendamento";
 import { Perfil } from "../pages/perfil/Perfil";
 import { Historico } from "../pages/historico/Historico";
+import { HomeGerente } from "../pages/gerente/home/HomeGerente";
+import { MenuGerente } from "../pages/gerente/MenuGerente";
+import { AgendamentoGerente } from "../pages/gerente/agendamento/AgendamentoGerente";
+import { Dashboard } from "../pages/gerente/dashboard/Dashboard";
+
 
 export default function AppRoutes() {
   return (
@@ -25,6 +30,11 @@ export default function AppRoutes() {
         <Route path={ROUTES.AGENDAMENTO} element={<Agendamento />} />
         <Route path={ROUTES.PERFIL} element={<Perfil />} />
         <Route path={ROUTES.HISTORICO} element={<Historico />} />
+        <Route path={ROUTES.GERENTE.HOME} element={<MenuGerente />}>
+          <Route index element={<HomeGerente />} />
+          <Route path={ROUTES.GERENTE.AGENDAMENTO} element={<AgendamentoGerente />} />
+          <Route path={ROUTES.GERENTE.DASHBOARD} element={<Dashboard />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   );

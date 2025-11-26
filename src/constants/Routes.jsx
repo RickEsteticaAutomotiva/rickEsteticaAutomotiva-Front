@@ -9,4 +9,9 @@ export const ROUTES = {
   AGENDAMENTO: '/agendamento',
   PERFIL: '/perfil',
   HISTORICO: '/historico',
+  GERENTE: {
+  HOME: '/gerente',
+  AGENDAMENTO: 'agendamento',
+  DASHBOARD: 'dashboard'
+}
 };
