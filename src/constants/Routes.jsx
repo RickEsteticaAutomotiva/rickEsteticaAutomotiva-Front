@@ -11,6 +11,7 @@ export const ROUTES = {
   HISTORICO: '/historico',
   GERENTE: {
   HOME: '/gerente',
-  AGENDAMENTO: '/gerente/agendamento'
+  AGENDAMENTO: 'agendamento',
+  DASHBOARD: 'dashboard'
 }
 };

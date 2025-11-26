@@ -14,6 +14,8 @@ export function MenuGerente() {
     const getPageTitle = () => {
         switch (location.pathname) {
             case "/gerente":
+                return "Home";
+            case "/gerente/dashboard":
                 return "Dashboard";
             case "/gerente/agendamento":
                 return "Agendamentos";
@@ -63,6 +65,13 @@ export function MenuGerente() {
                 <nav className="py-6">
                 <MenuLink
                     to="/gerente" 
+                    text="Home"
+                    onClick={toggleMenu}
+                    src="/icon-home.svg" alt="Home"
+                />
+
+                <MenuLink
+                    to="/gerente/dashboard" 
                     text="Dashboard"
                     onClick={toggleMenu}
                     src="/icon-grafico.svg" alt="Grafico"
