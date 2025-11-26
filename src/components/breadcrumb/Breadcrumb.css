@@ -74,9 +74,9 @@
   .breadcrumb-items {
     gap: 0.25rem;
   }
-  
-  .breadcrumb-text {
-    display: none; /* Esconder texto, mostrar apenas ícones */
+
+  .breadcrumb-current, .breadcrumb-link {
+    gap: 0.5rem;
   }
   
   .breadcrumb-link i,
