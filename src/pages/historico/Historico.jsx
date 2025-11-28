@@ -160,7 +160,7 @@ export function Historico() {
                             <p className="empty-description">
                                 Você ainda não realizou nenhum agendamento. Que tal agendar um serviço agora?
                             </p>
-                            <Link to={ROUTES.HOME} className="btn-primary">
+                            <Link to={ROUTES.HOME} className="btn-primary btn-agendar">
                                 <i className="bi bi-plus-circle mr-2"></i>
                                 Agendar Serviço
                             </Link>

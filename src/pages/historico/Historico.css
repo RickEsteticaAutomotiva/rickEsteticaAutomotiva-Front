@@ -83,6 +83,10 @@
     align-items: center;
 }
 
+.btn-agendar i {
+    font-size: 1rem;
+}
+
 .status-analise {
     background-color: #fef3c7;
     color: #92400e;
