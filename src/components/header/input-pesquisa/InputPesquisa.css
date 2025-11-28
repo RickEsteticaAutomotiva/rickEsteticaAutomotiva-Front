@@ -1,5 +1,6 @@
 .search-container {
     position: relative;
+    width: 90%;
 }
 
 .search-results {
@@ -36,4 +37,15 @@
 .search-highlight {
     background-color: #fef3c7;
     font-weight: 600;
+}
+
+@media (max-width: 768px) {
+    .formHeader {
+        width: 100%;
+    }
+
+    .formHeader input {
+        height: 2.5rem;
+        width: 100%;
+    }
 }
