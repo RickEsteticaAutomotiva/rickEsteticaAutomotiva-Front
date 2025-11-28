@@ -104,6 +104,10 @@
     transition: background-color 0.3s ease;
 }
 
+.btn-voltar i {
+    font-size: 1rem;
+}
+
 .btn-voltar:hover {
     background-color: #b91c1c;
 }
