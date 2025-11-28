@@ -81,6 +81,29 @@
     -webkit-box-orient: vertical;
 }
 
+#btn-continuar-comprando {
+  flex: 1;
+  background: white;
+  color: #6b7280;
+  border: 2px solid #e5e7eb;
+  padding: 0.875rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+#btn-continuar-comprando:hover:not(:disabled) {
+  border-color: #d1d5db;
+  background-color: #f9fafb;
+}
+
+#btn-continuar-comprando:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Responsividade */
 @media (max-width: 640px) {
     .sidebar-menu-right {

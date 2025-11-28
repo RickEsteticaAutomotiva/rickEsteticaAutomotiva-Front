@@ -117,7 +117,7 @@ export function CarrinhoMenu({ idUsuario, idServico }) {
                         <div className="sidebar-footer">
                             <Link 
                                 to="/" 
-                                className="bg-gray-100 flex justify-center items-center text-gray-700 px-6 py-3 rounded-lg w-full hover:bg-gray-200 cursor-pointer transition-colors border"
+                                id="btn-continuar-comprando"
                                 onClick={fecharMenuCarrinho}
                             >
                                 Continuar comprando

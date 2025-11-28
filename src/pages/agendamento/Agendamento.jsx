@@ -135,7 +135,6 @@ export function Agendamento() {
             setShowModalSucesso(true);
         } catch (error) {
             console.error('Erro ao confirmar agendamento:', error);
-            alert('Erro ao confirmar agendamento. Tente novamente.');
             setShowModalConfirmacao(false);
         } finally {
             setLoadingConfirmacao(false);

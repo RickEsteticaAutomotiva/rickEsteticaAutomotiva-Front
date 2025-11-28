@@ -193,6 +193,54 @@ export function Perfil() {
     }
   };
 
+  const handlePasswordChange = async (e) => {
+    e.preventDefault();
+
+    if (!validatePasswordForm()) {
+      return;
+    }
+
+    setSaving(true);
+
+    try {
+      await usuarioService.alterarSenha(user.id, {
+        senhaAtual: senhaData.senhaAtual,
+        novaSenha: senhaData.novaSenha
+      });
+
+      setSenhaData({
+        senhaAtual: "",
+        novaSenha: "",
+        confirmarSenha: ""
+      });
+      setShowPasswordForm(false);
+      setErrors({ success: 'Senha alterada com sucesso!' });
+
+    } catch (error) {
+      console.error("Erro ao alterar senha:", error);
+      setErrors({
+        password: error.message || "Erro ao alterar senha. Verifique a senha atual."
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handlePasswordInputChange = (e) => {
+    const { name, value } = e.target;
+    setSenhaData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ""
+      }));
+    }
+  };
+
   const handleDeleteAccount = () => {
     if (window.confirm('Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita.')) {
       usuarioService.deletarUsuario(user.id);
@@ -389,6 +437,139 @@ export function Perfil() {
                 </div>
               )}
             </form>
+
+            <div className="form-section">
+              <div className="section-header">
+                <div>
+                  <h3 className="section-title">Segurança</h3>
+                  <p className="section-description">
+                    Altere sua senha para manter sua conta segura
+                  </p>
+                </div>
+                {!showPasswordForm && (
+                  <button
+                    onClick={() => setShowPasswordForm(true)}
+                    className="btn-secondary"
+                  >
+                    <i className="bi bi-key"></i>
+                    Alterar Senha
+                  </button>
+                )}
+              </div>
+
+              {showPasswordForm && (
+                <form onSubmit={handlePasswordChange} className="password-form">
+                  {errors.password && (
+                    <div className="error-message">
+                      <i className="bi bi-exclamation-triangle mr-2"></i>
+                      {errors.password}
+                    </div>
+                  )}
+
+                  <div className="form-group">
+                    <label htmlFor="senhaAtual" className="form-label">
+                      Senha atual
+                    </label>
+                    <div className="password-input-wrapper">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        id="senhaAtual"
+                        name="senhaAtual"
+                        value={senhaData.senhaAtual}
+                        onChange={handlePasswordInputChange}
+                        disabled={saving}
+                        className={`form-input ${errors.senhaAtual ? 'error' : ''}`}
+                        placeholder="Digite sua senha atual"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="password-toggle"
+                      >
+                        <i className={`bi ${showPassword ? 'bi-eye-slash' : 'bi-eye'}`}></i>
+                      </button>
+                    </div>
+                    {errors.senhaAtual && (
+                      <span className="error-text">{errors.senhaAtual}</span>
+                    )}
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="novaSenha" className="form-label">
+                      Nova senha
+                    </label>
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      id="novaSenha"
+                      name="novaSenha"
+                      value={senhaData.novaSenha}
+                      onChange={handlePasswordInputChange}
+                      disabled={saving}
+                      className={`form-input ${errors.novaSenha ? 'error' : ''}`}
+                      placeholder="Digite a nova senha (mínimo 6 caracteres)"
+                    />
+                    {errors.novaSenha && (
+                      <span className="error-text">{errors.novaSenha}</span>
+                    )}
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="confirmarSenha" className="form-label">
+                      Confirmar nova senha
+                    </label>
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      id="confirmarSenha"
+                      name="confirmarSenha"
+                      value={senhaData.confirmarSenha}
+                      onChange={handlePasswordInputChange}
+                      disabled={saving}
+                      className={`form-input ${errors.confirmarSenha ? 'error' : ''}`}
+                      placeholder="Confirme a nova senha"
+                    />
+                    {errors.confirmarSenha && (
+                      <span className="error-text">{errors.confirmarSenha}</span>
+                    )}
+                  </div>
+
+                  <div className="form-actions border-b-0">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowPasswordForm(false);
+                        setSenhaData({
+                          senhaAtual: "",
+                          novaSenha: "",
+                          confirmarSenha: ""
+                        });
+                        setErrors({});
+                      }}
+                      className="btn-cancel"
+                      disabled={saving}
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={saving}
+                      className="btn-save"
+                    >
+                      {saving ? (
+                        <>
+                          <div className="button-spinner"></div>
+                          Salvando...
+                        </>
+                      ) : (
+                        <>
+                          <i className="bi bi-shield-check mr-2"></i>
+                          Alterar Senha
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
 
             <div className="form-section danger-zone">
               <h3 className="section-title">Zona de Perigo</h3>

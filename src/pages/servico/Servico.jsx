@@ -34,8 +34,8 @@ export function Servico() {
             icon: 'bi bi-house'
         },
         {
-            label: servico ? servico.nome : 'Categoria',
-            href: servico ? `${ROUTES.BUSCA}?pesquisa=${servico.nome.toLowerCase()}` : "Categoria",
+            label: servico ? servico.categoria.nome : 'Categoria',
+            href: servico ? `${ROUTES.BUSCA}?pesquisa=${servico.categoria.nome.toLowerCase()}` : "Categoria",
             icon: 'bi bi-list-ul'
         },
         {

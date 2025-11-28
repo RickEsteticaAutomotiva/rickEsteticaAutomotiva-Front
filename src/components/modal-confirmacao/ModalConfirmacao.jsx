@@ -98,7 +98,8 @@ export function ModalConfirmacao({
             type="button"
             onClick={handleClose}
             disabled={loading}
-            className="btn-cancelar"
+            className=""
+            id='btn-cancelar'
           >
             {textoBotaoCancelar}
           </button>
