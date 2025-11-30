@@ -14,6 +14,7 @@ import { HomeGerente } from "../pages/gerente/home/HomeGerente";
 import { MenuGerente } from "../pages/gerente/MenuGerente";
 import { AgendamentoGerente } from "../pages/gerente/agendamento/AgendamentoGerente";
 import { Dashboard } from "../pages/gerente/dashboard/Dashboard";
+import { OrdensServico } from "../pages/gerente/ordens-servico/OrdensServico";
 
 
 export default function AppRoutes() {
@@ -34,6 +35,7 @@ export default function AppRoutes() {
           <Route index element={<HomeGerente />} />
           <Route path={ROUTES.GERENTE.AGENDAMENTO} element={<AgendamentoGerente />} />
           <Route path={ROUTES.GERENTE.DASHBOARD} element={<Dashboard />} />
+          <Route path={ROUTES.GERENTE.ORDENS_SERVICO} element={<OrdensServico />} />
         </Route>
       </Routes>
     </BrowserRouter>

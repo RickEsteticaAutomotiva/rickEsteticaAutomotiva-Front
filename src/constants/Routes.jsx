@@ -12,6 +12,7 @@ export const ROUTES = {
   GERENTE: {
   HOME: '/gerente',
   AGENDAMENTO: 'agendamento',
-  DASHBOARD: 'dashboard'
+  DASHBOARD: 'dashboard',
+  ORDENS_SERVICO: 'ordens-servico'
 }
 };

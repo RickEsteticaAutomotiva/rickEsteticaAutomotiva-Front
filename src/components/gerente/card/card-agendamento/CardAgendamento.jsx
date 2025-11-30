@@ -1,15 +1,14 @@
 import { Button } from "../../../button/Button";
 
-export function CardAgendamento({ agendamento, onDetalhesClick }) {
+export function CardAgendamento({ agendamento, imagem, onDetalhesClick }) {
     return (
-        <div className="bg-gray-50 rounded-lg p-4 flex flex-col items-center gap-4">
-            <div className="text-center">
-                <h3 className="font-semibold text-lg">{agendamento.servico}</h3>
-                <div className="flex items-center justify-center gap-2 mt-2">
-                    <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                    <span className="text-gray-600">{agendamento.horario}</span>
-                </div>
+        <div className="bg-gray-50 rounded-lg p-4 flex flex-1 flex-col items-center justify-between gap-4 text-center">
+            <h3 className="font-semibold text-lg">{agendamento.servicos[0]?.nome}</h3>
+            <div className="flex  justify-center  gap-2 mt-auto">
+                {imagem}
+                <span className="text-gray-600">{agendamento.horario}</span>
             </div>
+
             <Button 
                 texto="Detalhes"     
                 onClick={() => onDetalhesClick && onDetalhesClick(agendamento)}
