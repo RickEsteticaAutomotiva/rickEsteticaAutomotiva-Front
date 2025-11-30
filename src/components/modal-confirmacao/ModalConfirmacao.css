@@ -116,7 +116,7 @@
   border-radius: 0 0 12px 12px;
 }
 
-.btn-cancelar {
+#btn-cancelar {
   flex: 1;
   background: white;
   color: #6b7280;
@@ -128,12 +128,12 @@
   transition: all 0.3s ease;
 }
 
-.btn-cancelar:hover:not(:disabled) {
+#btn-cancelar:hover:not(:disabled) {
   border-color: #d1d5db;
   background-color: #f9fafb;
 }
 
-.btn-cancelar:disabled {
+#btn-cancelar:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
@@ -273,7 +273,7 @@
     gap: 0.75rem;
   }
 
-  .btn-cancelar,
+  #btn-cancelar,
   .btn-confirmar {
     width: 100%;
     justify-content: center;

@@ -19,4 +19,13 @@ export class OrdemServicoService {
             throw new Error(error.message || 'Erro ao buscar ordens de serviço do usuário');
         }
     }
+
+    async atualizarStatus(id, novoStatus) {
+        try {
+            const response = await apiService.patch(`/ordem-servicos/${id}`, { status: novoStatus });
+            return response;
+        } catch (error) {
+            throw new Error(error.message || 'Erro ao atualizar status da ordem de serviço');
+        }
+    }
 }

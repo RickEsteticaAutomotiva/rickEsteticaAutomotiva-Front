@@ -27,6 +27,15 @@ export class UsuarioService {
             throw new Error(error.message || 'Erro ao deletar usuário');
         }
     }
+
+    async alterarSenha(userId, senhaData) {
+        try {
+            const response = await apiService.patch(`/pessoas/senha/${userId}`, senhaData);
+            return response;
+        } catch (error) {
+            throw new Error('Erro ao alterar senha. Verifique a senha atual.');
+        }
+    }
 }
 
 export const usuarioService = new UsuarioService();

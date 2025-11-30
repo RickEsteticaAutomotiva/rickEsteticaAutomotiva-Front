@@ -4,6 +4,7 @@ import { Header } from "../../components/header/Header";
 import { Breadcrumb } from "../../components/breadcrumb/Breadcrumb";
 import { Footer } from "../../components/footer/Footer";
 import { LoadingState } from "../../components/loading-state/LoadingState";
+import { ModalConfirmacao } from "../../components/modal-confirmacao/ModalConfirmacao";
 import { UseAuth } from "../../hooks/UseAuth";
 import { OrdemServicoService } from "../../services/OrdemServicoService";
 import { VeiculoService } from "../../services/VeiculoService";
@@ -15,6 +16,9 @@ import "./Historico.css";
 export function Historico() {
     const [agendamentos, setAgendamentos] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [showModalCancelamento, setShowModalCancelamento] = useState(false);
+    const [agendamentoParaCancelar, setAgendamentoParaCancelar] = useState(null);
+    const [loadingCancelamento, setLoadingCancelamento] = useState(false);
     const { user, isAuthenticated } = UseAuth();
     const navigate = useNavigate();
     const ordemServicoService = new OrdemServicoService();
@@ -80,6 +84,41 @@ export function Historico() {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleCancelar = (agendamento) => {
+        setAgendamentoParaCancelar(agendamento);
+        setShowModalCancelamento(true);
+    };
+
+    const confirmarCancelamento = async () => {
+        if (!agendamentoParaCancelar) return;
+
+        setLoadingCancelamento(true);
+        try {
+            await ordemServicoService.atualizarStatus(agendamentoParaCancelar.id, 4);
+            
+            setAgendamentos(prevAgendamentos =>
+                prevAgendamentos.map(agendamento =>
+                    agendamento.id === agendamentoParaCancelar.id
+                        ? { ...agendamento, status: 4 }
+                        : agendamento
+                )
+            );
+
+            setShowModalCancelamento(false);
+            setAgendamentoParaCancelar(null);
+        } catch (error) {
+            console.error('Erro ao cancelar agendamento:', error);
+            alert('Erro ao cancelar agendamento. Tente novamente.');
+        } finally {
+            setLoadingCancelamento(false);
+        }
+    };
+
+    const cancelarCancelamento = () => {
+        setShowModalCancelamento(false);
+        setAgendamentoParaCancelar(null);
     };
 
     const getStatusBadge = (status) => {
@@ -201,6 +240,16 @@ export function Historico() {
                                                 <span>Concluído em: {formatarDataCompleta(agendamento.dtConclusao)}</span>
                                             )}
                                         </div>
+                                        
+                                        {agendamento.status === 1 && (
+                                            <button
+                                                className="btn-cancelar"
+                                                onClick={() => handleCancelar(agendamento)}
+                                            >
+                                                <i className="bi bi-x-circle mr-2"></i>
+                                                Cancelar Agendamento
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             ))}
@@ -210,6 +259,47 @@ export function Historico() {
             </div>
 
             <Footer />
+
+            {/* Modal de Cancelamento */}
+            {agendamentoParaCancelar && (
+                <ModalConfirmacao
+                    isOpen={showModalCancelamento}
+                    onClose={cancelarCancelamento}
+                    onConfirm={confirmarCancelamento}
+                    titulo="Cancelar Agendamento"
+                    tipo="danger"
+                    icone="bi bi-exclamation-triangle"
+                    textoBotaoConfirmar="Sim, cancelar"
+                    textoBotaoCancelar="Não cancelar"
+                    loading={loadingCancelamento}
+                >
+                    <div style={{ textAlign: 'left' }}>
+                        <p className="modal-confirmacao-mensagem">
+                            Tem certeza que deseja cancelar o agendamento #{agendamentoParaCancelar.id}?
+                        </p>
+                        
+                        <div style={{
+                            marginTop: '1rem',
+                            padding: '1rem',
+                            backgroundColor: '#fef2f2',
+                            borderRadius: '8px',
+                            border: '1px solid #fecaca'
+                        }}>
+                            <p style={{
+                                fontSize: '0.875rem',
+                                color: '#dc2626',
+                                margin: 0,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem'
+                            }}>
+                                <i className="bi bi-exclamation-triangle"></i>
+                                Esta ação não pode ser desfeita.
+                            </p>
+                        </div>
+                    </div>
+                </ModalConfirmacao>
+            )}
         </>
     );
 }

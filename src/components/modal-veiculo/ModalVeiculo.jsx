@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { VeiculoService } from '../../services/VeiculoService';
 import { UseAuth } from '../../hooks/UseAuth';
 import './ModalVeiculo.css';
+import { formatarPlacaCarro, isPlacaCarro } from '../../utils';
 
 export function ModalVeiculo({ 
   isOpen, 
@@ -66,21 +67,6 @@ export function ModalVeiculo({
     setErrors({});
   };
 
-  const formatPlaca = (value) => {
-    // Remove tudo que não é letra ou número
-    const cleaned = value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
-    
-    // Formato antigo (AAA-9999) ou novo (AAA9A99)
-    if (cleaned.length <= 7) {
-      if (cleaned.length > 3) {
-        return cleaned.slice(0, 3) + '-' + cleaned.slice(3);
-      }
-      return cleaned;
-    }
-    
-    return cleaned.slice(0, 7);
-  };
-
   const validateForm = () => {
     const newErrors = {};
     const currentYear = new Date().getFullYear();
@@ -120,6 +106,10 @@ export function ModalVeiculo({
       if (placa.length !== 7) {
         newErrors.placa = 'Placa deve ter 7 caracteres';
       }
+
+      if(isPlacaCarro(placa) === false) {
+        newErrors.placa = 'Placa inválida';
+      }
     }
 
     // Validação do porte
@@ -137,7 +127,7 @@ export function ModalVeiculo({
 
     // Formatação específica para cada campo
     if (name === 'placa') {
-      formattedValue = formatPlaca(value);
+      formattedValue = formatarPlacaCarro(value);
     } else if (name === 'modelo') {
       formattedValue = value.replace(/[^a-zA-Z0-9\s\-]/g, '');
     } else if (name === 'ano') {
@@ -339,7 +329,7 @@ export function ModalVeiculo({
                 disabled={loading}
                 className={`form-input ${errors.placa ? 'error' : ''}`}
                 placeholder="ABC-1234 ou ABC1D23"
-                maxLength={8}
+                maxLength={7}
                 required
               />
               {errors.placa && (
