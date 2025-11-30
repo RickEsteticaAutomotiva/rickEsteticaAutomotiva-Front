@@ -1,6 +1,7 @@
 import "./MenuGerente.css";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { useState } from "react";
+import { Home, BarChart3, Calendar, FileText } from "lucide-react";
 import { MenuLink } from "../../components/gerente/menu-link/MenuLink";
 
 export function MenuGerente() {
@@ -19,6 +20,8 @@ export function MenuGerente() {
                 return "Dashboard";
             case "/gerente/agendamento":
                 return "Agendamentos";
+            case "/gerente/ordens-servico":
+                return "Ordens de Serviço";
             default:
                 return "Home";
         }
@@ -36,7 +39,7 @@ export function MenuGerente() {
                 <span className="w-5 h-0.5 bg-white block"></span>
                 <span className="w-5 h-0.5 bg-white block"></span>
             </button>
-            <h1 className="text-2xl font-semibold absolute left-1/2 transform -translate-x-1/2">{getPageTitle()}</h1>
+            <h1 className="text-2xl font-semibold absolute left-1/2 transform -translate-x-1/2 text-center max-w-xs truncate">{getPageTitle()}</h1>
             <div className="w-8"></div> 
         </div>
                 
@@ -67,28 +70,28 @@ export function MenuGerente() {
                     to="/gerente" 
                     text="Home"
                     onClick={toggleMenu}
-                    src="/icon-home.svg" alt="Home"
+                    icon={Home}
                 />
 
                 <MenuLink
                     to="/gerente/dashboard" 
                     text="Dashboard"
                     onClick={toggleMenu}
-                    src="/icon-grafico.svg" alt="Grafico"
+                    icon={BarChart3}
                 />
                 
                 <MenuLink 
                     to="/gerente/agendamento" 
                     text="Agendamentos"
                     onClick={toggleMenu}
-                    src="/icon-agendar.svg" alt="Agendar"
+                    icon={Calendar}
                 />
                 
                 <MenuLink 
                     to="/gerente/ordens-servico" 
                     text="Ordens de Serviço"
                     onClick={toggleMenu}
-                    src="/icon-lapis.svg" alt="editar"
+                    icon={FileText}
                 />
                 </nav>
             </div>

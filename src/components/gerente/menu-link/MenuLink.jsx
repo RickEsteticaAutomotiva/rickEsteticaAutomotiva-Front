@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 
-export function MenuLink({ to, text, onClick, src, alt = "", styleIma = "" }) {
+export function MenuLink({ to, text, onClick, icon: Icon, iconSize = 20 }) {
     const location = useLocation();
     
     return (
@@ -11,30 +11,14 @@ export function MenuLink({ to, text, onClick, src, alt = "", styleIma = "" }) {
             }`}
             onClick={onClick}
         >
-             <img 
-                src={src} 
-                alt={alt} 
-                className={`${styleIma} transition-all duration-200 ${
+            <Icon 
+                size={iconSize}
+                className={`transition-colors ${
                     location.pathname === to 
-                        ? "brightness-0 saturate-100 hue-rotate-0" 
-                        : "group-hover:brightness-0 group-hover:saturate-100 group-hover:hue-rotate-0"
-                } filter`}
-                style={{
-                    filter: location.pathname === to 
-                        ? 'brightness(0) saturate(100%) invert(18%) sepia(93%) saturate(3028%) hue-rotate(355deg) brightness(101%) contrast(91%)'
-                        : undefined
-                }}
-                onMouseEnter={(e) => {
-                    if (location.pathname !== to) {
-                        e.target.style.filter = 'brightness(0) saturate(100%) invert(18%) sepia(93%) saturate(3028%) hue-rotate(355deg) brightness(101%) contrast(91%)';
-                    }
-                }}
-                onMouseLeave={(e) => {
-                    if (location.pathname !== to) {
-                        e.target.style.filter = '';
-                    }
-                }}
-             />
+                        ? "text-red-700" 
+                        : "text-gray-700 group-hover:text-red-700"
+                }`}
+            />
             <span className="font-medium">{text}</span>
         </Link>
     );
