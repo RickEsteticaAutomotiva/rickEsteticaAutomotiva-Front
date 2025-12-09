@@ -7,8 +7,8 @@ export function MetricCard({ title, value, percent, trend }) {
       <h3 className="text-sm font-semibold text-gray-800">{title}</h3>
 
       <div className="mt-2 flex items-center gap-2 justify-between">
-        <p className="text-xl font-bold text-gray-900">{value}</p>
-        <span className="text-sm text-gray-600 flex items-center gap-2">
+        <p className="text-lg font-bold text-gray-900">{value}</p>
+        <span className="text-sm text-gray-600 flex items-center">
           {percent}%
           {trend === "up" ? (
             <ArrowUp size={14} className="text-green-500" />
