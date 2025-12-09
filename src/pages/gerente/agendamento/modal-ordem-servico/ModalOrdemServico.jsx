@@ -1,4 +1,4 @@
-import { X, Edit2, Trash2, Plus, Check } from 'lucide-react';
+import { X, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { Label } from './label/Label';
 import { ServicoItem } from './servico-item/ServicoItem';
@@ -11,36 +11,13 @@ export function ModalOrdemServico({ isOpen, agendamento, onClose }) {
     const [showRemoveModal, setShowRemoveModal] = useState(false);
     const [showAddServicoModal, setShowAddServicoModal] = useState(false);
     const [selectedServico, setSelectedServico] = useState(null);
-    const [servicosSelecionados, setServicosSelecionados] = useState([]); // Novo estado
-    const [editValue, setEditValue] = useState('');
 
     if (!isOpen || !agendamento) return null;
 
-    // Assumindo que agendamento.servicos é uma lista de objetos com { id, nome, valor }
     const servicos = agendamento.servicos || [];
-
-    // Lista de serviços disponíveis para adicionar
-    const servicosDisponiveis = [
-        { id: 100, nome: "Lavagem Externa", valor: "R$ 30,00" },
-        { id: 101, nome: "Lavagem Interna", valor: "R$ 25,00" },
-        { id: 102, nome: "Enceramento", valor: "R$ 50,00" },
-        { id: 103, nome: "Polimento", valor: "R$ 150,00" },
-        { id: 104, nome: "Limpeza de Interior", valor: "R$ 80,00" },
-        { id: 105, nome: "Higienização de Bancos", valor: "R$ 40,00" },
-        { id: 106, nome: "Proteção Cera", valor: "R$ 20,00" },
-        { id: 107, nome: "Aspiração Detalhada", valor: "R$ 30,00" },
-        { id: 108, nome: "Limpeza de Motor", valor: "R$ 60,00" },
-        { id: 109, nome: "Cera Líquida", valor: "R$ 35,00" }
-    ];
-
-    // Filtrar serviços que não estão no agendamento atual
-    const servicosNaoAdicionados = servicosDisponiveis.filter(
-        servicoDisponivel => !servicos.some(servico => servico.nome === servicoDisponivel.nome)
-    );
 
     const editaServicoClick = (servico) => {
         setSelectedServico(servico);
-        setEditValue(servico.valor);
         setEditaServicoModal(true);
     };
 
@@ -53,52 +30,28 @@ export function ModalOrdemServico({ isOpen, agendamento, onClose }) {
         setShowAddServicoModal(true);
     };
 
-    const btnEditaServico = () => {
-        // Implementar lógica de edição aqui
-        console.log('Editando serviço:', selectedServico.id, 'novo valor:', editValue);
-        //fazer a atualização do valor do serviço na lista com end pont
-        setEditaServicoModal(false);
-        setSelectedServico(null);
-        setEditValue('');
-    };
-
-    const btnRemoveServico = () => {
-        // Implementar lógica de remoção aqui
-        console.log('Removendo serviço:', selectedServico.id);
-        setShowRemoveModal(false);
-        setSelectedServico(null);
-    };
-
-    const btnAdicionalServico = (servico) => {
-        setServicosSelecionados(prev => {
-            const isSelected = prev.some(s => s.id === servico.id);
-            if (isSelected) {
-                // Remove se já estiver selecionado
-                return prev.filter(s => s.id !== servico.id);
-            } else {
-                // Adiciona se não estiver selecionado
-                return [...prev, servico];
-            }
-        });
-    };
-
-    const btnConfirmaAdicaoServicos = () => {
-        // Implementar lógica para adicionar os serviços selecionados
-        console.log('Adicionando serviços:', servicosSelecionados);
-        // Aqui você faria a requisição para o backend
-        
-        // Limpar seleção e fechar modal
-        setServicosSelecionados([]);
-        setShowAddServicoModal(false);
-    };
-
     const btnCancelaServico = () => {
         setEditaServicoModal(false);
         setShowRemoveModal(false);
         setShowAddServicoModal(false);
         setSelectedServico(null);
-        setServicosSelecionados([]); // Limpar seleção
-        setEditValue('');
+    };
+
+    const handleServicoEditado = () => {
+        setEditaServicoModal(false);
+        setSelectedServico(null);
+        // Aqui você pode recarregar os dados do agendamento se necessário
+    };
+
+    const handleServicosAdicionados = () => {
+        setShowAddServicoModal(false);
+        // Aqui você pode recarregar os dados do agendamento se necessário
+    };
+
+    const handleServicoRemovido = () => {
+        setShowRemoveModal(false);
+        setSelectedServico(null);
+        // Aqui você pode recarregar os dados do agendamento se necessário
     };
 
     return (
@@ -106,8 +59,8 @@ export function ModalOrdemServico({ isOpen, agendamento, onClose }) {
             <div className="fixed inset-0 bg-black/45 bg-opacity-90 flex items-center justify-center z-50 p-4">
                 <div className="bg-white rounded-lg rounded-t-3xl max-w-md w-full max-h-[90vh] overflow-y-auto"
                     style={{
-                        scrollbarWidth: 'none', /* Firefox */
-                        msOverflowStyle: 'none', /* IE and Edge */
+                        scrollbarWidth: 'none',
+                        msOverflowStyle: 'none',
                     }}
                     >
 
@@ -171,29 +124,28 @@ export function ModalOrdemServico({ isOpen, agendamento, onClose }) {
             {/* Modal de Adição de Serviço */}
             <ModalAdicionaServico
                 isOpen={showAddServicoModal}
-                servicosNaoAdicionados={servicosNaoAdicionados}
-                servicosSelecionados={servicosSelecionados}
-                onServicoToggle={btnAdicionalServico}
-                onConfirm={btnConfirmaAdicaoServicos}
+                ordemServicoId={agendamento.id}
+                servicosAtuais={servicos}
+                onSuccess={handleServicosAdicionados}
                 onCancel={btnCancelaServico}
             />
 
             {/* Modal de Edição */}
             <ModalEditaServico
                 isOpen={editaServicoModal}
-                selectedServico={selectedServico}
-                editValue={editValue}
-                setEditValue={setEditValue}
+                servico={selectedServico}
+                ordemServicoId={agendamento.id}
+                onSuccess={handleServicoEditado}
                 onCancel={btnCancelaServico}
-                onSave={btnEditaServico}
             />
 
             {/* Modal de Confirmação de Remoção */}
             <ModalRemoveServico
                 isOpen={showRemoveModal}
-                selectedServico={selectedServico}
+                servico={selectedServico}
+                ordemServicoId={agendamento.id}
+                onSuccess={handleServicoRemovido}
                 onCancel={btnCancelaServico}
-                onConfirm={btnRemoveServico}
             />
         </>
     );
