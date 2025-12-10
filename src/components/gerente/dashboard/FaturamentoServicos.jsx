@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { DashboardService } from "../../../services/DashboardService";
+import { useDashboardRefresh } from "../../../pages/gerente/dashboard/DashboardRefreshContext";
 
 export default function FaturamentoServicos() {
+  const { refreshKey } = useDashboardRefresh();
   const [categorias, setCategorias] = useState([]);
   const [loading, setLoading] = useState(true);
   const dashboardService = new DashboardService();
@@ -10,7 +12,7 @@ export default function FaturamentoServicos() {
     async function buscarFaturamento() {
       try {
         const response = await dashboardService.faturamentoPorServico();
-
+        console.log(response)
         // Transformando o array de categorias em array de serviços
         const dadosPlano = response.flatMap((categoria) =>
           (categoria.servicos || []).map((s) => ({
@@ -41,7 +43,7 @@ export default function FaturamentoServicos() {
     }
 
     buscarFaturamento();
-  }, []);
+  }, [refreshKey]);
 
   if (loading) {
     return <p className="text-center p-6">Carregando...</p>;

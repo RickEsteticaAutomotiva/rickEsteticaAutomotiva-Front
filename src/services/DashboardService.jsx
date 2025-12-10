@@ -56,12 +56,21 @@ export class DashboardService {
         }
     }
 
-        async faturamento() {
+    async faturamento() {
         try {
             const response = await apiService.get(`dashboard/faturamento`);
             return response;
         } catch (error) {
             throw new Error(error.message || 'Erro ao buscar faturamento');
+        }
+    }
+
+    async faturamentoPeriodo() {
+        try {
+            const response = await apiService.get(`dashboard/faturamento-periodo`);
+            return response;
+        } catch (error) {
+            throw new Error(error.message || 'Erro ao buscar faturamento por periodo');
         }
     }
     
