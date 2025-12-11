@@ -1,3 +1,4 @@
+import { useEffect, useState, useCallback } from "react";
 import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -8,6 +9,10 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import { DashboardService } from "../../../services/DashboardService";
+import { useDashboardRefresh } from "../../../pages/gerente/dashboard/DashboardRefreshContext";
+
+const dashboardService = new DashboardService();
 
 ChartJS.register(
   LineElement,
@@ -19,25 +24,55 @@ ChartJS.register(
 );
 
 export default function FaturamentoChart() {
-  const labels = ["Jun","Jul", "Ago", "Set", "Out", "Nov"];
+  const { refreshKey } = useDashboardRefresh();
+
+  const [state, setState] = useState({
+    labels: [],
+    valores: [],
+    ano: "",
+  });
+
+  const [error, setError] = useState(null);
+
+  const fetchData = useCallback(async () => {
+    try {
+      const response = await dashboardService.faturamentoPeriodo();
+      const registros = response || [];
+
+      registros.sort((a, b) => new Date(a.data) - new Date(b.data));
+
+      const ano = registros.length > 0 ? registros[0].data.split("-")[0] : "";
+
+      const labels = registros.map((item) => {
+        const [a, m, d] = item.data.split("-");
+        return `${d}/${m}`;
+      });
+
+      const valores = registros.map((item) => item.faturamentoDiario);
+
+      setState({ labels, valores, ano });
+
+    } catch (err) {
+      setError(err.message);
+    }
+  }, []);
+
+  // Atualiza quando refreshKey muda
+  useEffect(() => {
+    fetchData();
+  }, [refreshKey, fetchData]);
+
+  if (error) return <p>Erro ao carregar gráfico: {error}</p>;
 
   const data = {
-    labels,
+    labels: state.labels,
     datasets: [
       {
-        label: "2025",
-        data: [80, 120, 90, 140, 160, 180],
+        label: state.ano || "Faturamento",
+        data: state.valores,
         borderColor: "rgb(255, 99, 132)",
         backgroundColor: "rgba(255, 99, 132, 0.2)",
         tension: 0.4,
-      },
-      {
-        label: "2024",
-        data: [70, 100, 85, 110, 130, 150],
-        borderColor: "rgb(99, 132, 255)",
-        backgroundColor: "rgba(99, 132, 255, 0.2)",
-        tension: 0.4,
-        borderDash: [5, 5],
       },
     ],
   };
@@ -45,15 +80,23 @@ export default function FaturamentoChart() {
   const options = {
     responsive: true,
     maintainAspectRatio: false,
+    plugins: {
+      datalabels: {
+        display: false,
+      },
+    },
     scales: {
       y: { grid: { color: "#eee" } },
-      x: { grid: { display: false } },
+      x: {
+        grid: { display: false },
+        ticks: { autoSkip: false, maxRotation: 0, minRotation: 0 },
+      },
     },
   };
 
   return (
     <div className="bg-white p-6 rounded-2xl shadow-sm mt-6">
-      <h2 className="text-xl font-semibold mb-4">Faturamento</h2>
+      <h2 className="text-xl font-semibold mb-4">Faturamento Diário</h2>
 
       <div className="h-64 sm:h-72">
         <Line data={data} options={options} />

@@ -7,7 +7,7 @@ import { CarrinhoService } from "../../services/CarrinhoService";
 import { Footer } from "../../components/footer/Footer";
 import { UseAuth } from "../../hooks/UseAuth";
 import { formatarPreco } from "../../utils/index";
-import "./carrinho.css";
+import "./Carrinho.css";
 
 export function Carrinho() {
     const [loading, setLoading] = useState(true);
