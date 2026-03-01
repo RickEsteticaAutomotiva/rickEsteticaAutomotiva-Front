@@ -11,6 +11,7 @@ export function ModalOrdemServico({ isOpen, agendamento, onClose }) {
     const [showRemoveModal, setShowRemoveModal] = useState(false);
     const [showAddServicoModal, setShowAddServicoModal] = useState(false);
     const [selectedServico, setSelectedServico] = useState(null);
+    const [statusServico, setStatusServico] = useState(agendamento?.status);
 
     if (!isOpen || !agendamento) return null;
 
@@ -52,6 +53,16 @@ export function ModalOrdemServico({ isOpen, agendamento, onClose }) {
         setShowRemoveModal(false);
         setSelectedServico(null);
         // Aqui você pode recarregar os dados do agendamento se necessário
+    };
+
+    const handleStatusChange = async (novoStatus) => {
+        setStatusServico(novoStatus);
+        // Aqui você pode fazer a chamada à API para atualizar o status
+        // try {
+        //     await api.put(`/agendamentos/${agendamento.id}/status`, { status: novoStatus });
+        // } catch (error) {
+        //     console.error('Erro ao atualizar status:', error);
+        // }
     };
 
     return (
@@ -105,7 +116,20 @@ export function ModalOrdemServico({ isOpen, agendamento, onClose }) {
 
                         <Label label="Valor total do Serviço" value={agendamento.valor} />
 
-                        <Label label="Status do Serviço" value={agendamento.status} />
+                        <div>
+                            <label className="text-sm text-gray-500 block mb-1">Status do Serviço</label>
+                            <select
+                                value={statusServico}
+                                onChange={(e) => handleStatusChange(e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 text-sm"
+                            >
+                                <option value="1">Análise</option>
+                                <option value="2">Agenda Confirmada</option>
+                                <option value="3">Em Execução</option>
+                                <option value="4">Cancelado</option>
+                                <option value="5">Concluído</option>
+                            </select>
+                        </div>
 
                         <Label label="Data do Agendamento" value={agendamento.dataAgendamento} />
 
