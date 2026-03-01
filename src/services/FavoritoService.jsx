@@ -3,7 +3,7 @@ import { apiService } from './ApiService';
 export class FavoritoService {
     async buscarFavoritosUsuario(idPessoa) {
         try {
-            const response = await apiService.get(`/favoritos/${idPessoa}`);
+            const response = await apiService.get(`/favoritos/pessoa/${idPessoa}`);
             return response;
         } catch (error) {
             throw new Error(error.message || 'Erro ao buscar favoritos do usuário');

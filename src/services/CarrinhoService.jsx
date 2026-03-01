@@ -3,7 +3,7 @@ import { apiService } from './ApiService';
 export class CarrinhoService {
     async buscarCarrinhoUsuario(idPessoa) {
         try {
-            const response = await apiService.get(`/carrinhos/${idPessoa}`);
+            const response = await apiService.get(`/carrinhos/pessoa/${idPessoa}`);
             return response;
         } catch (error) {
             throw new Error(error.message || 'Erro ao buscar carrinho do usuário');

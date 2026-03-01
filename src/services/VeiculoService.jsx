@@ -3,7 +3,7 @@ import { apiService } from './ApiService';
 export class VeiculoService {
     async buscarVeiculosPorUsuario(idPessoa) {
         try {
-            const response = await apiService.get(`/veiculos/${idPessoa}`);
+            const response = await apiService.get(`/veiculos/pessoa/${idPessoa}`);
             return response;
         } catch (error) {
             throw new Error(error.message || 'Erro ao buscar veículos do usuário');
