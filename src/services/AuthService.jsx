@@ -1,6 +1,8 @@
 import { apiService } from './ApiService';
 
 export class AuthService {
+    BASE_URL = '/pessoas';
+
     async login(email, senha) {
         try {            
             // Garantir que os dados estão no formato correto
@@ -9,7 +11,7 @@ export class AuthService {
                 senha: senha
             };
                         
-            const response = await apiService.post('/pessoas/login', loginData);
+            const response = await apiService.post(`${this.BASE_URL}/login`, loginData);
             
             
             if (response && response.token) {
@@ -17,6 +19,7 @@ export class AuthService {
                     id: response.id,
                     email: response.email,
                     nome: response.nome,
+                    roles: response.roles || [],
                 };
                 
                 return {
@@ -35,7 +38,7 @@ export class AuthService {
 
     async cadastrar(userData) {
         try {
-            const response = await apiService.post('/pessoas/', userData);
+            const response = await apiService.post(`${this.BASE_URL}/`, userData);
             
             // Se o backend retorna token após cadastro
             if (response && response.token) {
@@ -82,11 +85,9 @@ export class AuthService {
     }
 
     async refreshToken() {
-        try {
-            throw new Error('Token expirado, faça login novamente');
-        } catch (error) {
-            throw new Error('Erro ao renovar token');
-        }
+        // Endpoint de refresh não implementado no backend.
+        // Quando disponibilizado, substituir pelo POST para /pessoas/refresh-token.
+        throw new Error('Sessão expirada, faça login novamente');
     }
 
     // Métodos auxiliares para JWT

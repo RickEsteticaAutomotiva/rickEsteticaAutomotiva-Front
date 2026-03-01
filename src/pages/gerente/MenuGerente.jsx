@@ -1,12 +1,15 @@
 import "./MenuGerente.css";
-import { Outlet, Link, useLocation } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { Home, BarChart3, Calendar, FileText } from "lucide-react";
 import { MenuLink } from "../../components/gerente/menu-link/MenuLink";
+import { UseAuth } from "../../hooks/UseAuth";
+import { ROUTES } from "../../constants/Routes";
 
 export function MenuGerente() {
     const [menuOpen, setMenuOpen] = useState(false);
     const location = useLocation();
+    const { user } = UseAuth();
 
     const toggleMenu = () => {
         setMenuOpen(!menuOpen);
@@ -14,13 +17,13 @@ export function MenuGerente() {
 
     const getPageTitle = () => {
         switch (location.pathname) {
-            case "/gerente":
+            case ROUTES.GERENTE.HOME:
                 return "Home";
-            case "/gerente/dashboard":
+            case `${ROUTES.GERENTE.HOME}/${ROUTES.GERENTE.DASHBOARD}`:
                 return "Dashboard";
-            case "/gerente/agendamento":
+            case `${ROUTES.GERENTE.HOME}/${ROUTES.GERENTE.AGENDAMENTO}`:
                 return "Agendamentos";
-            case "/gerente/ordens-servico":
+            case `${ROUTES.GERENTE.HOME}/${ROUTES.GERENTE.ORDENS_SERVICO}`:
                 return "Ordens de Serviço";
             default:
                 return "Home";
@@ -33,6 +36,7 @@ export function MenuGerente() {
         <div className="px-5 py-4 flex items-center justify-between">
             <button
                 className="flex flex-col gap-1 p-1"
+                aria-label="Abrir menu"
                 onClick={toggleMenu}
             >
                 <span className="w-5 h-0.5 bg-white block"></span>
@@ -43,9 +47,9 @@ export function MenuGerente() {
             <div className="w-8"></div> 
         </div>
                 
-                {location.pathname === "/gerente" && (
+                {location.pathname === ROUTES.GERENTE.HOME && (
                     <div className="flex justify-center px-5 pb-6">
-                        <h2 className="text-3xl font-semibold">Bem vindo, Henrique!</h2>
+                        <h2 className="text-3xl font-semibold">Bem vindo, {user?.nome || 'Gerente'}!</h2>
                     </div>
                 )}
             </header>

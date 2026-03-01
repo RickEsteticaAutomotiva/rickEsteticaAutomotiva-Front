@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { VeiculoService } from '../../services/VeiculoService';
+import { veiculoService } from '../../services/VeiculoService';
 import { UseAuth } from '../../hooks/UseAuth';
-import './ModalVeiculo.css';
+import { useToast } from '../../context/ToastContext';
+import { TiposToast } from '../../utils/enum/TiposToast';
 import { formatarPlacaCarro, isPlacaCarro } from '../../utils';
 
 export function ModalVeiculo({ 
@@ -37,8 +38,8 @@ export function ModalVeiculo({
     'Pequeno', 'Médio', 'Grande', 'SUV', 'Pickup', 'Van'
   ]);
 
-  const veiculoService = new VeiculoService();
   const { user } = UseAuth();
+  const { mostrarToast } = useToast();
 
   useEffect(() => {
     if (veiculo && modo === 'editar') {
@@ -180,9 +181,11 @@ export function ModalVeiculo({
       resetForm();
       
     } catch (error) {
-      console.error('Erro ao salvar veículo:', error);
-      setErrors({
-        submit: error.message || `Erro ao ${modo === 'editar' ? 'atualizar' : 'cadastrar'} veículo`
+      mostrarToast({
+        tipo: TiposToast.ERRO,
+        titulo: 'Erro ao salvar veículo',
+        mensagem: error.message || `Erro ao ${modo === 'editar' ? 'atualizar' : 'cadastrar'} veículo. Tente novamente.`,
+        duracao: 5000
       });
     } finally {
       setLoading(false);
@@ -198,16 +201,28 @@ export function ModalVeiculo({
 
   if (!isOpen) return null;
 
+  const inputClass = (field) =>
+    `w-full py-3.5 px-4 border-2 rounded-lg text-base transition-all bg-white placeholder-gray-400 focus:outline-none focus:border-red-600 focus:ring-[3px] focus:ring-red-600/10 disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed ${
+      errors[field] ? 'border-red-500 bg-red-50' : 'border-gray-200'
+    }`;
+
   return (
-    <div className="modal-overlay" onClick={handleClose}>
-      <div className="modal-veiculo" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2 className="modal-title">
+    <div
+      className="fixed inset-0 bg-black/60 flex items-center justify-center z-[1000] p-2 sm:p-4"
+      onClick={handleClose}
+    >
+      <div
+        className="bg-white rounded-xl shadow-2xl w-full max-w-[600px] max-h-[90vh] overflow-y-auto animate-[modal-slide-in_0.3s_ease-out]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex justify-between items-center p-6 border-b border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100 rounded-t-xl">
+          <h2 className="text-xl font-bold text-gray-800 m-0 flex items-center">
             <i className="bi bi-car-front mr-2"></i>
             {modo === 'editar' ? 'Editar Veículo' : 'Adicionar Novo Veículo'}
           </h2>
-          <button 
-            className="modal-close"
+          <button
+            className="bg-transparent border-none text-2xl text-gray-500 cursor-pointer p-2 rounded-lg transition-all w-10 h-10 flex items-center justify-center hover:bg-gray-100 hover:text-red-600 disabled:opacity-50"
             onClick={handleClose}
             disabled={loading}
           >
@@ -215,175 +230,81 @@ export function ModalVeiculo({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="modal-body">
-          {errors.submit && (
-            <div className="error-message">
-              <i className="bi bi-exclamation-triangle mr-2"></i>
-              {errors.submit}
-            </div>
-          )}
-
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="marca" className="form-label">
-                Marca
-              </label>
-              <select
-                id="marca"
-                name="marca"
-                value={formData.marca}
-                onChange={handleInputChange}
-                disabled={loading}
-                className={`form-input ${errors.marca ? 'error' : ''}`}
-                required
-              >
+        {/* Body */}
+        <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-6">
+          {/* Marca + Modelo */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col flex-1">
+              <label htmlFor="marca" className="font-semibold text-gray-700 mb-2 text-sm">Marca</label>
+              <select id="marca" name="marca" value={formData.marca} onChange={handleInputChange} disabled={loading} className={inputClass('marca')} required>
                 <option value="">Selecione a marca</option>
-                {marcas.map(marca => (
-                  <option key={marca} value={marca}>{marca}</option>
-                ))}
+                {marcas.map(m => <option key={m} value={m}>{m}</option>)}
               </select>
-              {errors.marca && (
-                <span className="error-text">{errors.marca}</span>
-              )}
+              {errors.marca && <span className="text-red-500 text-sm mt-1">{errors.marca}</span>}
             </div>
-
-            <div className="form-group">
-              <label htmlFor="modelo" className="form-label">
-                Modelo
-              </label>
-              <input
-                type="text"
-                id="modelo"
-                name="modelo"
-                value={formData.modelo}
-                onChange={handleInputChange}
-                disabled={loading}
-                className={`form-input ${errors.modelo ? 'error' : ''}`}
-                placeholder="Ex: Civic, Corolla, Gol"
-                maxLength={50}
-                required
-              />
-              {errors.modelo && (
-                <span className="error-text">{errors.modelo}</span>
-              )}
+            <div className="flex flex-col flex-1">
+              <label htmlFor="modelo" className="font-semibold text-gray-700 mb-2 text-sm">Modelo</label>
+              <input type="text" id="modelo" name="modelo" value={formData.modelo} onChange={handleInputChange} disabled={loading} className={inputClass('modelo')} placeholder="Ex: Civic, Corolla, Gol" maxLength={50} required />
+              {errors.modelo && <span className="text-red-500 text-sm mt-1">{errors.modelo}</span>}
             </div>
           </div>
 
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="ano" className="form-label">
-                Ano
-              </label>
-              <input
-                type="text"
-                id="ano"
-                name="ano"
-                value={formData.ano}
-                onChange={handleInputChange}
-                disabled={loading}
-                className={`form-input ${errors.ano ? 'error' : ''}`}
-                placeholder="Ex: 2020"
-                maxLength={4}
-                required
-              />
-              {errors.ano && (
-                <span className="error-text">{errors.ano}</span>
-              )}
+          {/* Ano + Cor */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col flex-1">
+              <label htmlFor="ano" className="font-semibold text-gray-700 mb-2 text-sm">Ano</label>
+              <input type="text" id="ano" name="ano" value={formData.ano} onChange={handleInputChange} disabled={loading} className={inputClass('ano')} placeholder="Ex: 2020" maxLength={4} required />
+              {errors.ano && <span className="text-red-500 text-sm mt-1">{errors.ano}</span>}
             </div>
-
-            <div className="form-group">
-              <label htmlFor="cor" className="form-label">
-                Cor
-              </label>
-              <select
-                id="cor"
-                name="cor"
-                value={formData.cor}
-                onChange={handleInputChange}
-                disabled={loading}
-                className={`form-input ${errors.cor ? 'error' : ''}`}
-                required
-              >
+            <div className="flex flex-col flex-1">
+              <label htmlFor="cor" className="font-semibold text-gray-700 mb-2 text-sm">Cor</label>
+              <select id="cor" name="cor" value={formData.cor} onChange={handleInputChange} disabled={loading} className={inputClass('cor')} required>
                 <option value="">Selecione a cor</option>
-                {cores.map(cor => (
-                  <option key={cor} value={cor}>{cor}</option>
-                ))}
+                {cores.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
-              {errors.cor && (
-                <span className="error-text">{errors.cor}</span>
-              )}
+              {errors.cor && <span className="text-red-500 text-sm mt-1">{errors.cor}</span>}
             </div>
           </div>
 
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="placa" className="form-label">
-                Placa
-              </label>
-              <input
-                type="text"
-                id="placa"
-                name="placa"
-                value={formData.placa}
-                onChange={handleInputChange}
-                disabled={loading}
-                className={`form-input ${errors.placa ? 'error' : ''}`}
-                placeholder="ABC-1234 ou ABC1D23"
-                maxLength={7}
-                required
-              />
-              {errors.placa && (
-                <span className="error-text">{errors.placa}</span>
-              )}
+          {/* Placa + Porte */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col flex-1">
+              <label htmlFor="placa" className="font-semibold text-gray-700 mb-2 text-sm">Placa</label>
+              <input type="text" id="placa" name="placa" value={formData.placa} onChange={handleInputChange} disabled={loading} className={inputClass('placa')} placeholder="ABC-1234 ou ABC1D23" maxLength={7} required />
+              {errors.placa && <span className="text-red-500 text-sm mt-1">{errors.placa}</span>}
             </div>
-
-            <div className="form-group">
-              <label htmlFor="porte" className="form-label">
-                Porte
-              </label>
-              <select
-                id="porte"
-                name="porte"
-                value={formData.porte}
-                onChange={handleInputChange}
-                disabled={loading}
-                className={`form-input ${errors.porte ? 'error' : ''}`}
-                required
-              >
+            <div className="flex flex-col flex-1">
+              <label htmlFor="porte" className="font-semibold text-gray-700 mb-2 text-sm">Porte</label>
+              <select id="porte" name="porte" value={formData.porte} onChange={handleInputChange} disabled={loading} className={inputClass('porte')} required>
                 <option value="">Selecione o porte</option>
-                {portes.map(porte => (
-                  <option key={porte} value={porte}>{porte}</option>
-                ))}
+                {portes.map(p => <option key={p} value={p}>{p}</option>)}
               </select>
-              {errors.porte && (
-                <span className="error-text">{errors.porte}</span>
-              )}
+              {errors.porte && <span className="text-red-500 text-sm mt-1">{errors.porte}</span>}
             </div>
           </div>
 
-          <div className="modal-footer">
+          {/* Footer */}
+          <div className="flex flex-col sm:flex-row gap-3 pt-2">
             <button
               type="button"
               onClick={handleClose}
               disabled={loading}
-              className="btn-cancel"
+              className="flex-1 bg-white text-gray-500 border-2 border-gray-200 px-6 py-3.5 rounded-lg font-semibold cursor-pointer transition-all hover:border-gray-300 hover:bg-gray-50 disabled:opacity-50"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="btn-save"
+              className="flex-1 bg-[#B30000] text-white border-none px-6 py-3.5 rounded-lg font-semibold cursor-pointer transition-all flex items-center justify-center gap-2 hover:bg-[#990000] hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed disabled:translate-y-0"
             >
               {loading ? (
                 <>
-                  <div className="button-spinner"></div>
+                  <div className="w-5 h-5 border-2 border-transparent border-t-white rounded-full animate-spin"></div>
                   {modo === 'editar' ? 'Atualizando...' : 'Cadastrando...'}
                 </>
               ) : (
-                <>
-                  {modo === 'editar' ? 'Atualizar' : 'Cadastrar'}
-                </>
+                modo === 'editar' ? 'Atualizar' : 'Cadastrar'
               )}
             </button>
           </div>

@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 
+/** @deprecated Use useToast() do ToastContext para toasts globais. */
 export function UseToast() {
     const [toasts, setToasts] = useState([]);
 
@@ -10,7 +11,7 @@ export function UseToast() {
         mensagem, 
         duracao = 3000 
     }) => {
-        const id = Date.now() + Math.random();
+        const id = crypto.randomUUID();
         const novoToast = {
             id,
             tipo,
@@ -25,7 +26,7 @@ export function UseToast() {
         return id;
     }, []);
 
-    const fecharToast = useCallback((id) => {
+    const fecharToast = useCallback((id: string) => {
         setToasts(anterior => anterior.filter(toast => toast.id !== id));
     }, []);
 
@@ -35,3 +36,6 @@ export function UseToast() {
         fecharToast
     };
 }
+
+/** Alias camelCase — preferível ao PascalCase acima. */
+export const useToast = UseToast;

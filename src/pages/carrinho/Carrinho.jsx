@@ -1,28 +1,30 @@
 import { Header } from "../../components/header/Header";
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { ROUTES } from "../../constants/Routes";
 import { LoadingState } from "../../components/loading-state/LoadingState";
 import { useEffect, useState } from "react";
-import { CarrinhoService } from "../../services/CarrinhoService";
+import { carrinhoService } from "../../services/CarrinhoService";
 import { Footer } from "../../components/footer/Footer";
-import { UseAuth } from "../../hooks/UseAuth";
+import { useAuth } from "../../context/AuthContext";
 import { formatarPreco } from "../../utils/index";
-import "./Carrinho.css";
+import { useToast } from '../../context/ToastContext';
+import { TiposToast } from '../../utils/enum/TiposToast';
 
 export function Carrinho() {
     const [loading, setLoading] = useState(true);
     const [carrinho, setCarrinho] = useState([]);
-    const carrinhoService = new CarrinhoService();
-    const { isAuthenticated, user } = UseAuth();
-    const navigate = useNavigate();
+    const [error, setError] = useState(null);
+    const { user } = useAuth();
+    const { mostrarToast } = useToast();
 
     const listarServicos = async () => {
         try {
             setLoading(true);
+            setError(null);
             const data = await carrinhoService.buscarCarrinhoUsuario(user.id);
             setCarrinho(data);
-        } catch (error) {
-            console.error('Erro ao buscar serviços no carrinho:', error);
+        } catch (err) {
+            setError('Não foi possível carregar o carrinho. Tente novamente.');
         } finally {
             setLoading(false);
         }
@@ -32,8 +34,13 @@ export function Carrinho() {
         try {
             await carrinhoService.removerItemCarrinho(idCarrinho);
             await listarServicos();
-        } catch (error) {
-            console.error('Erro ao remover serviço do carrinho:', error);
+        } catch (err) {
+            mostrarToast({
+                tipo: TiposToast.ERRO,
+                titulo: 'Erro ao remover',
+                mensagem: 'Não foi possível remover o serviço. Tente novamente.',
+                duracao: 4000
+            });
         }
     };
 
@@ -43,11 +50,7 @@ export function Carrinho() {
     };
 
     useEffect(() => {
-        if (!isAuthenticated()) {
-            navigate(ROUTES.LOGIN);
-            return;
-        }
-
+        if (!user) return;
         listarServicos();
     }, [user]);
 
@@ -55,12 +58,31 @@ export function Carrinho() {
         return <LoadingState />;
     }
 
+    if (error) {
+        return (
+            <>
+                <Header />
+                <div className="flex justify-center items-center py-20 flex-col gap-4">
+                    <i className="bi bi-exclamation-circle text-4xl text-red-500"></i>
+                    <p className="text-gray-600">{error}</p>
+                    <button
+                        onClick={listarServicos}
+                        className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors"
+                    >
+                        Tentar novamente
+                    </button>
+                </div>
+                <Footer />
+            </>
+        );
+    }
+
     return (
         <>
             <Header />
 
-            <div className="flex carrinho-content px-16 py-10 justify-between gap-10">
-                <div className="carrinho py-5 bg-white rounded shadow-md w-3/5 h-fit">
+            <div className="flex flex-col md:flex-row px-4 md:px-16 py-10 justify-between gap-10 pb-[32%] md:pb-10">
+                <div className="py-5 bg-white rounded shadow-md w-full md:w-3/5 h-fit">
                     <div className="flex flex-col items-start mb-4 border-b border-gray-300 pb-2 px-5">
                         <h1 className="font-bold text-lg">Carrinho de serviços</h1>
                         <div className="text-sm text-gray-400 w-full flex justify-between">
@@ -69,14 +91,14 @@ export function Carrinho() {
                         </div>
                     </div>
 
-                    <div className="carrinho-itens px-5">
+                    <div className="px-5">
                         {carrinho && carrinho.length > 0 ? (
                             <ul>
-                                {carrinho.map((item) => (
-                                    <li key={item.id} className="py-2 border-b border-gray-200 flex gap-3 items-start">
+                                {carrinho.map((item, index) => (
+                                    <li key={item.id ?? index} className="py-2 border-b border-gray-200 flex gap-3 items-start">
                                         {item.imagem ? (
                                             <img
-                                                src=""
+                                                src="/default-service.jpg"
                                                 alt={item.nome}
                                                 className="h-20 w-20 object-cover rounded"
                                                 onError={(e) => {
@@ -91,7 +113,7 @@ export function Carrinho() {
                                         <div className="flex flex-col gap-2 w-full">
                                             <div className="flex justify-between w-full">
                                                 <p className="font-bold">{item.nome}</p>
-                                                <p>R$ {item.preco?.toFixed(2).replace('.', ',') || '0,00'}</p>
+                                                <p>{formatarPreco(item.preco)}</p>
                                             </div>
 
                                             <button
@@ -119,7 +141,7 @@ export function Carrinho() {
                     </div>
                 </div>
 
-                <div className="resumo-pedido-carrinho py-5 bg-white rounded shadow-md w-1/3 h-fit">
+                <div className="fixed bottom-0 left-0 w-full h-[30%] z-[100] py-5 bg-white rounded-t-2xl shadow-2xl overflow-y-auto md:static md:w-1/3 md:h-fit md:rounded md:shadow-md">
                     <div className="flex justify-between items-center mb-4 border-b border-gray-300 pb-2 px-5">
                         <h1 className="font-bold text-lg">Resumo do pedido</h1>
                     </div>

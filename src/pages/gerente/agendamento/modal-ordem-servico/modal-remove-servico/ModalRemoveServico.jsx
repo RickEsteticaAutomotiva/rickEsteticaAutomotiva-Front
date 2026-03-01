@@ -1,4 +1,6 @@
 import { Trash2 } from 'lucide-react';
+import { useToast } from '../../../../../context/ToastContext';
+import { TiposToast } from '../../../../../utils/enum/TiposToast';
 
 export function ModalRemoveServico({ 
     isOpen, 
@@ -7,21 +9,23 @@ export function ModalRemoveServico({
     onSuccess,
     onCancel 
 }) {
+    const { mostrarToast } = useToast();
+
     if (!isOpen || !servico) return null;
 
     const handleConfirm = async () => {
         try {
-            // Implementar chamada ao backend
-            console.log('Removendo serviço:', servico.id, 'da ordem:', ordemServicoId);
-            
-            // Exemplo de requisição:
+            // Implementar chamada ao backend quando endpoint estiver disponível:
             // await api.delete(`/ordens-servico/${ordemServicoId}/servicos/${servico.id}`);
 
-            // Notificar sucesso
             onSuccess();
         } catch (error) {
-            console.error('Erro ao remover serviço:', error);
-            // Aqui você pode adicionar tratamento de erro (toast, alert, etc)
+            mostrarToast({
+                tipo: TiposToast.ERRO,
+                titulo: 'Erro ao remover serviço',
+                mensagem: error.message || 'Não foi possível remover o serviço.',
+                duracao: 4000
+            });
         }
     };
 

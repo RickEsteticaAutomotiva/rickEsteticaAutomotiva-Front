@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import './Calendario.css';
+import { useToast } from '../../context/ToastContext';
+import { TiposToast } from '../../utils/enum/TiposToast';
 
 export function Calendario({ 
   onDateSelect, 
@@ -11,6 +12,7 @@ export function Calendario({
   const [currentDate, setCurrentDate] = useState(new Date());
   const [availableTimes, setAvailableTimes] = useState([]);
   const [loadingTimes, setLoadingTimes] = useState(false);
+  const { mostrarToast } = useToast();
 
   useEffect(() => {
     if (selectedDate) {
@@ -36,7 +38,12 @@ export function Calendario({
 
       setAvailableTimes(freeTimes);
     } catch (error) {
-      console.error('Erro ao buscar horários:', error);
+      mostrarToast({
+        tipo: TiposToast.ERRO,
+        titulo: 'Erro ao carregar horários',
+        mensagem: 'Não foi possível buscar os horários disponíveis. Tente novamente.',
+        duracao: 4000
+      });
       setAvailableTimes([]);
     } finally {
       setLoadingTimes(false);
@@ -99,13 +106,14 @@ export function Calendario({
   const isDateAvailable = (date) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    date.setHours(0, 0, 0, 0);
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
     
     // Não permitir datas passadas
-    if (date < today) return false;
+    if (d < today) return false;
     
     // Não permitir domingos (dia 0)
-    if (date.getDay() === 0) return false;
+    if (d.getDay() === 0) return false;
     
     return true;
   };
@@ -147,27 +155,31 @@ export function Calendario({
   const daysInMonth = getDaysInMonth(currentDate);
 
   return (
-    <div className="calendario-wrapper">
-      <div className="calendario-container">
-        <div className="calendario-navigation">
-          <button 
-            className="nav-button"
+    <div className="w-full">
+      {/* Grade do calendário */}
+      <div className="bg-white rounded-t-lg p-4 sm:p-6">
+        {/* Navegação */}
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+          <button
+            className="w-8 h-8 bg-white border-2 border-red-600 text-red-600 rounded-md flex items-center justify-center cursor-pointer transition-all hover:bg-red-600 hover:text-white disabled:border-gray-300 disabled:text-gray-300 disabled:cursor-not-allowed disabled:hover:bg-white"
+            aria-label="Mês anterior"
             onClick={() => navigateMonth(-1)}
             disabled={
-              disabled || 
-              (currentDate.getMonth() === today.getMonth() && 
+              disabled ||
+              (currentDate.getMonth() === today.getMonth() &&
                currentDate.getFullYear() === today.getFullYear())
             }
           >
             <i className="bi bi-chevron-left"></i>
           </button>
 
-          <h2 className="mes-ano">
+          <h2 className="text-lg font-semibold text-gray-800">
             {months[currentDate.getMonth()]} {currentDate.getFullYear()}
           </h2>
 
-          <button 
-            className="nav-button"
+          <button
+            className="w-8 h-8 bg-white border-2 border-red-600 text-red-600 rounded-md flex items-center justify-center cursor-pointer transition-all hover:bg-red-600 hover:text-white disabled:border-gray-300 disabled:text-gray-300 disabled:cursor-not-allowed disabled:hover:bg-white"
+            aria-label="Próximo mês"
             onClick={() => navigateMonth(1)}
             disabled={disabled}
           >
@@ -175,9 +187,12 @@ export function Calendario({
           </button>
         </div>
 
-        <div className="calendario-grid">
+        {/* Grade dos dias */}
+        <div className="grid grid-cols-7 gap-px bg-gray-200 rounded-md overflow-hidden">
           {weekDays.map(day => (
-            <div key={day} className="dia-semana">{day}</div>
+            <div key={day} className="bg-gray-50 py-3 text-center font-semibold text-xs text-gray-500">
+              {day}
+            </div>
           ))}
 
           {daysInMonth.map((item, index) => {
@@ -185,19 +200,19 @@ export function Calendario({
             const isToday = date.toDateString() === today.toDateString();
             const isSelected = selectedDate && date.toDateString() === selectedDate.toDateString();
             const isAvailable = isDateAvailable(date);
+            const unavailable = !isAvailable || otherMonth || disabled;
 
             return (
               <div
                 key={index}
-                className={`dia-calendario ${
-                  otherMonth ? 'outro-mes' : ''
-                } ${
-                  isToday ? 'hoje' : ''
-                } ${
-                  isSelected ? 'selected' : ''
-                } ${
-                  !isAvailable || otherMonth || disabled ? 'disabled' : ''
-                }`}
+                className={`bg-white py-3 text-center transition-all relative min-h-11 flex items-center justify-center text-sm
+                  ${ unavailable
+                      ? 'text-gray-300 cursor-not-allowed'
+                      : 'cursor-pointer hover:bg-red-50 hover:text-red-600'
+                  }
+                  ${ isToday && !isSelected ? 'font-bold bg-amber-100' : '' }
+                  ${ isSelected ? '!bg-red-600 !text-white font-bold' : '' }
+                `}
                 onClick={() => !otherMonth && selectDate(date)}
               >
                 {date.getDate()}
@@ -207,32 +222,36 @@ export function Calendario({
         </div>
       </div>
 
+      {/* Horários */}
       {selectedDate && (
-        <div className="horarios-container">
-          <h3 className="horarios-title">
+        <div className="bg-white rounded-lg p-4 sm:p-6 mt-1 animate-[fade-in-up_0.3s_ease-out]">
+          <h3 className="text-lg font-semibold mb-4 text-gray-800">
             Horários disponíveis para {formatDate(selectedDate)}
           </h3>
 
           {loadingTimes ? (
-            <div className="horarios-loading">
-              <div className="loading-spinner">
-                <div className="spinner"></div>
-              </div>
+            <div className="flex flex-col items-center justify-center py-8 text-gray-500">
+              <div className="w-8 h-8 border-4 border-gray-100 border-t-red-600 rounded-full animate-spin mb-4" />
               <p>Carregando horários...</p>
             </div>
           ) : availableTimes.length > 0 ? (
-            <div className="horarios-grid">
+            <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fit,minmax(120px,1fr))] gap-3 sm:gap-4">
               {availableTimes.map(time => {
                 const timePassed = isTimePassed(time, selectedDate);
-                
+                const isSelected = selectedTime === time;
+
                 return (
                   <button
                     key={time}
-                    className={`horario-button ${
-                      selectedTime === time ? 'selected' : ''
-                    } ${
-                      timePassed ? 'time-passed' : ''
-                    }`}
+                    className={`py-3 px-4 border-2 rounded-lg cursor-pointer transition-all font-medium text-center
+                      ${ isSelected
+                          ? 'border-red-600 bg-red-600 text-white'
+                          : timePassed
+                          ? 'bg-gray-50 text-gray-300 cursor-not-allowed border-gray-100'
+                          : 'border-gray-200 bg-white hover:border-red-600 hover:bg-red-50 hover:text-red-600'
+                      }
+                      disabled:bg-gray-50 disabled:text-gray-300 disabled:cursor-not-allowed disabled:border-gray-100
+                    `}
                     onClick={() => selectTime(time)}
                     disabled={disabled || timePassed}
                     title={timePassed ? 'Horário já passou' : ''}
@@ -246,7 +265,7 @@ export function Calendario({
               })}
             </div>
           ) : (
-            <div className="sem-horarios">
+            <div className="text-center p-8 text-gray-500">
               <i className="bi bi-clock text-4xl text-gray-300 mb-2 block"></i>
               <p>Nenhum horário disponível para esta data</p>
             </div>

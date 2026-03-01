@@ -1,4 +1,3 @@
-import "./PerfilDropdown.css";
 import { Link, useNavigate } from "react-router-dom";
 import { UseAuth } from "../../../hooks/UseAuth";
 import { ROUTES } from "../../../constants/Routes";
@@ -10,20 +9,21 @@ export function PerfilDropdown() {
     const handleLogout = () => {
         authLogout();
         navigate("/");
-    }
+    };
 
     const handleVeiculos = () => {
         navigate(ROUTES.VEICULOS, { state: { fromHeader: true } });
-    }
+    };
 
     if (!user) return null;
 
     return (
-        <div className="dropdown relative flex gap-2 h-full items-center cursor-pointer">
-            <span>{user.nome}</span>
-            <i className="bi bi-chevron-down"></i>
+        <div className="group relative flex gap-2 h-full items-center cursor-pointer">
+            <span className="max-w-[120px] truncate">{user.nome}</span>
+            <i className="bi bi-chevron-down text-sm"></i>
 
-            <div className="dropdown-menu dropdown-menu-perfil absolute top-full right-0 mt-2 bg-white text-black rounded-lg shadow-lg min-w-48 z-50">
+            <div className="hidden group-hover:block absolute top-full right-0 pt-2 min-w-48 z-[200] sm:right-0 max-sm:-right-16">
+                <div className="bg-white text-black rounded-lg shadow-lg">
                 <Link to={ROUTES.PERFIL} className="block px-4 py-2 hover:bg-gray-100 rounded-t-lg font-medium text-gray-800 text-sm">
                     <i className="bi bi-person mr-2"></i>
                     Meu Perfil
@@ -41,6 +41,7 @@ export function PerfilDropdown() {
                     <i className="bi bi-box-arrow-right mr-2"></i>
                     Sair
                 </button>
+                </div>
             </div>
         </div>
     );

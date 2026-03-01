@@ -1,23 +1,34 @@
 import { apiService } from "./ApiService";
 
 export class CategoriaService {
+    BASE_URL = '/categorias';
+
     async buscarTodas() {
-        const response = await apiService.get("/categorias");
-        return response;
+        try {
+            const response = await apiService.get(this.BASE_URL);
+            return response;
+        } catch (error) {
+            throw new Error(error.message || 'Erro ao buscar categorias');
+        }
     }
 
     async criarCategoria(categoria) {
-        const response = await apiService.post("/categorias", categoria);
-        return response;
+        try {
+            const response = await apiService.post(this.BASE_URL, categoria);
+            return response;
+        } catch (error) {
+            throw new Error(error.message || 'Erro ao criar categoria');
+        }
     }
 
     async atualizarCategoria(id, categoria) {
-        const response = await apiService.put(`/categorias/${id}`, categoria);
-        return response;
+        try {
+            const response = await apiService.put(`${this.BASE_URL}/${id}`, categoria);
+            return response;
+        } catch (error) {
+            throw new Error(error.message || 'Erro ao atualizar categoria');
+        }
     }
-
-    // async removerCategoria(id) {
-    //     const response = await apiService.delete(`/categorias/${id}`);
-    //     return response;
-    // }
 }
+
+export const categoriaService = new CategoriaService();

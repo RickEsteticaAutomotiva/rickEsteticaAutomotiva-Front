@@ -1,5 +1,7 @@
 import { Plus, Check } from 'lucide-react';
 import { useState } from 'react';
+import { useToast } from '../../../../../context/ToastContext';
+import { TiposToast } from '../../../../../utils/enum/TiposToast';
 
 export function ModalAdicionaServico({ 
     isOpen, 
@@ -9,6 +11,7 @@ export function ModalAdicionaServico({
     onCancel 
 }) {
     const [servicosSelecionados, setServicosSelecionados] = useState([]);
+    const { mostrarToast } = useToast();
 
     if (!isOpen) return null;
 
@@ -45,8 +48,6 @@ export function ModalAdicionaServico({
     const handleConfirm = async () => {
         try {
             // Implementar chamada ao backend
-            console.log('Adicionando serviços à ordem:', ordemServicoId, servicosSelecionados);
-            
             // Exemplo de requisição:
             // await api.post(`/ordens-servico/${ordemServicoId}/servicos`, {
             //     servicos: servicosSelecionados.map(s => s.id)
@@ -54,10 +55,20 @@ export function ModalAdicionaServico({
 
             // Limpar seleção e notificar sucesso
             setServicosSelecionados([]);
+            mostrarToast({
+                tipo: TiposToast.SUCESSO,
+                titulo: 'Serviços adicionados',
+                mensagem: `${servicosSelecionados.length} serviço(s) adicionado(s) ao agendamento.`,
+                duracao: 4000
+            });
             onSuccess();
         } catch (error) {
-            console.error('Erro ao adicionar serviços:', error);
-            // Aqui você pode adicionar tratamento de erro (toast, alert, etc)
+            mostrarToast({
+                tipo: TiposToast.ERRO,
+                titulo: 'Erro ao adicionar serviços',
+                mensagem: error.message || 'Não foi possível adicionar os serviços.',
+                duracao: 4000
+            });
         }
     };
 

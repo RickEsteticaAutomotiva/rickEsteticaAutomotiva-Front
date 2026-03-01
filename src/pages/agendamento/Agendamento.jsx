@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Header } from "../../components/header/Header";
 import { Breadcrumb } from "../../components/breadcrumb/Breadcrumb";
 import { Calendario } from "../../components/calendario/Calendario";
 import { ModalConfirmacao } from "../../components/modal-confirmacao/ModalConfirmacao";
-import { UseAuth } from "../../hooks/UseAuth";
+import { useAuth } from "../../context/AuthContext";
+import { useToast } from '../../context/ToastContext';
+import { TiposToast } from '../../utils/enum/TiposToast';
 import { ROUTES } from "../../constants/Routes";
-import { CarrinhoService } from '../../services/CarrinhoService';
-import "./Agendamento.css";
+import { carrinhoService } from '../../services/CarrinhoService';
 import { Footer } from '../../components/footer/Footer';
-import { OrdemServicoService } from '../../services/OrdemServicoService';
+import { ordemServicoService } from '../../services/OrdemServicoService';
 import { formatarPreco, smoothScrollTo } from '../../utils/index';
 
 export function Agendamento() {
@@ -20,10 +21,10 @@ export function Agendamento() {
     const [showModalConfirmacao, setShowModalConfirmacao] = useState(false);
     const [showModalSucesso, setShowModalSucesso] = useState(false);
     const [loadingConfirmacao, setLoadingConfirmacao] = useState(false);
-    const carrinhoService = new CarrinhoService();
     const navigate = useNavigate();
-    const ordemServicoService = new OrdemServicoService();
-    const { isAuthenticated, user } = UseAuth();
+    const location = useLocation();
+    const { user } = useAuth();
+    const { mostrarToast } = useToast();
 
     const breadcrumbItems = [
         { label: 'Início', href: ROUTES.HOME, icon: 'bi bi-house' },
@@ -33,12 +34,10 @@ export function Agendamento() {
     ];
 
     useEffect(() => {
-        if (!isAuthenticated()) {
-            navigate(ROUTES.LOGIN);
-            return;
-        }
+        // A rota já está protegida por PrivateRoute; aguardar user estar disponível
+        if (!user) return;
 
-        const veiculo = JSON.parse(sessionStorage.getItem('veiculoSelecionado') || 'null');
+        const veiculo = location.state?.veiculoSelecionado ?? null;
 
         if (!veiculo) {
             navigate(ROUTES.VEICULOS);
@@ -46,10 +45,8 @@ export function Agendamento() {
         }
 
         setVeiculoSelecionado(veiculo);
-
-        if (user && user.id) {
-            buscarServicosCarrinho();
-        }
+        buscarServicosCarrinho();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user]);
 
     const buscarServicosCarrinho = async () => {
@@ -61,7 +58,12 @@ export function Agendamento() {
             const servicos = await carrinhoService.buscarCarrinhoUsuario(user.id);
             setServicosCarrinho(servicos || []);
         } catch (error) {
-            console.error('Erro ao buscar serviços do carrinho:', error);
+            mostrarToast({
+                tipo: TiposToast.ERRO,
+                titulo: 'Erro ao carregar carrinho',
+                mensagem: 'Não foi possível buscar seus serviços. Tente novamente.',
+                duracao: 4000
+            });
             setServicosCarrinho([]);
         }
     };
@@ -102,7 +104,12 @@ export function Agendamento() {
 
     const abrirModalConfirmacao = () => {
         if (!dataSelecionada || !horarioSelecionado) {
-            alert('Por favor, selecione uma data e horário');
+            mostrarToast({
+                tipo: TiposToast.ALERTA,
+                titulo: 'Seleção incompleta',
+                mensagem: 'Por favor, selecione uma data e horário antes de continuar.',
+                duracao: 4000
+            });
             return;
         }
         setShowModalConfirmacao(true);
@@ -134,7 +141,12 @@ export function Agendamento() {
             setShowModalConfirmacao(false);
             setShowModalSucesso(true);
         } catch (error) {
-            console.error('Erro ao confirmar agendamento:', error);
+            mostrarToast({
+                tipo: TiposToast.ERRO,
+                titulo: 'Erro ao agendar',
+                mensagem: error.message || 'Não foi possível confirmar o agendamento. Tente novamente.',
+                duracao: 5000
+            });
             setShowModalConfirmacao(false);
         } finally {
             setLoadingConfirmacao(false);
@@ -169,18 +181,18 @@ export function Agendamento() {
             <Header />
             <Breadcrumb items={breadcrumbItems} />
 
-            <div className="agendamento-container">
-                <div className="agendamento-content">
+            <div className="bg-gray-50 min-h-[calc(100vh-80px)] p-4 md:p-8">
+                <div className="max-w-[1200px] mx-auto grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-8">
                     {/* Calendário */}
-                    <div className="agendamento-main">
-                        <div className="agendamento-header">
-                            <h1 className="agendamento-title">Escolha a data e horário</h1>
-                            <p className="agendamento-subtitle">
+                    <div className="bg-white rounded-xl overflow-hidden">
+                        <div className="p-6 md:p-8 border-b border-gray-200">
+                            <h1 className="text-2xl font-bold text-gray-800 mb-2">Escolha a data e horário</h1>
+                            <p className="text-gray-500">
                                 Selecione quando deseja receber o serviço
                             </p>
                         </div>
 
-                        <div className="calendario-wrapper">
+                        <div className="w-full">
                             <Calendario
                                 onDateSelect={handleDateSelect}
                                 onTimeSelect={handleTimeSelect}
@@ -190,21 +202,20 @@ export function Agendamento() {
                         </div>
                     </div>
 
-                    {/* Resumo do Pedido */}
-                    <div className="resumo-pedido">
-                        <div className="resumo-header">
-                            <h2 className="resumo-title">Resumo do agendamento</h2>
+                    <div className="bg-white rounded-xl shadow-md h-fit sticky top-8">
+                        <div className="px-8 pt-8 pb-4 border-b border-gray-200">
+                            <h2 className="text-xl font-bold text-gray-800">Resumo do agendamento</h2>
                         </div>
 
-                        <div className="resumo-content">
+                        <div className="px-8 py-6">
                             {/* Veículo */}
-                            <div className="veiculo-selecionado">
-                                <div className="veiculo-info">
-                                    <h4>
+                            <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                                <div>
+                                    <h4 className="font-semibold text-gray-800 mb-2">
                                         <i className="bi bi-car-front mr-2"></i>
                                         {veiculoSelecionado.marca} {veiculoSelecionado.modelo}
                                     </h4>
-                                    <div className="veiculo-detalhes">
+                                    <div className="flex flex-wrap gap-2 text-sm text-gray-500">
                                         <span>{veiculoSelecionado.ano}</span>
                                         <span>•</span>
                                         <span>{veiculoSelecionado.cor}</span>
@@ -216,40 +227,40 @@ export function Agendamento() {
 
                             {/* Data e Horário */}
                             {dataSelecionada && horarioSelecionado && (
-                                <div className="agendamento-info">
-                                    <h4>
+                                <div className="bg-amber-50 rounded-lg p-4 mb-6">
+                                    <h4 className="font-semibold text-amber-800 mb-2">
                                         <i className="bi bi-calendar-check mr-2"></i>
                                         Data e Horário
                                     </h4>
-                                    <p className="font-medium">
+                                    <p className="font-medium text-amber-700">
                                         {formatarData(dataSelecionada)} às {horarioSelecionado}
                                     </p>
                                 </div>
                             )}
 
                             {/* Serviços */}
-                            <div className="servicos-lista">
+                            <div className="mb-6">
                                 <h4 className="font-semibold mb-3 text-gray-800">Serviços</h4>
-                                {servicosCarrinho && servicosCarrinho.map(servico => (
-                                    <div key={servico.id} className="servico-item">
-                                        <span className="servico-nome">{servico.nome}</span>
-                                        <span className="servico-preco">{formatarPreco(servico.preco)}</span>
+                                {servicosCarrinho && servicosCarrinho.map((servico, index) => (
+                                    <div key={servico.id ?? index} className="flex justify-between items-center py-3 border-b border-gray-100 last:border-0">
+                                        <span className="font-medium text-gray-800">{servico.nome}</span>
+                                        <span className="font-semibold text-[#B30000]">{formatarPreco(servico.preco)}</span>
                                     </div>
                                 ))}
                             </div>
 
                             {/* Total */}
-                            <div className="total-agendamento">
-                                <div className="servico-nome">Valor mínimo:</div>
-                                <div className="servico-preco text-2xl">
+                            <div className="flex justify-between items-center pt-4 mt-4 border-t-2 border-gray-200 text-lg font-bold">
+                                <div className="font-medium text-gray-800">Valor mínimo:</div>
+                                <div className="font-semibold text-[#B30000] text-2xl">
                                     {formatarPreco(calcularTotal())}
                                 </div>
                             </div>
                         </div>
 
-                        <div className="resumo-footer">
+                        <div className="px-8 pb-8 pt-4 border-t border-gray-200">
                             <button
-                                className="btn-confirmar"
+                                className="w-full bg-[#B30000] text-white py-4 rounded-lg font-semibold text-base cursor-pointer hover:bg-[#990000] hover:-translate-y-0.5 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:transform-none transition-all"
                                 onClick={abrirModalConfirmacao}
                                 disabled={!dataSelecionada || !horarioSelecionado}
                             >
@@ -345,7 +356,7 @@ export function Agendamento() {
                             </h4>
 
                             {servicosCarrinho.map((servico, index) => (
-                                <div key={servico.id} style={{
+                                <div key={servico.id ?? index} style={{
                                     display: 'flex',
                                     justifyContent: 'space-between',
                                     alignItems: 'center',

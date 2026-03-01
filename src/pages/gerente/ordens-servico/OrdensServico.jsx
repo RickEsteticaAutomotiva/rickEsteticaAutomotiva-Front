@@ -23,7 +23,6 @@ export function OrdensServico() {
     ];
     
     const abrirModal = (ordem) => {
-        console.log('Item clicado:', ordem);
         setOrdemSelecionada(ordem);
         setModalAbertoOrdem(true);
     };
@@ -34,7 +33,6 @@ export function OrdensServico() {
     };
 
     const handleAplicarFiltros = (filtros) => {
-        console.log('Filtros aplicados:', filtros);
         setFiltrosAplicados(filtros);
         // Aqui você pode fazer a requisição à API com os filtros
     };

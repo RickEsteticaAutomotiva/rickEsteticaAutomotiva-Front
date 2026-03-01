@@ -1,57 +1,56 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { PerfilDropdown } from "./perfil-dropdown/PerfilDropdown";
 import { CategoriasMenu } from "./categorias-menu/CategoriasMenu";
 import { InputPesquisa } from "./input-pesquisa/InputPesquisa";
-import { UseAuth } from "../../hooks/UseAuth";
+import { useAuth } from "../../context/AuthContext";
 import { ROUTES } from "../../constants/Routes";
-
-import "./Header.css";
 import logo from "../../assets/rick_logo.png";
 import { FavoritosDropdown } from "./favoritos-dropdown/FavoritosDropdown";
 
 export function Header() {
-    const { isAuthenticated } = UseAuth();
+    const { isAuthenticated } = useAuth();
+    const location = useLocation();
 
-    const habilitaPesquisa = () => {
-        if (window.location.pathname === ROUTES.LOGIN || window.location.pathname === ROUTES.CADASTRAR || window.location.pathname === ROUTES.VEICULOS) {
-            return false;
-        }
-        return true;
-    }
+    const showSearch = location.pathname !== ROUTES.LOGIN
+        && location.pathname !== ROUTES.CADASTRAR
+        && location.pathname !== ROUTES.VEICULOS;
+
+    const autenticado = isAuthenticated();
 
     return (
-        <>
-            <header className="header w-full h-20 py-3.5 px-16 flex justify-between shadow" style={{backgroundColor: '#B30000'}}>
-                <Link className="header-logo cursor-pointer" to={ROUTES.HOME}>
-                    <img src={logo} alt="Rick Logo" className="h-full" />
-                </Link>
+        <header className="w-full bg-[#B30000] shadow
+            flex flex-col items-center gap-3 py-6 px-8
+            md:flex-row md:justify-between md:h-20 md:py-3.5 md:px-16 md:gap-0">
 
-                {habilitaPesquisa() && (
-                    <div className="header-search-area flex h-full items-center gap-3">
-                        <InputPesquisa />
+            <Link className="cursor-pointer h-10 md:h-full flex-shrink-0" to={ROUTES.HOME}>
+                <img src={logo} alt="Rick Logo" className="h-full" />
+            </Link>
 
-                        <CategoriasMenu />
+            {showSearch && (
+                <div className="flex w-full md:w-auto md:h-full items-center gap-3 justify-center">
+                    <InputPesquisa />
+                    <CategoriasMenu />
+                </div>
+            )}
+
+            <div className="flex gap-7 items-center text-white">
+                {!autenticado && (
+                    <div className="flex gap-5 items-center">
+                        <Link className="cursor-pointer hover:underline" to={ROUTES.CADASTRAR}>Cadastrar</Link>
+                        <span className="border h-4 border-white"></span>
+                        <Link className="cursor-pointer hover:underline" to={ROUTES.LOGIN}>Entrar</Link>
                     </div>
                 )}
 
-                <div className="flex h-full gap-7 items-center text-white">
-                    {!isAuthenticated() && (
-                        <div className="flex gap-5 h-full items-center">
-                            <Link className="cursor-pointer" to={ROUTES.CADASTRAR}>Cadastrar</Link>
-                            <span className="separador border h-2/3 border-white"></span>
-                            <Link className="cursor-pointer" to={ROUTES.LOGIN}>Entrar</Link>
-                        </div>
-                    )}
+                {autenticado && <PerfilDropdown />}
+                {autenticado && showSearch && <FavoritosDropdown />}
 
-                    {isAuthenticated() && <PerfilDropdown />}
-
-                    {isAuthenticated() && habilitaPesquisa() && <FavoritosDropdown />}
-
-                    {habilitaPesquisa() && (<Link className="cursor-pointer" to={isAuthenticated() ? ROUTES.CARRINHO : ROUTES.LOGIN}>
-                        <i className="bi bi-cart3"></i>
-                    </Link>)}
-                </div>
-            </header>
-        </>
+                {showSearch && (
+                    <Link className="cursor-pointer" aria-label="Ver carrinho" to={autenticado ? ROUTES.CARRINHO : ROUTES.LOGIN}>
+                        <i className="bi bi-cart3" aria-hidden="true"></i>
+                    </Link>
+                )}
+            </div>
+        </header>
     );
 }
