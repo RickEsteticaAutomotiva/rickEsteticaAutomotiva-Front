@@ -1,6 +1,8 @@
 import { apiService } from './ApiService';
 
 export class ServicosService {
+    BASE_URL = '/servicos';
+
     async buscarTodos(parametros = {}) {
         try {
             const {
@@ -17,7 +19,7 @@ export class ServicosService {
                 filtro
             });
 
-            const response = await apiService.get(`/servicos?${queryParams.toString()}`);
+            const response = await apiService.get(`${this.BASE_URL}?${queryParams.toString()}`);
             return response;
         } catch (error) {
             throw new Error(error.message || 'Erro ao buscar serviços');
@@ -26,7 +28,7 @@ export class ServicosService {
 
     async buscarPorId(id) {
         try {
-            const response = await apiService.get(`/servicos/${id}`);
+            const response = await apiService.get(`${this.BASE_URL}/${id}`);
             return response;
         } catch (error) {
             throw new Error(error.message || 'Erro ao buscar serviço');
@@ -48,7 +50,7 @@ export class ServicosService {
                 filtro: categoria
             });
 
-            const response = await apiService.get(`/servicos?${queryParams.toString()}`);
+            const response = await apiService.get(`${this.BASE_URL}?${queryParams.toString()}`);
             return response;
         } catch (error) {
             throw new Error(error.message || 'Erro ao buscar serviços por categoria');
@@ -70,7 +72,7 @@ export class ServicosService {
                 filtro: termo
             });
 
-            const response = await apiService.get(`/servicos?${queryParams.toString()}`);
+            const response = await apiService.get(`${this.BASE_URL}?${queryParams.toString()}`);
             return response;
         } catch (error) {
             throw new Error(error.message || 'Erro ao pesquisar serviços');
@@ -79,7 +81,7 @@ export class ServicosService {
 
     async criarServico(servicoData) {
         try {
-            const response = await apiService.post('/servicos', servicoData);
+            const response = await apiService.post(this.BASE_URL, servicoData);
             return response;
         } catch (error) {
             throw new Error(error.message || 'Erro ao criar serviço');
@@ -88,7 +90,7 @@ export class ServicosService {
 
     async atualizarServico(id, servicoData) {
         try {
-            const response = await apiService.put(`/servicos/${id}`, servicoData);
+            const response = await apiService.put(`${this.BASE_URL}/${id}`, servicoData);
             return response;
         } catch (error) {
             throw new Error(error.message || 'Erro ao atualizar serviço');
@@ -97,7 +99,7 @@ export class ServicosService {
 
     async excluirServico(id) {
         try {
-            const response = await apiService.delete(`/servicos/${id}`);
+            const response = await apiService.delete(`${this.BASE_URL}/${id}`);
             return response;
         } catch (error) {
             throw new Error(error.message || 'Erro ao excluir serviço');
@@ -106,7 +108,7 @@ export class ServicosService {
 
     async uploadImagemServico(servicoId, arquivo) {
         try {
-            const response = await apiService.uploadFile(`/servicos/${servicoId}/imagem`, arquivo);
+            const response = await apiService.uploadFile(`${this.BASE_URL}/${servicoId}/imagem`, arquivo);
             return response;
         } catch (error) {
             throw new Error(error.message || 'Erro ao fazer upload da imagem');

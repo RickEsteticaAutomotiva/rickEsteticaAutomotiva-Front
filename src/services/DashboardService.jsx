@@ -1,9 +1,11 @@
 import { apiService } from './ApiService';
 
 export class DashboardService {
+    BASE_URL = 'dashboard';
+
     async buscarCancelamentos() {
         try {
-            const response = await apiService.get(`dashboard/cancelamentos`);
+            const response = await apiService.get(`${this.BASE_URL}/cancelamentos`);
             return response;
         } catch (error) {
             throw new Error(error.message || 'Erro ao buscar cancelamentos');
@@ -12,7 +14,7 @@ export class DashboardService {
 
     async fluxoCaixa() {
         try {
-            const response = await apiService.get(`dashboard/fluxo-caixa`);
+            const response = await apiService.get(`${this.BASE_URL}/fluxo-caixa`);
             return response;
         } catch (error) {
             throw new Error(error.message || 'Erro ao buscar flux de caixa');
@@ -21,7 +23,7 @@ export class DashboardService {
 
     async faturamentoPorServico() {
         try {
-            const response = await apiService.get(`dashboard/faturamento-servicos`);
+            const response = await apiService.get(`${this.BASE_URL}/faturamento-servicos`);
             return response;
         } catch (error) {
             throw new Error(error.message || 'Erro ao buscar faturamento por serviço');
@@ -30,7 +32,7 @@ export class DashboardService {
 
     async totalOrdens() {
         try {
-            const response = await apiService.get(`dashboard/total-ordens`);
+            const response = await apiService.get(`${this.BASE_URL}/total-ordens`);
             return response;
         } catch (error) {
             throw new Error(error.message || 'Erro ao buscar total de ordens');
@@ -39,7 +41,7 @@ export class DashboardService {
 
     async ticketMedio() {
         try {
-            const response = await apiService.get(`dashboard/ticket-medio`);
+            const response = await apiService.get(`${this.BASE_URL}/ticket-medio`);
             return response;
         } catch (error) {
             throw new Error(error.message || 'Erro ao buscar ticket Medio');
@@ -49,7 +51,7 @@ export class DashboardService {
 
     async servicosConcluidos() {
         try {
-            const response = await apiService.get(`dashboard/servicos-concluidos`);
+            const response = await apiService.get(`${this.BASE_URL}/servicos-concluidos`);
             return response;
         } catch (error) {
             throw new Error(error.message || 'Erro ao buscar servicos concluidos');
@@ -58,7 +60,7 @@ export class DashboardService {
 
     async faturamento() {
         try {
-            const response = await apiService.get(`dashboard/faturamento`);
+            const response = await apiService.get(`${this.BASE_URL}/faturamento`);
             return response;
         } catch (error) {
             throw new Error(error.message || 'Erro ao buscar faturamento');
@@ -67,7 +69,7 @@ export class DashboardService {
 
     async faturamentoPeriodo() {
         try {
-            const response = await apiService.get(`dashboard/faturamento-periodo`);
+            const response = await apiService.get(`${this.BASE_URL}/faturamento-periodo`);
             return response;
         } catch (error) {
             throw new Error(error.message || 'Erro ao buscar faturamento por periodo');

@@ -12,7 +12,7 @@ export default function DashboardRefreshProvider({ children }) {
   useEffect(() => {
     const interval = setInterval(() => {
       refreshDashboard();
-    }, 8000); // 5 segundos (pode mudar)
+    }, 5000); // 5 segundos (pode mudar)
 
     return () => clearInterval(interval);
   }, [refreshDashboard]);

@@ -1,45 +1,24 @@
-import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { UseAuth } from "../../../hooks/UseAuth";
-import "./FavoritosDropdown.css";
-import { FavoritoService } from "../../../services/FavoritoService";
+import { useFavoritos } from "../../../context/FavoritosContext";
 import { LoadingState } from "../../loading-state/LoadingState";
 import { formatarPreco } from "../../../utils/index";
 
 export function FavoritosDropdown() {
-    const [favoritos, setFavoritos] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const { user, getToken } = UseAuth();
-    const favoritoService = new FavoritoService();
-
-    useEffect(() => {
-        if (user) {
-            buscarFavoritos();
-        }
-    }, [user]);
-
-    const buscarFavoritos = async () => {
-        try {
-            const data = await favoritoService.buscarFavoritosUsuario(user.id);
-            setFavoritos(data);
-        } catch (error) {
-            console.error('Erro ao buscar favoritos:', error);
-            setLoading(false);
-        } finally {
-            setLoading(false);
-        }
-    };
+    const { user } = UseAuth();
+    const { favoritos, loading } = useFavoritos();
 
     if (!user) return null;
 
     return (
-        <div className="dropdown relative flex gap-2 h-full items-center cursor-pointer">
+        <div className="group relative flex gap-2 h-full items-center cursor-pointer">
             <div className="relative flex gap-2">
                 <span>Favoritos</span>
                 <i className="bi bi-chevron-down"></i>
             </div>
 
-            <div className="dropdown-menu dropdown-menu-favorito absolute top-full right-0 mt-2 bg-white text-black rounded-lg shadow-lg min-w-80 z-50 max-h-96 overflow-y-auto">
+            <div className="hidden group-hover:block absolute top-full right-0 pt-2 min-w-80 sm:min-w-96 z-[200]">
+                <div className="bg-white text-black rounded-lg shadow-lg max-h-96 overflow-y-auto">
                 <div className="p-4 border-b border-gray-200">
                     <h3 className="font-semibold text-gray-800">Meus Favoritos</h3>
                     <p className="text-sm text-gray-500">
@@ -93,6 +72,7 @@ export function FavoritosDropdown() {
                         ))}
                     </div>
                 )}
+                </div>
             </div>
         </div>
     );

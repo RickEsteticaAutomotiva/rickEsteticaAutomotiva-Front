@@ -1,8 +1,7 @@
 import { ChevronDown } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { DropdownButton } from '../../../../components/gerente/dropdown-button/DropdownButton';
-import { UseToast } from '../../../../hooks/UseToast';
-import { ContainerToast } from '../../../../components/toast/ContainerToast';
+import { useToast } from '../../../../context/ToastContext';
 import { TiposToast } from '../../../../utils/enum/TiposToast';
 
 export function ModalFiltro({ 
@@ -10,7 +9,7 @@ export function ModalFiltro({
     onClose, 
     onAplicarFiltros
 }) {
-    const { toasts, mostrarToast, fecharToast } = UseToast();
+    const { mostrarToast } = useToast();
     
     const [filtros, setFiltros] = useState({
         categoria: '',
@@ -124,9 +123,6 @@ export function ModalFiltro({
 
     return (
         <>
-            {/* Container de Toast */}
-            <ContainerToast toasts={toasts} aoFechar={fecharToast} />
-            
             {/* Overlay */}
             <div 
                 className="fixed inset-0 bg-black/45 bg-opacity-90 z-50"

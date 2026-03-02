@@ -31,8 +31,10 @@ class ApiService {
                     try {
                         const payload = JSON.parse(atob(token.split('.')[1]));
                         if (payload.exp && payload.exp < Date.now() / 1000) {
-                            // Token expirado, limpar e não enviar
-                            sessionStorage.clear();
+                            // Token expirado, limpar apenas dados de auth e não enviar
+                            sessionStorage.removeItem('token');
+                            sessionStorage.removeItem('userData');
+                            sessionStorage.removeItem('tokenExpiry');
                             return config;
                         }
                         
@@ -76,15 +78,11 @@ class ApiService {
                             if (!originalRequest._retry) {
                                 originalRequest._retry = true;
                                 
-                                // Limpar dados de autenticação
-                                sessionStorage.clear();
-                                
-                                // Redirecionar apenas se necessário
-                                if (window.location.pathname !== '/login' && 
-                                    window.location.pathname !== '/' &&
-                                    window.location.pathname !== '/cadastrar') {
-                                    window.location.href = '/login';
-                                }
+                                // Limpar apenas dados de autenticação e notificar AuthProvider via evento
+                                sessionStorage.removeItem('token');
+                                sessionStorage.removeItem('userData');
+                                sessionStorage.removeItem('tokenExpiry');
+                                window.dispatchEvent(new CustomEvent('auth:unauthorized'));
                             }
                             throw new Error('Sessão expirada. Faça login novamente.');
                             

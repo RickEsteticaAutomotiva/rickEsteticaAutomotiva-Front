@@ -2,12 +2,13 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from "../../components/header/Header";
 import { Breadcrumb } from "../../components/breadcrumb/Breadcrumb";
-import { UseAuth } from "../../hooks/UseAuth";
+import { useAuth } from "../../context/AuthContext";
 import { usuarioService } from "../../services/UsuarioService";
 import { ROUTES } from "../../constants/Routes";
 import { LoadingState } from "../../components/loading-state/LoadingState";
-import "./Perfil.css";
 import { Footer } from '../../components/footer/Footer';
+import { useToast } from '../../context/ToastContext';
+import { TiposToast } from '../../utils/enum/TiposToast';
 
 export function Perfil() {
   const [formData, setFormData] = useState({
@@ -29,7 +30,8 @@ export function Perfil() {
   });
   const [showPasswordForm, setShowPasswordForm] = useState(false);
 
-  const { user, logout, isAuthenticated } = UseAuth();
+  const { user, logout, isAuthenticated } = useAuth();
+  const { mostrarToast } = useToast();
 
   const breadcrumbItems = [
     {
@@ -50,6 +52,7 @@ export function Perfil() {
     }
     
     buscarPerfil();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const buscarPerfil = async () => {
@@ -64,7 +67,12 @@ export function Perfil() {
         dataNascimento: data.dataNascimento || ""
       });
     } catch (error) {
-      console.error('Erro ao buscar perfil:', error);
+      mostrarToast({
+        tipo: TiposToast.ERRO,
+        titulo: 'Erro ao carregar perfil',
+        mensagem: 'Não foi possível buscar seus dados. Tente novamente.',
+        duracao: 4000
+      });
     } finally {
       setLoading(false);
     }
@@ -181,12 +189,19 @@ export function Perfil() {
       await usuarioService.atualizarPerfil(user.id, userData);
 
       setIsEditing(false);
-      setErrors({ success: 'Perfil atualizado com sucesso!' });
+      mostrarToast({
+        tipo: TiposToast.SUCESSO,
+        titulo: 'Perfil atualizado',
+        mensagem: 'Suas informações foram salvas com sucesso.',
+        duracao: 4000
+      });
 
     } catch (error) {
-      console.error("Erro ao atualizar perfil:", error);
-      setErrors({
-        submit: error.message || "Erro ao atualizar perfil. Tente novamente."
+      mostrarToast({
+        tipo: TiposToast.ERRO,
+        titulo: 'Erro ao atualizar perfil',
+        mensagem: error.message || 'Erro ao atualizar perfil. Tente novamente.',
+        duracao: 5000
       });
     } finally {
       setSaving(false);
@@ -214,12 +229,19 @@ export function Perfil() {
         confirmarSenha: ""
       });
       setShowPasswordForm(false);
-      setErrors({ success: 'Senha alterada com sucesso!' });
+      mostrarToast({
+        tipo: TiposToast.SUCESSO,
+        titulo: 'Senha alterada',
+        mensagem: 'Sua senha foi alterada com sucesso.',
+        duracao: 4000
+      });
 
     } catch (error) {
-      console.error("Erro ao alterar senha:", error);
-      setErrors({
-        password: error.message || "Erro ao alterar senha. Verifique a senha atual."
+      mostrarToast({
+        tipo: TiposToast.ERRO,
+        titulo: 'Erro ao alterar senha',
+        mensagem: error.message || 'Verifique a senha atual e tente novamente.',
+        duracao: 5000
       });
     } finally {
       setSaving(false);
@@ -249,6 +271,9 @@ export function Perfil() {
     }
   };
 
+  const inputCls = (field, alwaysDisabled = false) =>
+    `w-full px-4 py-3.5 border-2 rounded-lg text-base transition-all focus:outline-none focus:border-[#B30000] focus:ring-2 focus:ring-[#B30000]/10${errors[field] ? ' border-red-500 bg-red-50' : ' border-gray-200'}${(!isEditing || alwaysDisabled) ? ' bg-gray-50 text-gray-400 cursor-not-allowed' : ' bg-white'}`;
+
   if (loading) {
     return <LoadingState />;
   }
@@ -258,312 +283,159 @@ export function Perfil() {
       <Header />
       <Breadcrumb items={breadcrumbItems} />
 
-      <div className="perfil-container">
-        <div className="perfil-card">
-          <div className="perfil-header">
-            <div className="perfil-avatar">
+      <div className="bg-gray-50 min-h-[calc(100vh-80px)] p-4 md:p-8">
+        <div className="max-w-[900px] mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row items-center gap-6 p-6 md:p-8 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
+            <div className="text-6xl text-gray-400">
               <i className="bi bi-person-circle"></i>
             </div>
-            <div className="perfil-info">
-              <h1 className="perfil-title">Meu Perfil</h1>
-              <p className="perfil-subtitle">
-                Gerencie suas informações pessoais
-              </p>
+            <div className="flex-1 text-center sm:text-left">
+              <h1 className="text-2xl font-bold text-gray-800">Meu Perfil</h1>
+              <p className="text-gray-500">Gerencie suas informações pessoais</p>
             </div>
-            <div className="perfil-actions">
+            <div>
               {!isEditing ? (
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="btn-edit"
+                  className="flex items-center gap-2 bg-white border-2 border-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:border-[#B30000] hover:text-[#B30000] transition-colors font-medium"
                 >
-                  <i className="bi bi-pencil mr-2"></i>
+                  <i className="bi bi-pencil"></i>
                   Editar
                 </button>
               ) : (
-                <div className="edit-actions">
-                  <button
-                    onClick={() => {
-                      setIsEditing(false);
-                      setErrors({});
-                      buscarPerfil();
-                    }}
-                    className="btn-cancel"
-                  >
-                    Cancelar
-                  </button>
-                </div>
+                <button
+                  onClick={() => { setIsEditing(false); setErrors({}); buscarPerfil(); }}
+                  className="flex items-center gap-2 bg-white border-2 border-gray-200 text-gray-500 px-4 py-2 rounded-lg hover:border-gray-400 transition-colors font-medium"
+                >
+                  Cancelar
+                </button>
               )}
             </div>
           </div>
 
-          <div className="perfil-content">
-            {errors.submit && (
-              <div className="error-message">
-                <i className="bi bi-exclamation-triangle mr-2"></i>
-                {errors.submit}
-              </div>
-            )}
+          <div className="p-6 md:p-8 flex flex-col gap-8">
+            {/* Informações Pessoais */}
+            <form onSubmit={handleSubmit}>
+              <div className="pb-8 border-b border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-700 mb-6">Informações Pessoais</h3>
 
-            {errors.success && (
-              <div className="success-message">
-                <i className="bi bi-check-circle mr-2"></i>
-                {errors.success}
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="perfil-form">
-              <div className="form-section">
-                <h3 className="section-title">Informações Pessoais</h3>
-
-                <div className="form-row">
-                  <div className="form-group">
-                    <label htmlFor="nome" className="form-label">
-                      Nome completo
-                    </label>
-                    <input
-                      type="text"
-                      id="nome"
-                      name="nome"
-                      value={formData.nome}
-                      onChange={handleInputChange}
-                      disabled={!isEditing || saving}
-                      className={`form-input ${errors.nome ? 'error' : ''} ${!isEditing ? 'disabled' : ''}`}
-                      placeholder="Digite seu nome completo"
-                      maxLength={100}
-                    />
-                    {errors.nome && (
-                      <span className="error-text">{errors.nome}</span>
-                    )}
+                <div className="flex flex-col sm:flex-row gap-4 mb-4">
+                  <div className="flex-1">
+                    <label htmlFor="nome" className="block font-semibold text-gray-700 mb-1.5 text-sm">Nome completo</label>
+                    <input type="text" id="nome" name="nome" value={formData.nome} onChange={handleInputChange}
+                      disabled={!isEditing || saving} className={inputCls('nome')} placeholder="Digite seu nome completo" maxLength={100} />
+                    {errors.nome && <span className="block text-red-500 text-sm mt-1.5">{errors.nome}</span>}
                   </div>
 
-                  <div className="form-group">
-                    <label htmlFor="cpf" className="form-label">
-                      CPF
-                    </label>
-                    <input
-                      type="text"
-                      id="cpf"
-                      name="cpf"
-                      value={formData.cpf}
-                      onChange={handleInputChange}
-                      disabled={true}
-                      className="form-input disabled"
-                      placeholder="000.000.000-00"
-                      maxLength={14}
-                    />
+                  <div className="flex-1">
+                    <label htmlFor="cpf" className="block font-semibold text-gray-700 mb-1.5 text-sm">CPF</label>
+                    <input type="text" id="cpf" name="cpf" value={formData.cpf} onChange={handleInputChange}
+                      disabled={true} className={inputCls('cpf', true)} placeholder="000.000.000-00" maxLength={14} />
                   </div>
                 </div>
 
-                <div className="form-row">
-                  <div className="form-group">
-                    <label htmlFor="email" className="form-label">
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      disabled={!isEditing || saving}
-                      className={`form-input ${errors.email ? 'error' : ''} ${!isEditing ? 'disabled' : ''}`}
-                      placeholder="seu@email.com"
-                    />
-                    {errors.email && (
-                      <span className="error-text">{errors.email}</span>
-                    )}
+                <div className="flex flex-col sm:flex-row gap-4 mb-4">
+                  <div className="flex-1">
+                    <label htmlFor="email" className="block font-semibold text-gray-700 mb-1.5 text-sm">Email</label>
+                    <input type="email" id="email" name="email" value={formData.email} onChange={handleInputChange}
+                      disabled={!isEditing || saving} className={inputCls('email')} placeholder="seu@email.com" />
+                    {errors.email && <span className="block text-red-500 text-sm mt-1.5">{errors.email}</span>}
                   </div>
 
-                  <div className="form-group">
-                    <label htmlFor="telefone" className="form-label">
-                      Telefone
-                    </label>
-                    <input
-                      type="tel"
-                      id="telefone"
-                      name="telefone"
-                      value={formData.telefone}
-                      onChange={handleInputChange}
-                      disabled={!isEditing || saving}
-                      className={`form-input ${errors.telefone ? 'error' : ''} ${!isEditing ? 'disabled' : ''}`}
-                      placeholder="(11) 99999-9999"
-                      maxLength={15}
-                    />
-                    {errors.telefone && (
-                      <span className="error-text">{errors.telefone}</span>
-                    )}
+                  <div className="flex-1">
+                    <label htmlFor="telefone" className="block font-semibold text-gray-700 mb-1.5 text-sm">Telefone</label>
+                    <input type="tel" id="telefone" name="telefone" value={formData.telefone} onChange={handleInputChange}
+                      disabled={!isEditing || saving} className={inputCls('telefone')} placeholder="(11) 99999-9999" maxLength={15} />
+                    {errors.telefone && <span className="block text-red-500 text-sm mt-1.5">{errors.telefone}</span>}
                   </div>
                 </div>
 
-                <div className="form-row">
-                  <div className="form-group">
-                    <label htmlFor="dataNascimento" className="form-label">
-                      Data de nascimento
-                    </label>
-                    <input
-                      type="date"
-                      id="dataNascimento"
-                      name="dataNascimento"
-                      value={formData.dataNascimento}
-                      onChange={handleInputChange}
-                      disabled={!isEditing || saving}
-                      className={`form-input ${!isEditing ? 'disabled' : ''}`}
-                      max={new Date().toISOString().split('T')[0]}
-                    />
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="flex-1 max-w-xs">
+                    <label htmlFor="dataNascimento" className="block font-semibold text-gray-700 mb-1.5 text-sm">Data de nascimento</label>
+                    <input type="date" id="dataNascimento" name="dataNascimento" value={formData.dataNascimento} onChange={handleInputChange}
+                      disabled={!isEditing || saving} className={inputCls('dataNascimento')} max={new Date().toISOString().split('T')[0]} />
                   </div>
                 </div>
               </div>
-
 
               {isEditing && (
-                <div className="form-actions">
-                  <button
-                    type="submit"
-                    disabled={saving}
-                    className="btn-save"
-                  >
+                <div className="flex justify-end mt-6">
+                  <button type="submit" disabled={saving}
+                    className="flex items-center gap-2 bg-[#B30000] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#990000] hover:-translate-y-0.5 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:transform-none transition-all">
                     {saving ? (
-                      <>
-                        <div className="button-spinner"></div>
-                        Salvando...
-                      </>
+                      <><div className="w-4 h-4 border-2 border-transparent border-t-white rounded-full animate-spin"></div>Salvando...</>
                     ) : (
-                      <>
-                        <i className="bi bi-check mr-2"></i>
-                        Salvar Alterações
-                      </>
+                      <><i className="bi bi-check"></i>Salvar Alterações</>
                     )}
                   </button>
                 </div>
               )}
             </form>
 
-            <div className="form-section">
-              <div className="section-header">
+            {/* Segurança */}
+            <div className="pb-8 border-b border-gray-200">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <div>
-                  <h3 className="section-title">Segurança</h3>
-                  <p className="section-description">
-                    Altere sua senha para manter sua conta segura
-                  </p>
+                  <h3 className="text-lg font-semibold text-gray-700">Segurança</h3>
+                  <p className="text-gray-500 text-sm">Altere sua senha para manter sua conta segura</p>
                 </div>
                 {!showPasswordForm && (
-                  <button
-                    onClick={() => setShowPasswordForm(true)}
-                    className="btn-secondary"
-                  >
-                    <i className="bi bi-key"></i>
-                    Alterar Senha
+                  <button onClick={() => setShowPasswordForm(true)}
+                    className="flex items-center gap-2 bg-white border-2 border-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:border-[#B30000] hover:text-[#B30000] transition-colors font-medium whitespace-nowrap">
+                    <i className="bi bi-key"></i>Alterar Senha
                   </button>
                 )}
               </div>
 
               {showPasswordForm && (
-                <form onSubmit={handlePasswordChange} className="password-form">
-                  {errors.password && (
-                    <div className="error-message">
-                      <i className="bi bi-exclamation-triangle mr-2"></i>
-                      {errors.password}
-                    </div>
-                  )}
-
-                  <div className="form-group">
-                    <label htmlFor="senhaAtual" className="form-label">
-                      Senha atual
-                    </label>
-                    <div className="password-input-wrapper">
-                      <input
-                        type={showPassword ? "text" : "password"}
-                        id="senhaAtual"
-                        name="senhaAtual"
-                        value={senhaData.senhaAtual}
-                        onChange={handlePasswordInputChange}
-                        disabled={saving}
-                        className={`form-input ${errors.senhaAtual ? 'error' : ''}`}
-                        placeholder="Digite sua senha atual"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="password-toggle"
-                      >
+                <form onSubmit={handlePasswordChange} className="flex flex-col gap-4">
+                  <div>
+                    <label htmlFor="senhaAtual" className="block font-semibold text-gray-700 mb-1.5 text-sm">Senha atual</label>
+                    <div className="relative">
+                      <input type={showPassword ? "text" : "password"} id="senhaAtual" name="senhaAtual"
+                        value={senhaData.senhaAtual} onChange={handlePasswordInputChange} disabled={saving}
+                        className={`w-full pr-12 px-4 py-3.5 border-2 rounded-lg text-base transition-all focus:outline-none focus:border-[#B30000] focus:ring-2 focus:ring-[#B30000]/10 disabled:bg-gray-50 disabled:text-gray-400${errors.senhaAtual ? ' border-red-500 bg-red-50' : ' border-gray-200 bg-white'}`}
+                        placeholder="Digite sua senha atual" />
+                      <button type="button" onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 p-1 hover:text-[#B30000] transition-colors">
                         <i className={`bi ${showPassword ? 'bi-eye-slash' : 'bi-eye'}`}></i>
                       </button>
                     </div>
-                    {errors.senhaAtual && (
-                      <span className="error-text">{errors.senhaAtual}</span>
-                    )}
+                    {errors.senhaAtual && <span className="block text-red-500 text-sm mt-1.5">{errors.senhaAtual}</span>}
                   </div>
 
-                  <div className="form-group">
-                    <label htmlFor="novaSenha" className="form-label">
-                      Nova senha
-                    </label>
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      id="novaSenha"
-                      name="novaSenha"
-                      value={senhaData.novaSenha}
-                      onChange={handlePasswordInputChange}
-                      disabled={saving}
-                      className={`form-input ${errors.novaSenha ? 'error' : ''}`}
-                      placeholder="Digite a nova senha (mínimo 6 caracteres)"
-                    />
-                    {errors.novaSenha && (
-                      <span className="error-text">{errors.novaSenha}</span>
-                    )}
+                  <div>
+                    <label htmlFor="novaSenha" className="block font-semibold text-gray-700 mb-1.5 text-sm">Nova senha</label>
+                    <input type={showPassword ? "text" : "password"} id="novaSenha" name="novaSenha"
+                      value={senhaData.novaSenha} onChange={handlePasswordInputChange} disabled={saving}
+                      className={`w-full px-4 py-3.5 border-2 rounded-lg text-base transition-all focus:outline-none focus:border-[#B30000] focus:ring-2 focus:ring-[#B30000]/10 disabled:bg-gray-50 disabled:text-gray-400${errors.novaSenha ? ' border-red-500 bg-red-50' : ' border-gray-200 bg-white'}`}
+                      placeholder="Digite a nova senha (mínimo 6 caracteres)" />
+                    {errors.novaSenha && <span className="block text-red-500 text-sm mt-1.5">{errors.novaSenha}</span>}
                   </div>
 
-                  <div className="form-group">
-                    <label htmlFor="confirmarSenha" className="form-label">
-                      Confirmar nova senha
-                    </label>
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      id="confirmarSenha"
-                      name="confirmarSenha"
-                      value={senhaData.confirmarSenha}
-                      onChange={handlePasswordInputChange}
-                      disabled={saving}
-                      className={`form-input ${errors.confirmarSenha ? 'error' : ''}`}
-                      placeholder="Confirme a nova senha"
-                    />
-                    {errors.confirmarSenha && (
-                      <span className="error-text">{errors.confirmarSenha}</span>
-                    )}
+                  <div>
+                    <label htmlFor="confirmarSenha" className="block font-semibold text-gray-700 mb-1.5 text-sm">Confirmar nova senha</label>
+                    <input type={showPassword ? "text" : "password"} id="confirmarSenha" name="confirmarSenha"
+                      value={senhaData.confirmarSenha} onChange={handlePasswordInputChange} disabled={saving}
+                      className={`w-full px-4 py-3.5 border-2 rounded-lg text-base transition-all focus:outline-none focus:border-[#B30000] focus:ring-2 focus:ring-[#B30000]/10 disabled:bg-gray-50 disabled:text-gray-400${errors.confirmarSenha ? ' border-red-500 bg-red-50' : ' border-gray-200 bg-white'}`}
+                      placeholder="Confirme a nova senha" />
+                    {errors.confirmarSenha && <span className="block text-red-500 text-sm mt-1.5">{errors.confirmarSenha}</span>}
                   </div>
 
-                  <div className="form-actions border-b-0">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowPasswordForm(false);
-                        setSenhaData({
-                          senhaAtual: "",
-                          novaSenha: "",
-                          confirmarSenha: ""
-                        });
-                        setErrors({});
-                      }}
-                      className="btn-cancel"
-                      disabled={saving}
-                    >
+                  <div className="flex gap-4 justify-end mt-2">
+                    <button type="button" disabled={saving}
+                      onClick={() => { setShowPasswordForm(false); setSenhaData({ senhaAtual: "", novaSenha: "", confirmarSenha: "" }); setErrors({}); }}
+                      className="px-5 py-2.5 border-2 border-gray-200 text-gray-600 rounded-lg hover:border-gray-400 transition-colors font-medium disabled:opacity-50">
                       Cancelar
                     </button>
-                    <button
-                      type="submit"
-                      disabled={saving}
-                      className="btn-save"
-                    >
+                    <button type="submit" disabled={saving}
+                      className="flex items-center gap-2 bg-[#B30000] text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-[#990000] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors">
                       {saving ? (
-                        <>
-                          <div className="button-spinner"></div>
-                          Salvando...
-                        </>
+                        <><div className="w-4 h-4 border-2 border-transparent border-t-white rounded-full animate-spin"></div>Salvando...</>
                       ) : (
-                        <>
-                          <i className="bi bi-shield-check mr-2"></i>
-                          Alterar Senha
-                        </>
+                        <><i className="bi bi-shield-check"></i>Alterar Senha</>
                       )}
                     </button>
                   </div>
@@ -571,17 +443,13 @@ export function Perfil() {
               )}
             </div>
 
-            <div className="form-section danger-zone">
-              <h3 className="section-title">Zona de Perigo</h3>
-              <p className="section-description">
-                Uma vez excluída, a conta não poderá ser recuperada.
-              </p>
-              <button
-                onClick={handleDeleteAccount}
-                className="btn-danger"
-              >
-                <i className="bi bi-trash mr-2"></i>
-                Excluir Conta
+            {/* Zona de Perigo */}
+            <div className="bg-red-50 border border-red-200 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-red-700 mb-2">Zona de Perigo</h3>
+              <p className="text-gray-500 text-sm mb-4">Uma vez excluída, a conta não poderá ser recuperada.</p>
+              <button onClick={handleDeleteAccount}
+                className="flex items-center gap-2 bg-red-600 text-white px-5 py-2.5 rounded-lg font-semibold hover:bg-red-700 transition-colors">
+                <i className="bi bi-trash"></i>Excluir Conta
               </button>
             </div>
           </div>

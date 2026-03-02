@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Label } from '../label/Label';
+import { useToast } from '../../../../../context/ToastContext';
+import { TiposToast } from '../../../../../utils/enum/TiposToast';
 
 export function ModalEditaServico({ 
     isOpen, 
@@ -9,6 +11,7 @@ export function ModalEditaServico({
     onCancel 
 }) {
     const [editValue, setEditValue] = useState('');
+    const { mostrarToast } = useToast();
 
     useEffect(() => {
         if (servico) {
@@ -20,20 +23,18 @@ export function ModalEditaServico({
 
     const handleSave = async () => {
         try {
-            // Implementar chamada ao backend
-            console.log('Editando serviço:', servico.id, 'ordem:', ordemServicoId, 'novo valor:', editValue);
-            
-            // Exemplo de requisição:
-            // await api.put(`/ordens-servico/${ordemServicoId}/servicos/${servico.id}`, {
-            //     valor: editValue
-            // });
+            // Implementar chamada ao backend quando endpoint estiver disponível:
+            // await api.put(`/ordens-servico/${ordemServicoId}/servicos/${servico.id}`, { valor: editValue });
 
-            // Limpar e notificar sucesso
             setEditValue('');
             onSuccess();
         } catch (error) {
-            console.error('Erro ao editar serviço:', error);
-            // Aqui você pode adicionar tratamento de erro (toast, alert, etc)
+            mostrarToast({
+                tipo: TiposToast.ERRO,
+                titulo: 'Erro ao editar serviço',
+                mensagem: error.message || 'Não foi possível editar o serviço.',
+                duracao: 4000
+            });
         }
     };
 

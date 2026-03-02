@@ -2,6 +2,30 @@ import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { TiposToast } from '../../utils/enum/TiposToast';
 
+// Definido fora do componente — objeto estático, não recriado a cada render
+const TIPOS_CONFIG = {
+    sucesso: {
+        Icone: CheckCircle,
+        classes: 'bg-green-50 border-green-200 text-green-800',
+        iconeBg: 'bg-green-500'
+    },
+    erro: {
+        Icone: AlertCircle,
+        classes: 'bg-red-50 border-red-200 text-red-800',
+        iconeBg: 'bg-red-500'
+    },
+    alerta: {
+        Icone: AlertTriangle,
+        classes: 'bg-yellow-50 border-yellow-200 text-yellow-800',
+        iconeBg: 'bg-yellow-500'
+    },
+    info: {
+        Icone: Info,
+        classes: 'bg-blue-50 border-blue-200 text-blue-800',
+        iconeBg: 'bg-blue-500'
+    }
+};
+
 export function Toast({ 
     tipo = TiposToast.INFO,
     titulo,
@@ -16,30 +40,7 @@ export function Toast({
     const tempoInicioRef = useRef(Date.now());
     const tempoRestanteRef = useRef(duracao);
 
-    const tiposConfig = {
-        sucesso: {
-            Icone: CheckCircle,
-            classes: 'bg-green-50 border-green-200 text-green-800',
-            iconeBg: 'bg-green-500'
-        },
-        erro: {
-            Icone: AlertCircle,
-            classes: 'bg-red-50 border-red-200 text-red-800',
-            iconeBg: 'bg-red-500'
-        },
-        alerta: {
-            Icone: AlertTriangle,
-            classes: 'bg-yellow-50 border-yellow-200 text-yellow-800',
-            iconeBg: 'bg-yellow-500'
-        },
-        info: {
-            Icone: Info,
-            classes: 'bg-blue-50 border-blue-200 text-blue-800',
-            iconeBg: 'bg-blue-500'
-        }
-    };
-
-    const config = tiposConfig[tipo] || tiposConfig.info;
+    const config = TIPOS_CONFIG[tipo] || TIPOS_CONFIG.info;
     const { Icone, classes, iconeBg } = config;
 
     useEffect(() => {

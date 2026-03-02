@@ -4,7 +4,8 @@ import { Header } from "../../components/header/Header";
 import { authService } from "../../services/AuthService";
 import { UseAuth } from "../../hooks/UseAuth";
 import { ROUTES } from "../../constants/Routes";
-import "./Cadastrar.css";
+import { useToast } from '../../context/ToastContext';
+import { TiposToast } from '../../utils/enum/TiposToast';
 import { Footer } from "../../components/footer/Footer";
 
 export function Cadastrar() {
@@ -24,6 +25,7 @@ export function Cadastrar() {
   
   const navigate = useNavigate();
   const { login } = UseAuth();
+  const { mostrarToast } = useToast();
 
   const formatCPF = (value) => {
     const numericValue = value.replace(/\D/g, '');
@@ -180,13 +182,22 @@ export function Cadastrar() {
       
       // Fazer login automático após cadastro
       await login(userData.email, userData.senha);
-      
+
+      mostrarToast({
+        tipo: TiposToast.SUCESSO,
+        titulo: 'Conta criada!',
+        mensagem: 'Seja bem-vindo! Sua conta foi criada com sucesso.',
+        duracao: 4000
+      });
+
       navigate(ROUTES.HOME);
       
     } catch (error) {
-      console.error("Erro ao cadastrar:", error);
-      setErrors({ 
-        submit: error.message || "Erro ao cadastrar. Tente novamente." 
+      mostrarToast({
+        tipo: TiposToast.ERRO,
+        titulo: 'Erro no cadastro',
+        mensagem: error.message || 'Não foi possível criar a conta. Tente novamente.',
+        duracao: 5000
       });
     } finally {
       setLoading(false);
@@ -197,25 +208,18 @@ export function Cadastrar() {
     <>
       <Header />
       
-      <div className="cadastro-container">
-        <div className="cadastro-card">
-          <div className="cadastro-header">
-            <h1 className="cadastro-title">Criar conta</h1>
-            <p className="cadastro-subtitle">
+      <div className="flex justify-center items-center min-h-[calc(100vh-80px)] bg-gray-50 p-4 md:p-8">
+        <div className="bg-white rounded-2xl shadow-xl w-full max-w-[800px] overflow-hidden">
+          <div className="px-8 pt-8 pb-4 text-center border-b border-gray-200">
+            <h1 className="text-3xl font-bold text-gray-800 mb-2">Criar conta</h1>
+            <p className="text-gray-500">
               Preencha os dados abaixo para criar sua conta
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="cadastro-form">
-            {errors.submit && (
-              <div className="error-message submit-error">
-                <i className="bi bi-exclamation-triangle mr-2"></i>
-                {errors.submit}
-              </div>
-            )}
-
-            <div className="form-group">
-              <label htmlFor="nome" className="form-label">
+          <form onSubmit={handleSubmit} className="p-8">
+            <div className="mb-6">
+              <label htmlFor="nome" className="block font-semibold text-gray-700 mb-1.5 text-sm">
                 Nome completo
               </label>
               <input
@@ -225,18 +229,18 @@ export function Cadastrar() {
                 value={formData.nome}
                 onChange={handleInputChange}
                 disabled={loading}
-                className={`form-input ${errors.nome ? 'error' : ''}`}
+                className={`w-full px-4 py-3.5 border-2 rounded-lg text-base transition-all focus:outline-none focus:border-[#B30000] focus:ring-2 focus:ring-[#B30000]/10 disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed${errors.nome ? ' border-red-500 bg-red-50' : ' border-gray-200 bg-white'}`}
                 placeholder="Digite seu nome completo"
                 maxLength={100}
               />
               {errors.nome && (
-                <span className="error-text">{errors.nome}</span>
+                <span className="block text-red-500 text-sm mt-1.5">{errors.nome}</span>
               )}
             </div>
 
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="cpf" className="form-label">
+            <div className="flex flex-col sm:flex-row gap-4 mb-6">
+              <div className="flex-1">
+                <label htmlFor="cpf" className="block font-semibold text-gray-700 mb-1.5 text-sm">
                   CPF
                 </label>
                 <input
@@ -246,17 +250,17 @@ export function Cadastrar() {
                   value={formData.cpf}
                   onChange={handleInputChange}
                   disabled={loading}
-                  className={`form-input ${errors.cpf ? 'error' : ''}`}
+                  className={`w-full px-4 py-3.5 border-2 rounded-lg text-base transition-all focus:outline-none focus:border-[#B30000] focus:ring-2 focus:ring-[#B30000]/10 disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed${errors.cpf ? ' border-red-500 bg-red-50' : ' border-gray-200 bg-white'}`}
                   placeholder="000.000.000-00"
                   maxLength={14}
                 />
                 {errors.cpf && (
-                  <span className="error-text">{errors.cpf}</span>
+                  <span className="block text-red-500 text-sm mt-1.5">{errors.cpf}</span>
                 )}
               </div>
 
-              <div className="form-group">
-                <label htmlFor="dataNascimento" className="form-label">
+              <div className="flex-1">
+                <label htmlFor="dataNascimento" className="block font-semibold text-gray-700 mb-1.5 text-sm">
                   Data de nascimento
                 </label>
                 <input
@@ -266,18 +270,18 @@ export function Cadastrar() {
                   value={formData.dataNascimento}
                   onChange={handleInputChange}
                   disabled={loading}
-                  className={`form-input ${errors.dataNascimento ? 'error' : ''}`}
+                  className={`w-full px-4 py-3.5 border-2 rounded-lg text-base transition-all focus:outline-none focus:border-[#B30000] focus:ring-2 focus:ring-[#B30000]/10 disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed${errors.dataNascimento ? ' border-red-500 bg-red-50' : ' border-gray-200 bg-white'}`}
                   max={new Date().toISOString().split('T')[0]}
                 />
                 {errors.dataNascimento && (
-                  <span className="error-text">{errors.dataNascimento}</span>
+                  <span className="block text-red-500 text-sm mt-1.5">{errors.dataNascimento}</span>
                 )}
               </div>
             </div>
 
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="email" className="form-label">
+            <div className="flex flex-col sm:flex-row gap-4 mb-6">
+              <div className="flex-1">
+                <label htmlFor="email" className="block font-semibold text-gray-700 mb-1.5 text-sm">
                   Email
                 </label>
                 <input
@@ -287,16 +291,16 @@ export function Cadastrar() {
                   value={formData.email}
                   onChange={handleInputChange}
                   disabled={loading}
-                  className={`form-input ${errors.email ? 'error' : ''}`}
+                  className={`w-full px-4 py-3.5 border-2 rounded-lg text-base transition-all focus:outline-none focus:border-[#B30000] focus:ring-2 focus:ring-[#B30000]/10 disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed${errors.email ? ' border-red-500 bg-red-50' : ' border-gray-200 bg-white'}`}
                   placeholder="seu@email.com"
                 />
                 {errors.email && (
-                  <span className="error-text">{errors.email}</span>
+                  <span className="block text-red-500 text-sm mt-1.5">{errors.email}</span>
                 )}
               </div>
 
-              <div className="form-group">
-                <label htmlFor="telefone" className="form-label">
+              <div className="flex-1">
+                <label htmlFor="telefone" className="block font-semibold text-gray-700 mb-1.5 text-sm">
                   Telefone
                 </label>
                 <input
@@ -306,22 +310,22 @@ export function Cadastrar() {
                   value={formData.telefone}
                   onChange={handleInputChange}
                   disabled={loading}
-                  className={`form-input ${errors.telefone ? 'error' : ''}`}
+                  className={`w-full px-4 py-3.5 border-2 rounded-lg text-base transition-all focus:outline-none focus:border-[#B30000] focus:ring-2 focus:ring-[#B30000]/10 disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed${errors.telefone ? ' border-red-500 bg-red-50' : ' border-gray-200 bg-white'}`}
                   placeholder="(11) 99999-9999"
                   maxLength={15}
                 />
                 {errors.telefone && (
-                  <span className="error-text">{errors.telefone}</span>
+                  <span className="block text-red-500 text-sm mt-1.5">{errors.telefone}</span>
                 )}
               </div>
             </div>
 
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="senha" className="form-label">
+            <div className="flex flex-col sm:flex-row gap-4 mb-8">
+              <div className="flex-1">
+                <label htmlFor="senha" className="block font-semibold text-gray-700 mb-1.5 text-sm">
                   Senha
                 </label>
-                <div className="password-input-container">
+                <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
                     id="senha"
@@ -329,13 +333,13 @@ export function Cadastrar() {
                     value={formData.senha}
                     onChange={handleInputChange}
                     disabled={loading}
-                    className={`form-input ${errors.senha ? 'error' : ''}`}
+                    className={`w-full pr-12 px-4 py-3.5 border-2 rounded-lg text-base transition-all focus:outline-none focus:border-[#B30000] focus:ring-2 focus:ring-[#B30000]/10 disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed${errors.senha ? ' border-red-500 bg-red-50' : ' border-gray-200 bg-white'}`}
                     placeholder="Mínimo 6 caracteres"
                     minLength={6}
                   />
                   <button
                     type="button"
-                    className="password-toggle"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 p-1 rounded hover:text-[#B30000] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     onClick={() => setShowPassword(!showPassword)}
                     disabled={loading}
                   >
@@ -343,15 +347,15 @@ export function Cadastrar() {
                   </button>
                 </div>
                 {errors.senha && (
-                  <span className="error-text">{errors.senha}</span>
+                  <span className="block text-red-500 text-sm mt-1.5">{errors.senha}</span>
                 )}
               </div>
 
-              <div className="form-group">
-                <label htmlFor="confirmarSenha" className="form-label">
+              <div className="flex-1">
+                <label htmlFor="confirmarSenha" className="block font-semibold text-gray-700 mb-1.5 text-sm">
                   Confirmar senha
                 </label>
-                <div className="password-input-container">
+                <div className="relative">
                   <input
                     type={showConfirmPassword ? "text" : "password"}
                     id="confirmarSenha"
@@ -359,12 +363,12 @@ export function Cadastrar() {
                     value={formData.confirmarSenha}
                     onChange={handleInputChange}
                     disabled={loading}
-                    className={`form-input ${errors.confirmarSenha ? 'error' : ''}`}
+                    className={`w-full pr-12 px-4 py-3.5 border-2 rounded-lg text-base transition-all focus:outline-none focus:border-[#B30000] focus:ring-2 focus:ring-[#B30000]/10 disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed${errors.confirmarSenha ? ' border-red-500 bg-red-50' : ' border-gray-200 bg-white'}`}
                     placeholder="Repita a senha"
                   />
                   <button
                     type="button"
-                    className="password-toggle"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 p-1 rounded hover:text-[#B30000] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     disabled={loading}
                   >
@@ -372,7 +376,7 @@ export function Cadastrar() {
                   </button>
                 </div>
                 {errors.confirmarSenha && (
-                  <span className="error-text">{errors.confirmarSenha}</span>
+                  <span className="block text-red-500 text-sm mt-1.5">{errors.confirmarSenha}</span>
                 )}
               </div>
             </div>
@@ -380,25 +384,25 @@ export function Cadastrar() {
             <button
               type="submit"
               disabled={loading}
-              className="submit-button"
+              className="w-full bg-gradient-to-br from-[#B30000] to-[#990000] text-white py-4 rounded-lg font-semibold text-base cursor-pointer hover:shadow-lg hover:-translate-y-0.5 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed disabled:transform-none transition-all flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
-                  <div className="button-spinner"></div>
+                  <div className="w-5 h-5 border-2 border-transparent border-t-white rounded-full animate-spin"></div>
                   Criando conta...
                 </>
               ) : (
                 <>
-                  <i className="bi bi-person-plus mr-2"></i>
+                  <i className="bi bi-person-plus"></i>
                   Criar conta
                 </>
               )}
             </button>
 
-            <div className="form-footer">
-              <p className="login-link">
+            <div className="mt-8 text-center pt-6 border-t border-gray-200">
+              <p className="text-gray-500">
                 Já tem uma conta?{' '}
-                <Link to={ROUTES.LOGIN} className="link">
+                <Link to={ROUTES.LOGIN} className="text-[#B30000] font-semibold hover:underline">
                   Fazer login
                 </Link>
               </p>

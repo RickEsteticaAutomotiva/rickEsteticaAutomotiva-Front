@@ -5,13 +5,14 @@ import { Breadcrumb } from "../../components/breadcrumb/Breadcrumb";
 import { Footer } from "../../components/footer/Footer";
 import { LoadingState } from "../../components/loading-state/LoadingState";
 import { ModalConfirmacao } from "../../components/modal-confirmacao/ModalConfirmacao";
-import { UseAuth } from "../../hooks/UseAuth";
-import { OrdemServicoService } from "../../services/OrdemServicoService";
-import { VeiculoService } from "../../services/VeiculoService";
+import { useAuth } from "../../context/AuthContext";
+import { ordemServicoService } from "../../services/OrdemServicoService";
+import { veiculoService } from "../../services/VeiculoService";
 import { servicosService } from "../../services/ServicosService";
 import { ROUTES } from "../../constants/Routes";
 import { tradutorStatus, formatarDataCompleta, formatarHorario, formatarPreco } from '../../utils/index';
-import "./Historico.css";
+import { useToast } from '../../context/ToastContext';
+import { TiposToast } from '../../utils/enum/TiposToast';
 
 export function Historico() {
     const [agendamentos, setAgendamentos] = useState([]);
@@ -19,10 +20,9 @@ export function Historico() {
     const [showModalCancelamento, setShowModalCancelamento] = useState(false);
     const [agendamentoParaCancelar, setAgendamentoParaCancelar] = useState(null);
     const [loadingCancelamento, setLoadingCancelamento] = useState(false);
-    const { user, isAuthenticated } = UseAuth();
+    const { user, isAuthenticated } = useAuth();
     const navigate = useNavigate();
-    const ordemServicoService = new OrdemServicoService();
-    const veiculoService = new VeiculoService();
+    const { mostrarToast } = useToast();
 
     const breadcrumbItems = [
         {
@@ -80,7 +80,12 @@ export function Historico() {
 
             setAgendamentos(agendamentosEnriquecidos);
         } catch (error) {
-            console.error('Erro ao buscar histórico:', error);
+            mostrarToast({
+                tipo: TiposToast.ERRO,
+                titulo: 'Erro ao carregar histórico',
+                mensagem: 'Não foi possível buscar seus agendamentos. Tente novamente.',
+                duracao: 4000
+            });
         } finally {
             setLoading(false);
         }
@@ -108,9 +113,19 @@ export function Historico() {
 
             setShowModalCancelamento(false);
             setAgendamentoParaCancelar(null);
+            mostrarToast({
+                tipo: TiposToast.SUCESSO,
+                titulo: 'Agendamento cancelado',
+                mensagem: 'Seu agendamento foi cancelado com sucesso.',
+                duracao: 4000
+            });
         } catch (error) {
-            console.error('Erro ao cancelar agendamento:', error);
-            alert('Erro ao cancelar agendamento. Tente novamente.');
+            mostrarToast({
+                tipo: TiposToast.ERRO,
+                titulo: 'Erro ao cancelar',
+                mensagem: error.message || 'Não foi possível cancelar o agendamento. Tente novamente.',
+                duracao: 5000
+            });
         } finally {
             setLoadingCancelamento(false);
         }
@@ -125,7 +140,7 @@ export function Historico() {
         const statusInfo = tradutorStatus(status);
 
         return (
-            <span className={`status-badge ${statusInfo.classe}`}>
+            <span className={statusInfo.classe}>
                 <i className={statusInfo.icon}></i>
                 {statusInfo.label}
             </span>
@@ -141,41 +156,41 @@ export function Historico() {
             <Header />
             <Breadcrumb items={breadcrumbItems} />
 
-            <div className="historico-container">
-                <div className="historico-content">
-                    <div className="historico-header">
-                        <h1 className="historico-title">
+            <div className="bg-gray-50 min-h-[calc(100vh-80px)] p-4 md:p-8">
+                <div className="max-w-[1200px] mx-auto">
+                    <div className="bg-white rounded-xl p-6 md:p-8 mb-8 shadow-md">
+                        <h1 className="text-3xl font-bold text-gray-800 mb-2">
                             <i className="bi bi-clock-history mr-3"></i>
                             Meu Histórico de Agendamentos
                         </h1>
-                        <p className="historico-subtitle">
+                        <p className="text-gray-500">
                             Acompanhe todos os seus agendamentos realizados
                         </p>
                     </div>
 
                     {agendamentos.length === 0 ? (
-                        <div className="empty-state">
-                            <i className="bi bi-calendar-x empty-icon"></i>
-                            <h3 className="empty-title">Nenhum agendamento encontrado</h3>
-                            <p className="empty-description">
+                        <div className="text-center py-16">
+                            <i className="bi bi-calendar-x text-6xl text-gray-300 mb-6 block"></i>
+                            <h3 className="text-2xl font-semibold text-gray-600 mb-3">Nenhum agendamento encontrado</h3>
+                            <p className="text-gray-500 mb-6 max-w-md mx-auto">
                                 Você ainda não realizou nenhum agendamento. Que tal agendar um serviço agora?
                             </p>
-                            <Link to={ROUTES.HOME} className="btn-primary btn-agendar">
-                                <i className="bi bi-plus-circle mr-2"></i>
+                            <Link to={ROUTES.HOME} className="inline-flex items-center gap-2 bg-[#B30000] text-white px-6 py-3 rounded-lg hover:bg-[#990000] transition-colors font-semibold">
+                                <i className="bi bi-plus-circle"></i>
                                 Agendar Serviço
                             </Link>
                         </div>
                     ) : (
-                        <div className="agendamentos-grid">
+                        <div className="grid gap-6">
                             {agendamentos.map((agendamento) => (
-                                <div key={agendamento.id} className="agendamento-card">
-                                    <div className="agendamento-header">
-                                        <div className="agendamento-info">
+                                <div key={agendamento.id} className="bg-white rounded-xl shadow-md overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-lg">
+                                    <div className="p-6 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                                        <div className="flex items-center gap-4">
                                             <div>
-                                                <div className="agendamento-id">
+                                                <div className="font-semibold text-gray-800">
                                                     Agendamento #{agendamento.id}
                                                 </div>
-                                                <div className="agendamento-data">
+                                                <div className="text-gray-500 text-sm">
                                                     {formatarDataCompleta(agendamento.dataAgendamento)} às {formatarHorario(agendamento.dataAgendamento)}
                                                 </div>
                                             </div>
@@ -183,14 +198,14 @@ export function Historico() {
                                         {getStatusBadge(agendamento.status)}
                                     </div>
 
-                                    <div className="agendamento-body">
+                                    <div className="p-6">
                                         {/* Informações do Veículo */}
-                                        <div className="veiculo-info">
-                                            <div className="veiculo-title">
+                                        <div className="bg-slate-50 rounded-lg p-4 mb-4">
+                                            <div className="font-semibold text-gray-800 flex items-center gap-2 mb-2">
                                                 <i className="bi bi-car-front"></i>
                                                 Veículo
                                             </div>
-                                            <div className="veiculo-detalhes">
+                                            <div className="text-gray-500 text-sm">
                                                 {agendamento.veiculo ?
                                                     `${agendamento.veiculo.marca} ${agendamento.veiculo.modelo} - ${agendamento.veiculo.ano} | ${agendamento.veiculo.cor} | ${agendamento.veiculo.placa}` :
                                                     'Dados do veículo não disponíveis'
@@ -199,15 +214,15 @@ export function Historico() {
                                         </div>
 
                                         {/* Lista de Serviços */}
-                                        <div className="servicos-lista">
-                                            <div className="servicos-title">
+                                        <div className="mb-4">
+                                            <div className="font-semibold text-gray-800 flex items-center gap-2 mb-3">
                                                 <i className="bi bi-list-check"></i>
                                                 Serviços ({agendamento.servicos?.length || 0})
                                             </div>
                                             {agendamento.servicos?.map((servico, index) => (
-                                                <div key={servico.id || index} className="servico-item">
-                                                    <span className="servico-nome">{servico.nome || `Serviço ${index + 1}`}</span>
-                                                    <span className="servico-preco">
+                                                <div key={`${servico.id}-${index}`} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
+                                                    <span className="text-gray-800">{servico.nome || `Serviço ${index + 1}`}</span>
+                                                    <span className="text-[#B30000] font-semibold">
                                                         {formatarPreco(servico.preco)}
                                                     </span>
                                                 </div>
@@ -215,27 +230,27 @@ export function Historico() {
                                         </div>
 
                                         {/* Total */}
-                                        <div className="total-value">
+                                        <div className="flex justify-between items-center pt-4 border-t-2 border-gray-200 font-bold text-gray-800">
                                             <span>Total Mínimo:</span>
                                             <span>{formatarPreco(agendamento.precoMinimo)}</span>
                                         </div>
 
                                         {/* Observações */}
                                         {agendamento.observacoes && (
-                                            <div className="observacoes">
-                                                <div className="observacoes-title">
+                                            <div className="mt-4">
+                                                <div className="font-semibold text-gray-800 flex items-center gap-2 mb-2">
                                                     <i className="bi bi-chat-text"></i>
                                                     Observações
                                                 </div>
-                                                <div className="observacoes-texto">
+                                                <div className="text-gray-600 text-sm">
                                                     {agendamento.observacoes}
                                                 </div>
                                             </div>
                                         )}
                                     </div>
 
-                                    <div className="agendamento-footer">
-                                        <div className="footer-info">
+                                    <div className="px-6 py-4 border-t border-gray-100 flex justify-between items-center">
+                                        <div className="text-sm text-gray-500">
                                             {agendamento.dtConclusao && (
                                                 <span>Concluído em: {formatarDataCompleta(agendamento.dtConclusao)}</span>
                                             )}
@@ -243,7 +258,7 @@ export function Historico() {
                                         
                                         {agendamento.status === 1 && (
                                             <button
-                                                className="btn-cancelar"
+                                                className="bg-red-50 text-red-600 border border-red-200 px-4 py-2 rounded-lg hover:bg-red-600 hover:text-white transition-colors text-sm font-medium"
                                                 onClick={() => handleCancelar(agendamento)}
                                             >
                                                 <i className="bi bi-x-circle mr-2"></i>

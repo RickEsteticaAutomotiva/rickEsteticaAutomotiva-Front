@@ -1,5 +1,5 @@
 export const smoothScrollTo = (targetPosition, duration = 800) => {
-    const startPosition = window.pageYOffset;
+    const startPosition = window.scrollY;
     const distance = targetPosition - startPosition;
     let startTime = null;
 

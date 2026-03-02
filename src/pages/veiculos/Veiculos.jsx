@@ -5,10 +5,9 @@ import { Footer } from "../../components/footer/Footer";
 import { Breadcrumb } from "../../components/breadcrumb/Breadcrumb";
 import { ModalVeiculo } from "../../components/modal-veiculo/ModalVeiculo";
 import { ModalConfirmacao } from "../../components/modal-confirmacao/ModalConfirmacao";
-import { UseAuth } from "../../hooks/UseAuth";
+import { useAuth } from "../../context/AuthContext";
 import { ROUTES } from "../../constants/Routes";
-import "./Veiculos.css";
-import { VeiculoService } from '../../services/VeiculoService';
+import { veiculoService } from '../../services/VeiculoService';
 
 export function Veiculos() {
   const [veiculos, setVeiculos] = useState([]);
@@ -25,9 +24,8 @@ export function Veiculos() {
   const [veiculoParaExcluir, setVeiculoParaExcluir] = useState(null);
   const [loadingExclusao, setLoadingExclusao] = useState(false);
 
-  const veiculoService = new VeiculoService();
   const navigate = useNavigate();
-  const { isAuthenticated, user } = UseAuth();
+  const { isAuthenticated, user } = useAuth();
 
   const breadcrumbItems = [
     {
@@ -93,10 +91,9 @@ export function Veiculos() {
     }
 
     const veiculo = veiculos.find(v => v.id === veiculoSelecionado);
+    if (!veiculo) return;
 
-    sessionStorage.setItem('veiculoSelecionado', JSON.stringify(veiculo));
-
-    navigate('/agendamento');
+    navigate(ROUTES.AGENDAMENTO, { state: { veiculoSelecionado: veiculo } });
   };
 
   const handleAdicionarVeiculo = () => {
@@ -174,57 +171,57 @@ export function Veiculos() {
       <Header />
       <Breadcrumb items={fromHeader ? breadcrumbItemsFromHeader : breadcrumbItems} />
 
-      <div className="veiculos-container">
-        <div className="veiculos-card">
-          <div className="veiculos-header">
+      <div className="flex justify-center p-4 md:p-8 min-h-[calc(100vh-210px)] bg-gray-50">
+        <div className="bg-white rounded-xl shadow-md w-full max-w-[800px] h-fit overflow-hidden">
+          <div className="p-6 md:p-8 border-b border-gray-200">
             {!fromHeader && (
               <>
-                <h1 className="veiculos-title">Escolha um veículo que irá receber o serviço</h1>
-                <p className="veiculos-subtitle">Selecione o veículo e clique em avançar para continuar</p>
+                <h1 className="text-2xl font-bold mb-2">Escolha um veículo que irá receber o serviço</h1>
+                <p className="text-gray-500 text-sm">Selecione o veículo e clique em avançar para continuar</p>
               </>
             )}
 
             {fromHeader && (
               <>
-                <h1 className="veiculos-title">Meus Veículos Cadastrados</h1>
-                <p className="veiculos-subtitle">Visualize e cadastre seus veículos</p>
+                <h1 className="text-2xl font-bold mb-2">Meus Veículos Cadastrados</h1>
+                <p className="text-gray-500 text-sm">Visualize e cadastre seus veículos</p>
               </>
             )}
           </div>
 
           {error && (
-            <div className="error-message">
-              <i className="bi bi-exclamation-triangle mr-2"></i>
+            <div className="mx-6 my-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 flex items-center gap-2">
+              <i className="bi bi-exclamation-triangle"></i>
               {error}
             </div>
           )}
 
           {veiculos.length === 0 && !loading ? (
-            <div className="empty-state">
-              <i className="bi bi-car-front text-6xl text-gray-300 mb-4"></i>
+            <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
+              <i className="bi bi-car-front text-6xl text-gray-300 mb-4 block"></i>
               <h3 className="text-xl font-semibold text-gray-600 mb-2">Nenhum veículo cadastrado</h3>
               {!fromHeader && (
                 <p className="text-gray-500 mb-4">Você precisa cadastrar um veículo para continuar</p>
               )}
               <button
                 onClick={handleAdicionarVeiculo}
-                className="btn-primary"
+                className="flex items-center gap-2 bg-[#B30000] text-white px-5 py-2.5 rounded-lg font-semibold hover:bg-[#990000] transition-colors"
               >
-                <i className="bi bi-plus-circle mr-2"></i>
+                <i className="bi bi-plus-circle"></i>
                 Cadastrar Primeiro Veículo
               </button>
             </div>
           ) : (
             <>
-              <div className="veiculos-list">
+              <div className="p-6">
                 {veiculos.map((veiculo) => (
                   <div
                     key={veiculo.id}
-                    className={`veiculo-item ${fromHeader ? '' : veiculoSelecionado === veiculo.id ? 'selected' : ''}`}
+                    className={`flex items-center p-4 md:p-6 border-2 rounded-xl mb-4 cursor-pointer transition-all hover:border-red-500 hover:shadow-md${!fromHeader && veiculoSelecionado === veiculo.id ? ' border-red-500 bg-red-50 shadow-md' : ' border-gray-200 bg-white'}`}
                     onClick={() => handleVeiculoSelect(veiculo.id)}
                   >
                     {!fromHeader && (
-                      <div className="veiculo-radio">
+                      <div className="relative mr-4">
                         <input
                           type="radio"
                           id={`veiculo-${veiculo.id}`}
@@ -232,43 +229,45 @@ export function Veiculos() {
                           value={veiculo.id}
                           checked={veiculoSelecionado === veiculo.id}
                           onChange={() => handleVeiculoSelect(veiculo.id)}
-                          className="radio-input"
+                          className="absolute opacity-0 cursor-pointer w-0 h-0"
                         />
-                        <label htmlFor={`veiculo-${veiculo.id}`} className="radio-label"></label>
+                        <label htmlFor={`veiculo-${veiculo.id}`}
+                          className={`block w-5 h-5 border-2 rounded-full cursor-pointer transition-all${veiculoSelecionado === veiculo.id ? ' border-red-600 bg-red-600' : ' border-gray-300 bg-white'}`}>
+                        </label>
                       </div>
                     )}
 
-                    <div className="veiculo-icon">
-                      <i className="bi bi-car-front text-3xl text-gray-400"></i>
+                    <div className={`flex items-center justify-center w-14 h-14 rounded-xl mr-6 flex-shrink-0${!fromHeader && veiculoSelecionado === veiculo.id ? ' bg-red-100' : ' bg-gray-100'}`}>
+                      <i className={`bi bi-car-front text-2xl${!fromHeader && veiculoSelecionado === veiculo.id ? ' text-red-600' : ' text-gray-400'}`}></i>
                     </div>
 
-                    <div className="veiculo-info">
-                      <h3 className="veiculo-nome">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-800 text-lg mb-1">
                         {veiculo.marca} {veiculo.modelo}
                       </h3>
-                      <div className="veiculo-detalhes">
-                        <span className="detalhe-item">
+                      <div className="flex flex-wrap gap-3 text-sm text-gray-500">
+                        <span>
                           <i className="bi bi-calendar3 mr-1"></i>
                           {veiculo.ano}
                         </span>
-                        <span className="detalhe-item">
+                        <span>
                           <i className="bi bi-palette mr-1"></i>
                           {veiculo.cor}
                         </span>
-                        <span className="detalhe-item">
+                        <span>
                           <i className="bi bi-credit-card mr-1"></i>
                           {veiculo.placa}
                         </span>
-                        <span className="detalhe-item">
+                        <span>
                           <i className="bi bi-car-front-fill mr-1"></i>
                           {veiculo.porte}
                         </span>
                       </div>
                     </div>
 
-                    <div className="veiculo-actions">
+                    <div className="flex gap-2 ml-4">
                       <button
-                        className="btn-icon"
+                        className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:border-[#B30000] hover:text-[#B30000] transition-colors"
                         title="Editar veículo"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -278,7 +277,7 @@ export function Veiculos() {
                         <i className="bi bi-pencil"></i>
                       </button>
                       <button
-                        className="btn-icon btn-danger"
+                        className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:border-red-600 hover:bg-red-600 hover:text-white transition-colors"
                         title="Excluir veículo"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -292,12 +291,12 @@ export function Veiculos() {
                 ))}
               </div>
 
-              <div className="veiculos-footer">
+              <div className="flex flex-col sm:flex-row justify-between gap-4 p-6 border-t border-gray-200">
                 <button
                   onClick={handleAdicionarVeiculo}
-                  className="btn-secondary"
+                  className="flex items-center gap-2 bg-white border-2 border-gray-200 text-gray-700 px-5 py-2.5 rounded-lg font-semibold hover:border-[#B30000] hover:text-[#B30000] transition-colors"
                 >
-                  <i className="bi bi-plus-circle mr-2"></i>
+                  <i className="bi bi-plus-circle"></i>
                   Adicionar Novo Veículo
                 </button>
 
@@ -305,10 +304,10 @@ export function Veiculos() {
                   <button
                     onClick={handleAvancar}
                     disabled={!veiculoSelecionado}
-                    className="btn-primary"
+                    className="flex items-center gap-2 bg-[#B30000] text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-[#990000] disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
                   >
                     Avançar
-                    <i className="bi bi-arrow-right ml-2"></i>
+                    <i className="bi bi-arrow-right"></i>
                   </button>)}
               </div>
             </>
@@ -338,24 +337,11 @@ export function Veiculos() {
       >
         {veiculoParaExcluir && (
           <div>
-            <p className="modal-confirmacao-mensagem">
+            <p className="text-gray-700 mb-4">
               Tem certeza que deseja excluir o veículo <strong>{veiculoParaExcluir.marca} {veiculoParaExcluir.modelo}</strong>?
             </p>
-            <div style={{
-              marginTop: '1rem',
-              padding: '0.75rem',
-              backgroundColor: '#fef2f2',
-              borderRadius: '8px',
-              border: '1px solid #fecaca'
-            }}>
-              <p style={{
-                fontSize: '0.875rem',
-                color: '#dc2626',
-                margin: 0,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}>
+            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-600 flex items-center gap-2">
                 <i className="bi bi-exclamation-triangle"></i>
                 Esta ação não pode ser desfeita.
               </p>

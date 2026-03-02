@@ -1,9 +1,11 @@
 import { apiService } from './ApiService';
 
 export class VeiculoService {
+    BASE_URL = '/veiculos';
+
     async buscarVeiculosPorUsuario(idPessoa) {
         try {
-            const response = await apiService.get(`/veiculos/${idPessoa}`);
+            const response = await apiService.get(`${this.BASE_URL}/pessoa/${idPessoa}`);
             return response;
         } catch (error) {
             throw new Error(error.message || 'Erro ao buscar veículos do usuário');
@@ -12,7 +14,7 @@ export class VeiculoService {
 
     async adicionarVeiculo(veiculoData) {
         try {
-            const response = await apiService.post(`/veiculos`, veiculoData);
+            const response = await apiService.post(this.BASE_URL, veiculoData);
             return response;
         } catch (error) {
             throw new Error(error.message || 'Erro ao adicionar veículo');
@@ -21,7 +23,7 @@ export class VeiculoService {
 
     async atualizarVeiculo(veiculoData) {
         try {
-            const response = await apiService.patch(`/veiculos/${veiculoData.id}`, veiculoData);
+            const response = await apiService.patch(`${this.BASE_URL}/${veiculoData.id}`, veiculoData);
             return response;
         } catch (error) {
             throw new Error(error.message || 'Erro ao atualizar veículo');
@@ -30,10 +32,12 @@ export class VeiculoService {
 
     async removerVeiculo(idVeiculo) {
         try {
-            const response = await apiService.delete(`/veiculos/${idVeiculo}`);
+            const response = await apiService.delete(`${this.BASE_URL}/${idVeiculo}`);
             return response;
         } catch (error) {
             throw new Error(error.message || 'Erro ao remover veículo');
         }
     }
 }
+
+export const veiculoService = new VeiculoService();

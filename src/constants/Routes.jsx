@@ -2,6 +2,7 @@ export const ROUTES = {
   HOME: '/',
   LOGIN: '/login',
   CADASTRAR: '/cadastrar',
+  ESQUECI_SENHA: '/esqueci-senha',
   VEICULOS: '/veiculos',
   CARRINHO: '/carrinho',
   BUSCA: '/busca',

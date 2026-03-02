@@ -9,7 +9,9 @@ import {
 
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import { DashboardService } from "../../../services/DashboardService";
-import { useDashboardRefresh } from "../../../pages/gerente/dashboard/DashboardRefreshContext"; // <--- ADICIONE ISTO
+import { useDashboardRefresh } from "../../../pages/gerente/dashboard/DashboardRefreshContext";
+import { useToast } from '../../../context/ToastContext';
+import { TiposToast } from '../../../utils/enum/TiposToast';
 
 ChartJS.register(ArcElement, Tooltip, Legend, ChartDataLabels);
 
@@ -23,6 +25,7 @@ const formatTipo = (tipo) => {
 
 export default function CancelamentosChart() {
   const dashboardService = new DashboardService();
+  const { mostrarToast } = useToast();
 
   // ⬇ pega o sinal global de atualização
   const { refreshKey } = useDashboardRefresh();
@@ -65,7 +68,12 @@ export default function CancelamentosChart() {
           ],
         });
       } catch (error) {
-        console.error("Erro ao buscar cancelamentos:", error);
+        mostrarToast({
+          tipo: TiposToast.ERRO,
+          titulo: 'Erro ao carregar cancelamentos',
+          mensagem: 'Não foi possível buscar os dados de cancelamentos.',
+          duracao: 4000
+        });
       }
     };
 

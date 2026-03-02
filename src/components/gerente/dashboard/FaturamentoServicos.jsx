@@ -1,18 +1,20 @@
 import { useEffect, useState } from "react";
 import { DashboardService } from "../../../services/DashboardService";
 import { useDashboardRefresh } from "../../../pages/gerente/dashboard/DashboardRefreshContext";
+import { useToast } from '../../../context/ToastContext';
+import { TiposToast } from '../../../utils/enum/TiposToast';
 
 export default function FaturamentoServicos() {
   const { refreshKey } = useDashboardRefresh();
   const [categorias, setCategorias] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { mostrarToast } = useToast();
   const dashboardService = new DashboardService();
 
   useEffect(() => {
     async function buscarFaturamento() {
       try {
         const response = await dashboardService.faturamentoPorServico();
-        console.log(response)
         // Transformando o array de categorias em array de serviços
         const dadosPlano = response.flatMap((categoria) =>
           (categoria.servicos || []).map((s) => ({
@@ -36,7 +38,12 @@ export default function FaturamentoServicos() {
 
         setCategorias(dadosAgrupados);
       } catch (error) {
-        console.error("Erro ao buscar faturamento:", error);
+        mostrarToast({
+          tipo: TiposToast.ERRO,
+          titulo: 'Erro ao carregar faturamento',
+          mensagem: 'Não foi possível buscar os dados de faturamento.',
+          duracao: 4000
+        });
       } finally {
         setLoading(false);
       }
