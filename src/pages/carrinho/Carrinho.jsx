@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { carrinhoService } from "../../services/CarrinhoService";
 import { Footer } from "../../components/footer/Footer";
 import { useAuth } from "../../context/AuthContext";
+import { useCarrinho } from "../../context/CarrinhoContext";
 import { formatarPreco } from "../../utils/index";
 import { useToast } from '../../context/ToastContext';
 import { TiposToast } from '../../utils/enum/TiposToast';
@@ -17,6 +18,7 @@ export function Carrinho() {
     const [error, setError] = useState(null);
     const { user } = useAuth();
     const { mostrarToast } = useToast();
+    const { atualizarCarrinho } = useCarrinho();
 
     const listarServicos = async () => {
         try {
@@ -35,6 +37,7 @@ export function Carrinho() {
         try {
             await carrinhoService.removerItemCarrinho(idCarrinho);
             await listarServicos();
+            await atualizarCarrinho();
         } catch (err) {
             mostrarToast({
                 tipo: TiposToast.ERRO,
@@ -97,23 +100,25 @@ export function Carrinho() {
                             <ul>
                                 {carrinho.map((item, index) => (
                                     <li key={item.id ?? index} className="py-2 border-b border-gray-200 flex gap-3 items-start">
-                                        {item.imagem ? (
-                                            <img
-                                                src="/default-service.jpg"
-                                                alt={item.nome}
-                                                className="h-20 w-20 object-cover rounded"
-                                                onError={(e) => {
-                                                    e.target.src = "/default-service.jpg";
-                                                }}
-                                            />) : (
-                                            <div className="h-25 w-25 bg-gray-200 rounded flex items-center justify-center">
-                                                <i className="bi bi-gear text-4xl text-gray-400"></i>
-                                            </div>
-                                        )}
+                                        <Link to={ROUTES.SERVICO.replace(':id', item.idServico)}>
+                                            {item.imagem ? (
+                                                <img
+                                                    src="/default-service.jpg"
+                                                    alt={item.nome}
+                                                    className="h-20 w-20 object-cover rounded hover:opacity-80 transition-opacity"
+                                                    onError={(e) => {
+                                                        e.target.src = "/default-service.jpg";
+                                                    }}
+                                                />) : (
+                                                <div className="h-25 w-25 bg-gray-200 rounded flex items-center justify-center hover:opacity-80 transition-opacity">
+                                                    <i className="bi bi-gear text-4xl text-gray-400"></i>
+                                                </div>
+                                            )}
+                                        </Link>
 
                                         <div className="flex flex-col gap-2 w-full">
                                             <div className="flex justify-between w-full">
-                                                <p className="font-bold">{item.nome}</p>
+                                                <Link to={ROUTES.SERVICO.replace(':id', item.idServico)} className="font-bold hover:text-red-600 transition-colors">{item.nome}</Link>
                                                 <p>{formatarPreco(item.preco)}</p>
                                             </div>
 

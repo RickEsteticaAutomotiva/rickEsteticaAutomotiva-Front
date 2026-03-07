@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useFavoritos } from '../../context/FavoritosContext';
+import { useCarrinho } from '../../context/CarrinhoContext';
 import { ROUTES } from '../../constants/Routes';
 import { Header } from '../../components/header/Header';
 import { Breadcrumb } from "../../components/breadcrumb/Breadcrumb";
@@ -23,6 +24,7 @@ export function Servico() {
     const { user, isAuthenticated } = useAuth();
     const { refreshFavoritos } = useFavoritos();
     const { mostrarToast } = useToast();
+    const { atualizarCarrinho } = useCarrinho();
     const [servico, setServico] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -155,6 +157,7 @@ export function Servico() {
             }
             
             await carrinhoService.adicionarServicoCarrinho(user.id, servico.id);
+            await atualizarCarrinho();
             navigate(`/carrinho`);
         } catch (error) {
             mostrarToast({
