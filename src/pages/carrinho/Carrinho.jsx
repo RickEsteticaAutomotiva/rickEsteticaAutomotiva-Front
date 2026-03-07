@@ -9,6 +9,7 @@ import { useAuth } from "../../context/AuthContext";
 import { formatarPreco } from "../../utils/index";
 import { useToast } from '../../context/ToastContext';
 import { TiposToast } from '../../utils/enum/TiposToast';
+import { InfoTooltip } from "../../components/info-tooltip/InfoTooltip";
 
 export function Carrinho() {
     const [loading, setLoading] = useState(true);
@@ -148,7 +149,10 @@ export function Carrinho() {
 
                     <div className="px-5 flex flex-col gap-4">
                         <div className="flex justify-between mb-2">
-                            <p>Valor mínimo:</p>
+                            <p className="flex items-center">
+                                Valor mínimo:
+                                <InfoTooltip message="Valor inicial estimado. O valor final pode variar conforme o tamanho do veículo e complexidade do serviço." />
+                            </p>
                             <p className="font-bold">{formatarPreco(calcularTotal())}</p>
                         </div>
 

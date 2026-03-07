@@ -15,6 +15,7 @@ import { CarrinhoMenu } from '../../components/carrinho-menu/CarrinhoMenu';
 import { formatarPreco } from '../../utils/index';
 import { useToast } from '../../context/ToastContext';
 import { TiposToast } from '../../utils/enum/TiposToast';
+import { InfoTooltip } from "../../components/info-tooltip/InfoTooltip";
 
 export function Servico() {
     const { id } = useParams();
@@ -312,7 +313,10 @@ export function Servico() {
 
                         <div className="px-5 flex flex-col gap-4">
                             <div className="flex flex-col">
-                                <p className="font-semibold">A partir de:</p>
+                                <p className="font-semibold">
+                                    A partir de:
+                                    <InfoTooltip message="Valor inicial estimado. O valor final pode variar conforme o tamanho do veículo e complexidade do serviço." />
+                                </p>
                                 <p className="text-2xl font-semibold text-red-600">{formatarPreco(servico.preco)}</p>
                             </div>
                             <div className="acoes-servico flex flex-col gap-4 mt-6">
