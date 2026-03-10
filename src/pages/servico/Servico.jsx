@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useFavoritos } from '../../context/FavoritosContext';
@@ -31,6 +31,10 @@ export function Servico() {
     const [isFavorito, setIsFavorito] = useState(false);
     const [favoritos, setFavoritos] = useState([]);
     const [loadingFavorito, setLoadingFavorito] = useState(false);
+    const [imagemSelecionada, setImagemSelecionada] = useState(0);
+    const [zoomAtivo, setZoomAtivo] = useState(false);
+    const [posicaoZoom, setPosicaoZoom] = useState({ x: 50, y: 50 });
+    const imagemContainerRef = useRef(null);
 
     const breadcrumbItems = [
         {
@@ -169,6 +173,67 @@ export function Servico() {
         }
     };
 
+    const IMAGENS_PLACEHOLDER = [
+        'https://placehold.co/600x600/e2e8f0/94a3b8?text=Imagem+1',
+        'https://placehold.co/600x600/fef9c3/ca8a04?text=Imagem+2',
+        'https://placehold.co/600x600/fce7f3/db2777?text=Imagem+3',
+        'https://placehold.co/600x600/dcfce7/16a34a?text=Imagem+4',
+        'https://placehold.co/600x600/ede9fe/7c3aed?text=Imagem+5',
+    ];
+
+    const imagens = servico?.imagem
+        ? [servico.imagem, servico.imagem, servico.imagem, servico.imagem]
+        : IMAGENS_PLACEHOLDER;
+
+    const compartilharServico = async () => {
+        const url = window.location.href;
+        const shareData = {
+            title: servico.nome,
+            text: servico.descricao ?? `Confira o serviço ${servico.nome} na Rick Estética Automotiva!`,
+            url,
+        };
+
+        if (navigator.share) {
+            try {
+                await navigator.share(shareData);
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    mostrarToast({
+                        tipo: TiposToast.ERRO,
+                        titulo: 'Erro ao compartilhar',
+                        mensagem: 'Não foi possível compartilhar o serviço.',
+                        duracao: 3000,
+                    });
+                }
+            }
+        } else {
+            try {
+                await navigator.clipboard.writeText(url);
+                mostrarToast({
+                    tipo: TiposToast.SUCESSO,
+                    titulo: 'Link copiado!',
+                    mensagem: 'O link do serviço foi copiado para a área de transferência.',
+                    duracao: 3000,
+                });
+            } catch {
+                mostrarToast({
+                    tipo: TiposToast.ERRO,
+                    titulo: 'Erro ao copiar',
+                    mensagem: 'Não foi possível copiar o link.',
+                    duracao: 3000,
+                });
+            }
+        }
+    };
+
+    const handleMouseMove = useCallback((e) => {
+        if (!imagemContainerRef.current) return;
+        const rect = imagemContainerRef.current.getBoundingClientRect();
+        const x = Math.min(Math.max(((e.clientX - rect.left) / rect.width) * 100, 0), 100);
+        const y = Math.min(Math.max(((e.clientY - rect.top) / rect.height) * 100, 0), 100);
+        setPosicaoZoom({ x, y });
+    }, []);
+
     if (loading) {
         return (
             <LoadingState />
@@ -202,103 +267,151 @@ export function Servico() {
             <Header />
             <Breadcrumb items={breadcrumbItems} />
 
-            <main className='px-4 md:px-16 py-5'>
-                <div className="">
-                    <div className="flex flex-col md:flex-row justify-between h-auto md:h-80 gap-4">
-                        <div className="w-full md:w-1/2 flex-shrink-0 bg-gray-200 rounded-lg shadow-md flex justify-center items-center overflow-hidden">
-                            {servico.imagem ? (
-                                <img src={servico.imagem} alt={servico.nome} className="w-full h-full" />
-                            ) : (
-                                <i className="bi bi-gear text-gray-400"></i>
+            <main className='px-4 md:px-16 py-8'>
+                <div className="flex flex-col lg:flex-row gap-8">
+
+                    <div className="flex gap-3 lg:w-[55%] lg:self-start lg:sticky lg:top-4">
+                        {imagens.length > 0 && (
+                            <div className="hidden md:flex flex-col gap-2 flex-shrink-0">
+                                {imagens.map((img, index) => (
+                                    <button
+                                        key={`thumb-desktop-${index}`}
+                                        onClick={() => setImagemSelecionada(index)}
+                                        className={`w-16 h-16 rounded-lg overflow-hidden border-2 transition-all focus:outline-none ${
+                                            imagemSelecionada === index
+                                                ? 'border-blue-500 shadow-md'
+                                                : 'border-gray-200 hover:border-gray-400'
+                                        }`}
+                                    >
+                                        <img src={img} alt={`Imagem ${index + 1}`} className="w-full h-full object-cover" />
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+
+                        <div className="flex-1 flex flex-col gap-3">
+                            <div
+                                ref={imagemContainerRef}
+                                className="w-full aspect-square rounded-xl overflow-hidden bg-gray-100 cursor-crosshair relative"
+                                role="img"
+                                aria-label={`Imagem do serviço ${servico.nome}`}
+                                onMouseMove={handleMouseMove}
+                                onMouseEnter={() => setZoomAtivo(true)}
+                                onMouseLeave={() => setZoomAtivo(false)}
+                            >
+                                {imagens[imagemSelecionada] ? (
+                                    <img
+                                        src={imagens[imagemSelecionada]}
+                                        alt={servico.nome}
+                                        className="w-full h-full object-cover transition-transform duration-100 ease-out select-none"
+                                        style={zoomAtivo ? {
+                                            transform: 'scale(2)',
+                                            transformOrigin: `${posicaoZoom.x}% ${posicaoZoom.y}%`
+                                        } : {}}
+                                        draggable={false}
+                                    />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center">
+                                        <i className="bi bi-gear text-gray-300 text-6xl"></i>
+                                    </div>
+                                )}
+
+                                {zoomAtivo && imagens[imagemSelecionada] && (
+                                    <div className="absolute bottom-3 right-3 bg-black/50 text-white text-xs px-2 py-1 rounded-full pointer-events-none">
+                                        <i className="bi bi-zoom-in mr-1"></i>Zoom ativo
+                                    </div>
+                                )}
+                            </div>
+
+                            {imagens.length > 0 && (
+                                <div className="flex md:hidden gap-2 overflow-x-auto pb-1">
+                                    {imagens.map((img, index) => (
+                                        <button
+                                            key={`thumb-mobile-${index}`}
+                                            onClick={() => setImagemSelecionada(index)}
+                                            className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all focus:outline-none ${
+                                                imagemSelecionada === index
+                                                    ? 'border-blue-500 shadow-md'
+                                                    : 'border-gray-200 hover:border-gray-400'
+                                            }`}
+                                        >
+                                            <img src={img} alt={`Imagem ${index + 1}`} className="w-full h-full object-cover" />
+                                        </button>
+                                    ))}
+                                </div>
                             )}
                         </div>
-                        <div className="hidden md:grid w-[48%] grid-cols-2 gap-5 flex-shrink-0">
-                            <div className='w-full h-full rounded-lg shadow-md flex justify-center items-center overflow-hidden bg-gray-200'>
-                                {servico.imagem ? (
-                                    <img src={servico.imagemUrl} alt={servico.nome} className="w-full h-full rounded-lg" />
-                                ) : (
-                                    <i className="bi bi-gear text-gray-400"></i>
-                                )}
-                            </div>
-                            <div className='w-full h-full rounded-lg shadow-md flex justify-center items-center overflow-hidden bg-gray-200'>
-                                {servico.imagem ? (
-                                    <img src={servico.imagemUrl} alt={servico.nome} className="w-full h-full rounded-lg" />
-                                ) : (
-                                    <i className="bi bi-gear text-gray-400"></i>
-                                )}
-                            </div>
-                            <div className='w-full h-full rounded-lg shadow-md flex justify-center items-center overflow-hidden bg-gray-200'>
-                                {servico.imagem ? (
-                                    <img src={servico.imagemUrl} alt={servico.nome} className="w-full h-full rounded-lg" />
-                                ) : (
-                                    <i className="bi bi-gear text-gray-400"></i>
-                                )}
-                            </div>
-                            <div className='w-full h-full rounded-lg shadow-md flex justify-center items-center overflow-hidden bg-gray-200'>
-                                {servico.imagem ? (
-                                    <img src={servico.imagemUrl} alt={servico.nome} className="w-full h-full rounded-lg" />
-                                ) : (
-                                    <i className="bi bi-gear text-gray-400"></i>
-                                )}
-                            </div>
-                        </div>
                     </div>
-                </div>
 
-                <div className='flex flex-col md:flex-row justify-between gap-5'>
-                    <div className="w-full md:w-[70%] mt-8">
-                        <div className='flex gap-4 justify-between items-center mb-4 border-b-2 pb-4 border-gray-200'>
-                            <h1 className="text-3xl font-bold">{servico.nome}</h1>
-
-                            <div className='flex gap-4'>
-                                <div className='h-10 w-10 rounded-full bg-white flex justify-center items-center cursor-pointer shadow'>
-                                    <div><i className="bi bi-share"></i></div>
-                                </div>
-
-                                <div
-                                    className={`h-10 w-10 rounded-full bg-white flex justify-center items-center cursor-pointer shadow transition-all duration-200 ${loadingFavorito ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-50'
+                    <div className="lg:w-[45%] flex flex-col gap-5 bg-white p-6 rounded-xl shadow">
+                        {/* Header: category + title + actions */}
+                        <div>
+                            <div className="flex justify-between items-start gap-3 mt-1">
+                                <h1 className="text-2xl font-bold text-gray-900 leading-snug">{servico.nome}</h1>
+                                <div className="flex gap-2 flex-shrink-0 mt-1">
+                                    <button
+                                        className="h-9 w-9 cursor-pointer rounded-full bg-gray-100 flex justify-center items-center hover:bg-gray-200 transition-colors"
+                                        onClick={compartilharServico}
+                                        title="Compartilhar serviço"
+                                    >
+                                        <i className="bi bi-share text-gray-600"></i>
+                                    </button>
+                                    <button
+                                        className={`h-9 w-9 cursor-pointer rounded-full bg-gray-100 flex justify-center items-center transition-all ${
+                                            loadingFavorito ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-50'
                                         }`}
-                                    onClick={toggleFavorito}
-                                    disabled={loadingFavorito}
-                                >
-                                    <div>
+                                        onClick={toggleFavorito}
+                                        disabled={loadingFavorito}
+                                    >
                                         {loadingFavorito ? (
-                                            <i className="bi bi-arrow-repeat animate-spin"></i>
+                                            <i className="bi bi-arrow-repeat animate-spin text-gray-500"></i>
                                         ) : isFavorito ? (
                                             <i className="bi bi-heart-fill text-red-500"></i>
                                         ) : (
                                             <i className="bi bi-heart text-gray-600"></i>
                                         )}
-                                    </div>
+                                    </button>
                                 </div>
                             </div>
                         </div>
 
-                        <div>
-                            <p className="mt-4">{servico.descricao}</p>
+                        <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                            <p className="text-sm text-gray-500 flex items-center gap-1">
+                                A partir de:
+                                <InfoTooltip message="Valor inicial estimado. O valor final pode variar conforme o tamanho do veículo e complexidade do serviço." />
+                            </p>
+                            <p className="text-3xl font-bold text-green-600 mt-1">{formatarPreco(servico.preco)}</p>
                         </div>
 
-                        <div className="flex flex-col md:flex-row gap-5 mt-8">
-                            <div className="flex-1">
-                                <h1 className="text-xl font-bold"><i className="bi bi-house mr-3"></i>Sobre o local</h1>
-                                <p className="mt-2">Estamos localizados na R. Alcatifa, a oficina Rick Estética Automotiva é referência em cuidados automotivos, oferecendo serviços especializados que vão desde lavagens técnicas até vitrificação e revitalização completa de veículos. Nosso objetivo é proporcionar não apenas limpeza, mas também proteção, valorização e durabilidade para cada carro que passa por aqui.</p>
-                            </div>
-
-                            <img src={localImage} alt="Imagem do local" className="w-full md:w-2/5 object-cover rounded-lg" />
+                        <div className="flex flex-col gap-3">
+                            <CarrinhoMenu
+                                idUsuario={user ? user.id : null}
+                                idServico={servico.id}
+                            />
+                            <button
+                                className="w-full border border-green-600 text-green-600 px-6 py-3 rounded-lg font-semibold hover:bg-green-600 hover:text-white transition-colors cursor-pointer"
+                                onClick={agendarServico}
+                            >
+                                Agendar Serviço
+                            </button>
                         </div>
 
-                        <div className="flex flex-col md:flex-row gap-5 mt-10 md:mt-15">
-                            <div className="flex-1">
-                                <h1 className="text-xl font-bold"><i className="bi bi-geo-alt mr-3"></i>Como chegar?</h1>
-                                <h2 className="mt-3 text-lg font-semibold" href="#">Rick Estética Automotiva</h2>
-                                <p className='mt-3'>R. Alcatifa, 81 - Jardim Brasilia (Zona Leste), São Paulo, 03583-030</p>
-                            </div>
+                        <div className="border-t border-gray-200 pt-5">
+                            <h2 className="font-bold text-lg mb-2">Descrição</h2>
+                            <p className="text-gray-600 leading-relaxed">{servico.descricao}</p>
+                        </div>
 
-                            <div className="w-full md:w-2/5 rounded-lg overflow-hidden">
+                        <div className="border-t border-gray-200 pt-5">
+                            <h2 className="font-bold text-lg mb-3">
+                                <i className="bi bi-geo-alt mr-2"></i>Localização
+                            </h2>
+                            <p className="font-semibold text-gray-800">Rick Estética Automotiva</p>
+                            <p className="text-gray-500 text-sm mt-1">R. Alcatifa, 81 - Jardim Brasilia (Zona Leste), São Paulo, 03583-030</p>
+                            <div className="mt-3 rounded-lg overflow-hidden border border-gray-200">
                                 <iframe
                                     src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3658.2486944757753!2d-46.51234178502112!3d-23.53453698467894!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94ce5f0a5c5c5c5c%3A0x1234567890abcdef!2sR.%20Alcatifa%2C%2081%20-%20Jardim%20Brasilia%2C%20S%C3%A3o%20Paulo%20-%20SP%2C%2003583-030!5e0!3m2!1spt-BR!2sbr!4v1234567890123!5m2!1spt-BR!2sbr"
                                     width="100%"
-                                    height="200"
+                                    height="160"
                                     style={{ border: 0 }}
                                     allowFullScreen=""
                                     loading="lazy"
@@ -307,33 +420,18 @@ export function Servico() {
                                 ></iframe>
                             </div>
                         </div>
-                    </div>
 
-                    <div className="fixed bottom-0 left-0 w-full h-[36%] z-[100] py-5 rounded-t-2xl shadow-2xl overflow-y-auto bg-white md:static md:w-1/3 md:h-fit md:rounded-xl md:shadow-md md:mt-8">
-                        <div className="flex justify-between items-center mb-4 border-b border-gray-300 pb-2 px-5">
-                            <h1 className="font-bold text-lg">{servico.nome}</h1>
-                        </div>
-
-                        <div className="px-5 flex flex-col gap-4">
-                            <div className="flex flex-col">
-                                <p className="font-semibold">
-                                    A partir de:
-                                    <InfoTooltip message="Valor inicial estimado. O valor final pode variar conforme o tamanho do veículo e complexidade do serviço." />
-                                </p>
-                                <p className="text-2xl font-semibold text-red-600">{formatarPreco(servico.preco)}</p>
-                            </div>
-                            <div className="acoes-servico flex flex-col gap-4 mt-6">
-                                <CarrinhoMenu 
-                                    idUsuario={user ? user.id : null}
-                                    idServico={servico.id}
-                                />
-
-                                <button
-                                    className="border border-green-600 text-green-600 px-6 py-2 rounded-lg hover:bg-green-700 hover:text-white transition-colors cursor-pointer"
-                                    onClick={agendarServico}
-                                >
-                                    Agendar Serviço
-                                </button>
+                        <div className="border-t border-gray-200 pt-5">
+                            <h2 className="font-bold text-lg mb-3">
+                                <i className="bi bi-house mr-2"></i>Sobre o local
+                            </h2>
+                            <p className="text-gray-600 leading-relaxed">
+                            Estamos localizados na R. Alcatifa, a oficina Rick Estética Automotiva é referência em cuidados automotivos,
+                            oferecendo serviços especializados que vão desde lavagens técnicas até vitrificação e revitalização completa de veículos.
+                            Nosso objetivo é proporcionar não apenas limpeza, mas também proteção, valorização e durabilidade para cada carro que passa por aqui.
+                            </p>
+                            <div className="mt-3 rounded-lg overflow-hidden border border-gray-200">
+                                <img src={localImage} alt="Imagem do local" className="w-full h-full object-cover" />
                             </div>
                         </div>
                     </div>

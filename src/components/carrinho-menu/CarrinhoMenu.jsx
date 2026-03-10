@@ -86,10 +86,10 @@ export function CarrinhoMenu({ idUsuario, idServico }) {
                 {carregando ? (
                     <>
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        <span>Adicionando...</span>
+                        <span className="font-semibold">Adicionando...</span>
                     </>
                 ) : (
-                    <span>Adicionar ao Carrinho</span>
+                    <span className="font-semibold">Adicionar ao Carrinho</span>
                 )}
             </button>
 
