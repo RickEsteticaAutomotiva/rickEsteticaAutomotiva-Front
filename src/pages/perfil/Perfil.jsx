@@ -9,6 +9,7 @@ import { LoadingState } from "../../components/loading-state/LoadingState";
 import { Footer } from '../../components/footer/Footer';
 import { useToast } from '../../context/ToastContext';
 import { TiposToast } from '../../utils/enum/TiposToast';
+import { ModalConfirmacao } from '../../components/modal-confirmacao/ModalConfirmacao';
 
 export function Perfil() {
   const [formData, setFormData] = useState({
@@ -29,8 +30,12 @@ export function Perfil() {
     confirmarSenha: ""
   });
   const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [modalPerfil, setModalPerfil] = useState(false);
+  const [modalSenha, setModalSenha] = useState(false);
+  const [modalExcluir, setModalExcluir] = useState(false);
 
-  const { user, logout, isAuthenticated } = useAuth();
+  const { user, logout, isAuthenticated, updateUser } = useAuth();
+  const navigate = useNavigate();
   const { mostrarToast } = useToast();
 
   const breadcrumbItems = [
@@ -168,15 +173,15 @@ export function Perfil() {
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
+    setModalPerfil(true);
+  };
 
-    if (!validateForm()) {
-      return;
-    }
-
+  const handleSubmitConfirmed = async () => {
+    setModalPerfil(false);
     setSaving(true);
-
     try {
       const userData = {
         nome: formData.nome.trim(),
@@ -187,8 +192,10 @@ export function Perfil() {
       };
 
       await usuarioService.atualizarPerfil(user.id, userData);
+      updateUser({ nome: userData.nome, email: userData.email });
 
       setIsEditing(false);
+      setShowPasswordForm(false);
       mostrarToast({
         tipo: TiposToast.SUCESSO,
         titulo: 'Perfil atualizado',
@@ -208,26 +215,22 @@ export function Perfil() {
     }
   };
 
-  const handlePasswordChange = async (e) => {
+  const handlePasswordChange = (e) => {
     e.preventDefault();
+    if (!validatePasswordForm()) return;
+    setModalSenha(true);
+  };
 
-    if (!validatePasswordForm()) {
-      return;
-    }
-
+  const handlePasswordChangeConfirmed = async () => {
+    setModalSenha(false);
     setSaving(true);
-
     try {
       await usuarioService.alterarSenha(user.id, {
         senhaAtual: senhaData.senhaAtual,
         novaSenha: senhaData.novaSenha
       });
 
-      setSenhaData({
-        senhaAtual: "",
-        novaSenha: "",
-        confirmarSenha: ""
-      });
+      setSenhaData({ senhaAtual: "", novaSenha: "", confirmarSenha: "" });
       setShowPasswordForm(false);
       mostrarToast({
         tipo: TiposToast.SUCESSO,
@@ -264,11 +267,14 @@ export function Perfil() {
   };
 
   const handleDeleteAccount = () => {
-    if (window.confirm('Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita.')) {
-      usuarioService.deletarUsuario(user.id);
-      logout();
-      navigate(ROUTES.HOME);
-    }
+    setModalExcluir(true);
+  };
+
+  const handleDeleteAccountConfirmed = async () => {
+    setModalExcluir(false);
+    await usuarioService.deletarUsuario(user.id);
+    logout();
+    navigate(ROUTES.HOME);
   };
 
   const inputCls = (field, alwaysDisabled = false) =>
@@ -305,7 +311,7 @@ export function Perfil() {
                 </button>
               ) : (
                 <button
-                  onClick={() => { setIsEditing(false); setErrors({}); buscarPerfil(); }}
+                  onClick={() => { setIsEditing(false); setShowPasswordForm(false); setErrors({}); buscarPerfil(); }}
                   className="flex items-center gap-2 bg-white border-2 border-gray-200 text-gray-500 px-4 py-2 rounded-lg hover:border-gray-400 transition-colors font-medium"
                 >
                   Cancelar
@@ -375,7 +381,7 @@ export function Perfil() {
             </form>
 
             {/* Segurança */}
-            <div className="pb-8 border-b border-gray-200">
+            {isEditing && <div className="py-8 border-y border-gray-200">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <div>
                   <h3 className="text-lg font-semibold text-gray-700">Segurança</h3>
@@ -441,7 +447,7 @@ export function Perfil() {
                   </div>
                 </form>
               )}
-            </div>
+            </div>}
 
             {/* Zona de Perigo */}
             <div className="bg-red-50 border border-red-200 rounded-xl p-6">
@@ -457,6 +463,38 @@ export function Perfil() {
       </div>
 
       <Footer />
+
+      <ModalConfirmacao
+        isOpen={modalPerfil}
+        onClose={() => setModalPerfil(false)}
+        onConfirm={handleSubmitConfirmed}
+        titulo="Salvar alterações"
+        mensagem="Deseja salvar as alterações feitas no seu perfil?"
+        textoBotaoConfirmar="Salvar"
+        tipo="default"
+        loading={saving}
+      />
+
+      <ModalConfirmacao
+        isOpen={modalSenha}
+        onClose={() => setModalSenha(false)}
+        onConfirm={handlePasswordChangeConfirmed}
+        titulo="Alterar senha"
+        mensagem="Deseja alterar sua senha? Você continuará logado com a nova senha."
+        textoBotaoConfirmar="Alterar Senha"
+        tipo="warning"
+        loading={saving}
+      />
+
+      <ModalConfirmacao
+        isOpen={modalExcluir}
+        onClose={() => setModalExcluir(false)}
+        onConfirm={handleDeleteAccountConfirmed}
+        titulo="Excluir conta"
+        mensagem="Tem certeza que deseja excluir sua conta? Esta ação é irreversível e todos os seus dados serão perdidos."
+        textoBotaoConfirmar="Excluir Conta"
+        tipo="danger"
+      />
     </>
   );
 }
