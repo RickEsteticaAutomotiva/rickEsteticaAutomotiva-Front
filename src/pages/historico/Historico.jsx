@@ -78,7 +78,10 @@ export function Historico() {
                 })
             );
 
-            setAgendamentos(agendamentosEnriquecidos);
+            const ordenados = agendamentosEnriquecidos.sort(
+                (a, b) => new Date(b.dataAgendamento) - new Date(a.dataAgendamento)
+            );
+            setAgendamentos(ordenados);
         } catch (error) {
             mostrarToast({
                 tipo: TiposToast.ERRO,

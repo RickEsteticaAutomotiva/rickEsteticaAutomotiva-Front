@@ -224,7 +224,7 @@ export function Calendario({
 
       {/* Horários */}
       {selectedDate && (
-        <div className="bg-white rounded-lg p-4 sm:p-6 mt-1 animate-[fade-in-up_0.3s_ease-out]">
+        <div className="horarios-container bg-white rounded-lg p-4 sm:p-6 mt-1 animate-[fade-in-up_0.3s_ease-out]">
           <h3 className="text-lg font-semibold mb-4 text-gray-800">
             Horários disponíveis para {formatDate(selectedDate)}
           </h3>

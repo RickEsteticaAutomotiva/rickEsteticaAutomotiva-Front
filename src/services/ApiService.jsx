@@ -21,7 +21,9 @@ class ApiService {
                 // Endpoints públicos que não precisam de token (incluindo versões com barra)
                 const isLoginRequest = config.url === '/pessoas/login';
                 const isCadastroRequest = (config.url === '/pessoas' || config.url === '/pessoas/') && config.method === 'post';
-                const isPublicEndpoint = isLoginRequest || isCadastroRequest;
+                const isEsqueciSenhaRequest = config.url === '/pessoas/esqueci-senha';
+                const isRedefinirSenhaRequest = config.url === '/pessoas/redefinir-senha';
+                const isPublicEndpoint = isLoginRequest || isCadastroRequest || isEsqueciSenhaRequest || isRedefinirSenhaRequest;
                 
                 // Só adicionar token se:
                 // 1. Token existe

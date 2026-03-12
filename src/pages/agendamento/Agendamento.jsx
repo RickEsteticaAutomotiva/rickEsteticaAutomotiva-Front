@@ -35,7 +35,6 @@ export function Agendamento() {
     ];
 
     useEffect(() => {
-        // A rota já está protegida por PrivateRoute; aguardar user estar disponível
         if (!user) return;
 
         const veiculo = location.state?.veiculoSelecionado ?? null;
@@ -46,9 +45,38 @@ export function Agendamento() {
         }
 
         setVeiculoSelecionado(veiculo);
+        setDataSelecionada(getProximaDataDisponivel());
         buscarServicosCarrinho();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user]);
+
+    const getProximaDataDisponivel = () => {
+        const horarios = ['08:00', '09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
+        const agora = new Date();
+        const limiteComMargem = new Date(agora.getTime() + 60 * 60 * 1000);
+
+        const data = new Date();
+        data.setHours(0, 0, 0, 0);
+
+        while (true) {
+            if (data.getDay() !== 0) {
+                const isHoje = data.toDateString() === agora.toDateString();
+                if (!isHoje) {
+                    return data;
+                }
+                // Para hoje, verificar se ainda há algum horário disponível
+                const temHorarioDisponivel = horarios.some(h => {
+                    const [horas, minutos] = h.split(':').map(Number);
+                    const horarioDate = new Date();
+                    horarioDate.setHours(horas, minutos, 0, 0);
+                    return horarioDate > limiteComMargem;
+                });
+                if (temHorarioDisponivel) {
+                    return data;
+                }
+            }
+            data.setDate(data.getDate() + 1);
+        }
+    };
 
     const buscarServicosCarrinho = async () => {
         if (!user || !user.id) {

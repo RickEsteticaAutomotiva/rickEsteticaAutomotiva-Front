@@ -3,6 +3,7 @@ export const ROUTES = {
   LOGIN: '/login',
   CADASTRAR: '/cadastrar',
   ESQUECI_SENHA: '/esqueci-senha',
+  REDEFINIR_SENHA: '/redefinir-senha',
   VEICULOS: '/veiculos',
   CARRINHO: '/carrinho',
   BUSCA: '/busca',

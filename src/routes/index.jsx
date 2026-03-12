@@ -9,6 +9,8 @@ const Home             = lazy(() => import("../pages/home/Home").then(m => ({ de
 const Veiculos         = lazy(() => import("../pages/veiculos/Veiculos").then(m => ({ default: m.Veiculos })));
 const Login            = lazy(() => import("../pages/login/Login").then(m => ({ default: m.Login })));
 const Cadastrar        = lazy(() => import("../pages/cadastrar/Cadastrar").then(m => ({ default: m.Cadastrar })));
+const EsqueciSenha     = lazy(() => import("../pages/esqueci-senha/EsqueciSenha").then(m => ({ default: m.EsqueciSenha })));
+const RedefinirSenha   = lazy(() => import("../pages/redefinir-senha/RedefinirSenha").then(m => ({ default: m.RedefinirSenha })));
 const Busca            = lazy(() => import("../pages/busca/Busca").then(m => ({ default: m.Busca })));
 const Servico          = lazy(() => import("../pages/servico/Servico").then(m => ({ default: m.Servico })));
 const Carrinho         = lazy(() => import("../pages/carrinho/Carrinho").then(m => ({ default: m.Carrinho })));
@@ -26,11 +28,13 @@ export default function AppRoutes() {
     <Suspense fallback={<LoadingState />}>
       <Routes>
         {/* Rotas públicas */}
-        <Route path={ROUTES.HOME}      element={<Home />} />
-        <Route path={ROUTES.LOGIN}     element={<Login />} />
-        <Route path={ROUTES.CADASTRAR} element={<Cadastrar />} />
-        <Route path={ROUTES.BUSCA}     element={<Busca />} />
-        <Route path={ROUTES.SERVICO}   element={<Servico />} />
+        <Route path={ROUTES.HOME}           element={<Home />} />
+        <Route path={ROUTES.LOGIN}          element={<Login />} />
+        <Route path={ROUTES.CADASTRAR}      element={<Cadastrar />} />
+        <Route path={ROUTES.ESQUECI_SENHA}  element={<EsqueciSenha />} />
+        <Route path={ROUTES.REDEFINIR_SENHA} element={<RedefinirSenha />} />
+        <Route path={ROUTES.BUSCA}          element={<Busca />} />
+        <Route path={ROUTES.SERVICO}        element={<Servico />} />
 
         {/* Rotas protegidas — exigem autenticação */}
         <Route path={ROUTES.VEICULOS}    element={<PrivateRoute><Veiculos /></PrivateRoute>} />
