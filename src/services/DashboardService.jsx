@@ -75,5 +75,14 @@ export class DashboardService {
             throw new Error(error.message || 'Erro ao buscar faturamento por periodo');
         }
     }
+
+    async homeResumo() {
+        try {
+            const response = await apiService.get(`${this.BASE_URL}/home-resumo`);
+            return response;
+        } catch (error) {
+            throw new Error(error.message || 'Erro ao buscar resumo da home');
+        }
+    }
     
 }

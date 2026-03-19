@@ -34,23 +34,35 @@ export default function FaturamentoChart() {
 
   const [error, setError] = useState(null);
 
+  const getDataRegistro = (item) => item?.data ?? item?.dia ?? item?.dataFaturamento ?? null;
+
   const fetchData = useCallback(async () => {
     try {
       const response = await dashboardService.faturamentoPeriodo();
-      const registros = response || [];
+      const registros = Array.isArray(response) ? response : [];
 
-      registros.sort((a, b) => new Date(a.data) - new Date(b.data));
+      const registrosValidos = registros
+        .map((item) => ({
+          ...item,
+          dataRegistro: getDataRegistro(item),
+        }))
+        .filter((item) => typeof item.dataRegistro === "string" && item.dataRegistro.includes("-"));
 
-      const ano = registros.length > 0 ? registros[0].data.split("-")[0] : "";
+      registrosValidos.sort((a, b) => new Date(a.dataRegistro) - new Date(b.dataRegistro));
 
-      const labels = registros.map((item) => {
-        const [a, m, d] = item.data.split("-");
+      const ano = registrosValidos.length > 0
+        ? String(registrosValidos[0].dataRegistro).split("-")[0]
+        : "";
+
+      const labels = registrosValidos.map((item) => {
+        const [, m, d] = String(item.dataRegistro).split("-");
         return `${d}/${m}`;
       });
 
-      const valores = registros.map((item) => item.faturamentoDiario);
+      const valores = registrosValidos.map((item) => item.faturamentoDiario ?? 0);
 
       setState({ labels, valores, ano });
+      setError(null);
 
     } catch (err) {
       setError(err.message);

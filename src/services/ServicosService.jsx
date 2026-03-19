@@ -12,16 +12,30 @@ export class ServicosService {
                 filtro = ''
             } = parametros;
 
-            const queryParams = new URLSearchParams({
-                pagina: pagina.toString(),
-                tamanho: tamanho.toString(),
-                ordenarPor,
-                filtro
-            });
+            const queryParams = new URLSearchParams();
+            queryParams.set('pagina', pagina.toString());
+            queryParams.set('tamanho', tamanho.toString());
+            queryParams.set('ordenarPor', ordenarPor);
+            
+            if (filtro && filtro.trim()) {
+                queryParams.set('filtro', filtro);
+            }
 
-            const response = await apiService.get(`${this.BASE_URL}?${queryParams.toString()}`);
-            return response;
+            const url = `${this.BASE_URL}?${queryParams.toString()}`;
+            console.log('[ServicosService.buscarTodos] GET', url);
+            
+            try {
+                const response = await apiService.get(url);
+                console.log('[ServicosService.buscarTodos] Response:', response);
+                return response;
+            } catch (error1) {
+                console.warn('[ServicosService.buscarTodos] Erro com parâmetros, tentando endpoint simples:', error1?.message);
+                const response = await apiService.get(this.BASE_URL);
+                console.log('[ServicosService.buscarTodos] Response (fallback):', response);
+                return response;
+            }
         } catch (error) {
+            console.error('[ServicosService.buscarTodos] Erro:', error);
             throw new Error(error.message || 'Erro ao buscar serviços');
         }
     }

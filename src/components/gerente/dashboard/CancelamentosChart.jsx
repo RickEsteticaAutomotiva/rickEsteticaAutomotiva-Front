@@ -16,6 +16,10 @@ import { TiposToast } from '../../../utils/enum/TiposToast';
 ChartJS.register(ArcElement, Tooltip, Legend, ChartDataLabels);
 
 const formatTipo = (tipo) => {
+  if (typeof tipo !== "string" || !tipo.trim()) {
+    return "Nao informado";
+  }
+
   return tipo
     .toLowerCase()
     .split('_')

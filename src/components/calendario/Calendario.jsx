@@ -153,6 +153,9 @@ export function Calendario({
 
   const today = new Date();
   const daysInMonth = getDaysInMonth(currentDate);
+  const displayedTimes = selectedDate
+    ? availableTimes.filter((time) => !isTimePassed(time, selectedDate))
+    : [];
 
   return (
     <div className="w-full">
@@ -234,9 +237,9 @@ export function Calendario({
               <div className="w-8 h-8 border-4 border-gray-100 border-t-red-600 rounded-full animate-spin mb-4" />
               <p>Carregando horários...</p>
             </div>
-          ) : availableTimes.length > 0 ? (
+          ) : displayedTimes.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fit,minmax(120px,1fr))] gap-3 sm:gap-4">
-              {availableTimes.map(time => {
+              {displayedTimes.map(time => {
                 const timePassed = isTimePassed(time, selectedDate);
                 const isSelected = selectedTime === time;
 

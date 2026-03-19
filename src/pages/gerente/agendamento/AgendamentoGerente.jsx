@@ -1,17 +1,178 @@
 import { Button } from "../../../components/button/Button";
 import { CardAgendamento } from "../../../components/gerente/card/card-agendamento/CardAgendamento";
 import { CardPequeno } from "../../../components/gerente/card/card-pequeno/CardPequeno";
-import { Clock, X, BanknoteArrowUp, Car } from 'lucide-react';
-import { useState } from 'react';
+import { Clock, BanknoteArrowUp } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { ModalOrdemServico } from "./modal-ordem-servico/ModalOrdemServico";
+import { ordemServicoService } from '../../../services/OrdemServicoService';
+import { servicosService } from '../../../services/ServicosService';
+import { veiculoService } from '../../../services/VeiculoService';
+import { useToast } from '../../../context/ToastContext';
+import { TiposToast } from '../../../utils/enum/TiposToast';
+import { formatarHorario, formatarPreco } from '../../../utils';
+
+const formatarVeiculo = (veiculo) => {
+    if (!veiculo) return '-';
+    if (typeof veiculo === 'string') return veiculo;
+
+    const textoPrincipal = [veiculo.marca, veiculo.modelo].filter(Boolean).join(' ');
+    return textoPrincipal || veiculo.placa || '-';
+};
+
+const normalizarServicos = (servicos = []) => {
+    return servicos.map((servico) => {
+        if (typeof servico === 'number') {
+            return {
+                id: servico,
+                nome: `Serviço ${servico}`,
+                preco: 0,
+                valor: formatarPreco(0)
+            };
+        }
+
+        const id = servico.id ?? servico.idServico;
+        const preco = servico.valorAplicado ?? servico.preco ?? servico.precoBase ?? 0;
+
+        return {
+            id,
+            nome: servico.nome ?? servico.servico?.nome ?? `Serviço ${id}`,
+            preco,
+            valor: formatarPreco(preco)
+        };
+    });
+};
+
+const normalizarAgendamento = (ordem) => {
+    const servicos = normalizarServicos(ordem?.servicos || []);
+    const valorTotal = ordem?.valorTotal ?? ordem?.precoMinimo ?? servicos.reduce(
+        (total, servico) => total + (servico.preco || 0),
+        0
+    );
+
+    return {
+        id: ordem?.id,
+        horario: ordem?.horario || (ordem?.dataAgendamento ? formatarHorario(ordem.dataAgendamento) : '--:--'),
+        cliente: ordem?.cliente?.nome || ordem?.cliente || '-',
+        veiculo: formatarVeiculo(ordem?.veiculo),
+        valor: formatarPreco(valorTotal),
+        status: ordem?.status,
+        dataAgendamento: ordem?.dataAgendamento || '-',
+        dataConclusao: ordem?.dtConclusao || ordem?.dataConclusao || '--/--/---- - --:--',
+        observacoes: ordem?.observacoes || 'Sem observações.',
+        servicos
+    };
+};
+
+const resolverReferenciasOrdem = async (ordem) => {
+    if (!ordem) return ordem;
+
+    const ordemResolvida = { ...ordem };
+    const servicosOrigem = ordem?.servicos || ordem?.itensServico || ordem?.itens || [];
+
+    if (Array.isArray(servicosOrigem) && servicosOrigem.length > 0 && typeof servicosOrigem[0] === 'number') {
+        const idsUnicos = [...new Set(servicosOrigem)];
+
+        const detalhesServicos = await Promise.all(
+            idsUnicos.map(async (idServico) => {
+                try {
+                    const detalhe = await servicosService.buscarPorId(idServico);
+                    return [idServico, detalhe];
+                } catch {
+                    return [idServico, null];
+                }
+            })
+        );
+
+        const mapaServicos = new Map(detalhesServicos);
+
+        ordemResolvida.servicos = servicosOrigem.map((idServico) => {
+            const detalhe = mapaServicos.get(idServico);
+
+            if (!detalhe) {
+                return { id: idServico, nome: `Serviço ${idServico}`, preco: 0 };
+            }
+
+            return {
+                ...detalhe,
+                id: detalhe.id ?? idServico
+            };
+        });
+    }
+
+    if (typeof ordemResolvida.veiculo === 'number') {
+        try {
+            ordemResolvida.veiculo = await veiculoService.buscarPorId(ordemResolvida.veiculo);
+        } catch {
+            ordemResolvida.veiculo = `Veículo ${ordemResolvida.veiculo}`;
+        }
+    }
+
+    return ordemResolvida;
+};
 
 export function AgendamentoGerente() {
     const [modalAberto, setModalAberto] = useState(false);
     const [agendamentoSelecionado, setAgendamentoSelecionado] = useState(null);
+    const [agendamentos, setAgendamentos] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [loadingDetalhe, setLoadingDetalhe] = useState(false);
+    const { mostrarToast } = useToast();
 
-    const abrirModal = (agendamento) => {
+    const buscarAgendamentos = async () => {
+        setLoading(true);
+        try {
+            const response = await ordemServicoService.listarOrdensGestao({
+                pagina: 0,
+                tamanho: 50,
+                ordenarPor: 'dataAgendamento',
+                direcao: 'asc'
+            });
+
+            const lista = response?.content || response || [];
+            const listaResolvida = await Promise.all(
+                lista.map((ordem) => resolverReferenciasOrdem(ordem))
+            );
+
+            setAgendamentos(listaResolvida.map(normalizarAgendamento));
+        } catch (error) {
+            setAgendamentos([]);
+            mostrarToast({
+                tipo: TiposToast.ERRO,
+                titulo: 'Erro ao carregar agendamentos',
+                mensagem: error.message || 'Não foi possível carregar os agendamentos.',
+                duracao: 4000
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        buscarAgendamentos();
+    }, []);
+
+    const abrirModal = async (agendamento) => {
+        if (!agendamento) return;
+
+        // Abre imediatamente com os dados já carregados da listagem.
         setAgendamentoSelecionado(agendamento);
         setModalAberto(true);
+
+        setLoadingDetalhe(true);
+        try {
+            const detalhe = await ordemServicoService.buscarPorId(agendamento.id);
+            const detalheResolvido = await resolverReferenciasOrdem(detalhe);
+            setAgendamentoSelecionado(normalizarAgendamento(detalheResolvido));
+        } catch (error) {
+            mostrarToast({
+                tipo: TiposToast.ALERTA,
+                titulo: 'Detalhe indisponível',
+                mensagem: error.message || 'Não foi possível carregar os detalhes completos da ordem.',
+                duracao: 3000
+            });
+        } finally {
+            setLoadingDetalhe(false);
+        }
     };
 
     const fecharModal = () => {
@@ -19,69 +180,34 @@ export function AgendamentoGerente() {
         setAgendamentoSelecionado(null);
     };
 
-const todosAgendamentos = [
-    {
-        id: 1,
-        horario: "9h00",
-        cliente: "João Silva",
-        veiculo: "Honda Civic",
-        valor: "R$ 80,00",
-        status: 1,
-        dataAgendamento: "17/11/2025 - 9:00:00",
-        dataConclusao: "--/--/---- - --:--",
-        observacoes: "Cliente solicitou lavagem completa com cera. Veículo apresenta sujeira acumulada.",
-        servicos: [
-            { id: 1, nome: "Lavagem Externa", valor: "R$ 30,00" },
-            { id: 2, nome: "Enceramento", valor: "R$ 50,00" }
-        ]
-    },
-    {
-        id: 2,
-        horario: "12h00",
-        cliente: "Maria Santos",
-        veiculo: "Toyota Corolla",
-        valor: "R$ 120,00",
-        status: 2,
-        dataAgendamento: "17/11/2025 - 12:00:00",
-        dataConclusao: "--/--/---- - --:--",
-        observacoes: "Limpeza completa do interior com aspiração e produtos específicos para couro.",
-        servicos: [
-            { id: 3, nome: "Limpeza de Interior", valor: "R$ 80,00" },
-            { id: 4, nome: "Higienização de Bancos", valor: "R$ 40,00" }
-        ]
-    },
-    {
-        id: 3,
-        horario: "17h00",
-        cliente: "Pedro Costa",
-        veiculo: "Volkswagen Golf",
-        valor: "R$ 200,00",
-        status: 4,
-        dataAgendamento: "17/11/2025 - 17:00:00",
-        dataConclusao: "--/--/---- - --:--",
-        observacoes: "Serviço completo de polimento e lavagem externa.",
-        servicos: [
-            { id: 5, nome: "Polimento", valor: "R$ 150,00" },
-            { id: 6, nome: "Lavagem Externa", valor: "R$ 30,00" },
-            { id: 7, nome: "Proteção Cera", valor: "R$ 20,00" }
-        ]
-    },
-    {
-        id: 4,
-        horario: "18h00",
-        cliente: "Ana Oliveira",
-        veiculo: "Chevrolet Onix",
-        valor: "R$ 100,00",
-        status: 5,
-        dataAgendamento: "17/11/2025 - 18:00:00",
-        dataConclusao: "--/--/---- - --:--",
-        observacoes: "Cliente possui animais de estimação, necessário aspiração detalhada.",
-        servicos: [
-            { id: 8, nome: "Limpeza de Interior", valor: "R$ 70,00" },
-            { id: 9, nome: "Aspiração Detalhada", valor: "R$ 30,00" }
-        ]
-    }
-];
+    const proximoAgendamento = useMemo(() => {
+        const pendentes = agendamentos.filter((agendamento) => agendamento.status !== 4 && agendamento.status !== 5);
+        if (pendentes.length === 0) {
+            return null;
+        }
+
+        return [...pendentes].sort((a, b) => {
+            const dataA = new Date(a.dataAgendamento).getTime();
+            const dataB = new Date(b.dataAgendamento).getTime();
+            return dataA - dataB;
+        })[0];
+    }, [agendamentos]);
+
+    const handleOrdemAtualizada = (ordemAtualizada) => {
+        if (!ordemAtualizada?.id) return;
+
+        setAgendamentos((prev) => prev.map((item) =>
+            item.id === ordemAtualizada.id ? { ...item, ...ordemAtualizada } : item
+        ));
+        setAgendamentoSelecionado((prev) => {
+            if (!prev || prev.id !== ordemAtualizada.id) {
+                return prev;
+            }
+
+            return { ...prev, ...ordemAtualizada };
+        });
+    };
+
     return (
         <div className="mt-4">
             <div className="flex justify-center bg-white rounded-2xl p-5 mb-6 shadow-sm">
@@ -89,40 +215,55 @@ const todosAgendamentos = [
                     <h2 className="text-2xl font-semibold text-center">Próximo agendamento</h2>
                     <div className="flex justify-center items-center gap-10">
                         <div className="flex flex-col gap-7">
-                            <CardPequeno texto="Polimento" label="Servico" />
-                            <CardPequeno texto="14h30" label="Horário" icon={Clock} />
+                            <CardPequeno
+                                texto={proximoAgendamento?.servicos?.[0]?.nome || 'Sem agendamento'}
+                                label="Servico"
+                            />
+                            <CardPequeno
+                                texto={proximoAgendamento?.horario || '--:--'}
+                                label="Horário"
+                                icon={Clock}
+                            />
                         </div>
                         <div className="bg-gray-300 w-px h-full"></div>
-                        <div className="flex flex-col gap-7">                            
-                            <CardPequeno texto="Golf" label="Veículo" />
-                            <CardPequeno texto="R$ 200" label="Valor" icon={BanknoteArrowUp} />
+                        <div className="flex flex-col gap-7">
+                            <CardPequeno texto={proximoAgendamento?.veiculo || '-'} label="Veículo" />
+                            <CardPequeno texto={proximoAgendamento?.valor || 'R$ 0,00'} label="Valor" icon={BanknoteArrowUp} />
                         </div>
                     </div>
                                     
-                    <Button texto="Detalhes"
-                        onClick={() => abrirModal && abrirModal(todosAgendamentos[2])}
+                    <Button
+                        texto={loadingDetalhe ? "Carregando..." : "Detalhes"}
+                        onClick={() => proximoAgendamento && abrirModal(proximoAgendamento)}
                     />                                  
                 </div>
             </div>
             <h2 className="text-2xl font-semibold text-center mb-6">Todos</h2>
 
-            <div>                
-                <div className="grid grid-cols-2 gap-4 py-4">
-                    {todosAgendamentos.map((agendamento) => (
-                        <CardAgendamento
-                            key={agendamento.id}
-                            agendamento={agendamento}
-                            imagem={<Clock />}
-                            onDetalhesClick={abrirModal}
-                        />
-                    ))}
-                </div>
+            <div>
+                {loading ? (
+                    <p className="text-center text-gray-500 py-4">Carregando agendamentos...</p>
+                ) : agendamentos.length === 0 ? (
+                    <p className="text-center text-gray-500 py-4">Nenhum agendamento encontrado.</p>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+                        {agendamentos.map((agendamento) => (
+                            <CardAgendamento
+                                key={agendamento.id}
+                                agendamento={agendamento}
+                                imagem={<Clock />}
+                                onDetalhesClick={abrirModal}
+                            />
+                        ))}
+                    </div>
+                )}
             </div>
 
             <ModalOrdemServico
                 isOpen={modalAberto}
                 agendamento={agendamentoSelecionado}
                 onClose={fecharModal}
+                onOrdemAtualizada={handleOrdemAtualizada}
             />
 
         </div>
