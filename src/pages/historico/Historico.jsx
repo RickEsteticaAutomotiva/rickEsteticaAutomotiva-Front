@@ -210,7 +210,7 @@ export function Historico() {
                                             </div>
                                             <div className="text-gray-500 text-sm">
                                                 {agendamento.veiculo ?
-                                                    `${agendamento.veiculo.marca} ${agendamento.veiculo.modelo} - ${agendamento.veiculo.ano} | ${agendamento.veiculo.cor} | ${agendamento.veiculo.placa}` :
+                                                    `${agendamento.veiculo.marca} ${agendamento.veiculo.modelo} - ${agendamento.veiculo.placa}` :
                                                     'Dados do veículo não disponíveis'
                                                 }
                                             </div>
