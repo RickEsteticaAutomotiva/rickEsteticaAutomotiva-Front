@@ -1,38 +1,84 @@
 import { Plus, Check } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useToast } from '../../../../../context/ToastContext';
 import { TiposToast } from '../../../../../utils/enum/TiposToast';
+import { servicosService } from '../../../../../services/ServicosService';
+import { ordemServicoService } from '../../../../../services/OrdemServicoService';
+import { formatarPreco } from '../../../../../utils';
 
 export function ModalAdicionaServico({ 
     isOpen, 
     ordemServicoId,
     servicosAtuais,
+    onOptimisticUpdate,
+    onRollback,
     onSuccess, 
     onCancel 
 }) {
     const [servicosSelecionados, setServicosSelecionados] = useState([]);
+    const [servicosDisponiveis, setServicosDisponiveis] = useState([]);
+    const [loadingServicos, setLoadingServicos] = useState(false);
+    const [salvando, setSalvando] = useState(false);
     const { mostrarToast } = useToast();
 
-    if (!isOpen) return null;
+    useEffect(() => {
+        const carregarServicos = async () => {
+            if (!isOpen) return;
 
-    // Lista de serviços disponíveis
-    const servicosDisponiveis = [
-        { id: 100, nome: "Lavagem Externa", valor: "R$ 30,00" },
-        { id: 101, nome: "Lavagem Interna", valor: "R$ 25,00" },
-        { id: 102, nome: "Enceramento", valor: "R$ 50,00" },
-        { id: 103, nome: "Polimento", valor: "R$ 150,00" },
-        { id: 104, nome: "Limpeza de Interior", valor: "R$ 80,00" },
-        { id: 105, nome: "Higienização de Bancos", valor: "R$ 40,00" },
-        { id: 106, nome: "Proteção Cera", valor: "R$ 20,00" },
-        { id: 107, nome: "Aspiração Detalhada", valor: "R$ 30,00" },
-        { id: 108, nome: "Limpeza de Motor", valor: "R$ 60,00" },
-        { id: 109, nome: "Cera Líquida", valor: "R$ 35,00" }
-    ];
+            setLoadingServicos(true);
+            try {
+                const response = await servicosService.buscarTodos({
+                    pagina: 0,
+                    tamanho: 100,
+                    ordenarPor: 'nome',
+                    filtro: ''
+                });
 
-    // Filtrar serviços que não estão no agendamento atual
-    const servicosNaoAdicionados = servicosDisponiveis.filter(
-        servicoDisponivel => !servicosAtuais.some(servico => servico.nome === servicoDisponivel.nome)
+                console.log('[ModalAdicionaServico] Response:', response);
+
+                const lista = response?.content || response?.data || response || [];
+                const listaArray = Array.isArray(lista) ? lista : [];
+
+                const servicosNormalizados = listaArray.map((servico) => ({
+                    id: servico?.id,
+                    nome: servico?.nome,
+                    valor: formatarPreco(servico?.preco || 0),
+                    preco: servico?.preco || 0
+                })).filter((servico) => servico?.id);
+
+                console.log('[ModalAdicionaServico] Servços normalizados:', servicosNormalizados);
+
+                setServicosDisponiveis(servicosNormalizados);
+            } catch (error) {
+                console.error('[ModalAdicionaServico] Erro ao carregar:', error);
+                mostrarToast({
+                    tipo: TiposToast.ERRO,
+                    titulo: 'Erro ao carregar serviços',
+                    mensagem: error.message || 'Não foi possível carregar a lista de serviços.',
+                    duracao: 4000
+                });
+                setServicosDisponiveis([]);
+            } finally {
+                setLoadingServicos(false);
+            }
+        };
+
+        carregarServicos();
+    }, [isOpen, mostrarToast]);
+
+    const servicosNaoAdicionados = useMemo(
+        () => {
+            const idsAtuais = new Set(
+                (servicosAtuais || []).map((s) => s?.idServico ?? s?.servico?.id ?? s?.id)
+            );
+            return servicosDisponiveis.filter(
+                (servicoDisponivel) => !idsAtuais.has(servicoDisponivel?.id)
+            );
+        },
+        [servicosAtuais, servicosDisponiveis]
     );
+
+    if (!isOpen) return null;
 
     const handleServicoToggle = (servico) => {
         setServicosSelecionados(prev => {
@@ -46,12 +92,34 @@ export function ModalAdicionaServico({
     };
 
     const handleConfirm = async () => {
+        let snapshotServicos = [];
+
         try {
-            // Implementar chamada ao backend
-            // Exemplo de requisição:
-            // await api.post(`/ordens-servico/${ordemServicoId}/servicos`, {
-            //     servicos: servicosSelecionados.map(s => s.id)
-            // });
+            if (!ordemServicoId) {
+                throw new Error('Ordem de serviço inválida para adicionar serviços.');
+            }
+
+            if (servicosSelecionados.length === 0) {
+                return;
+            }
+
+            snapshotServicos = (servicosAtuais || []).map((item) => ({ ...item }));
+
+            const servicosSelecionadosNormalizados = servicosSelecionados.map((servico) => ({
+                id: servico.id,
+                nome: servico.nome,
+                preco: servico.preco,
+                valor: formatarPreco(servico.preco)
+            }));
+
+            const idsAtuais = new Set(snapshotServicos.map((item) => item?.idServico ?? item?.servico?.id ?? item?.id));
+            const novosServicos = servicosSelecionadosNormalizados.filter((item) => !idsAtuais.has(item.id));
+            const servicosAtualizados = [...snapshotServicos, ...novosServicos];
+
+            setSalvando(true);
+            onOptimisticUpdate?.(servicosAtualizados);
+
+            const ordemAtualizada = await ordemServicoService.adicionarServicos(ordemServicoId, servicosSelecionados);
 
             // Limpar seleção e notificar sucesso
             setServicosSelecionados([]);
@@ -61,14 +129,17 @@ export function ModalAdicionaServico({
                 mensagem: `${servicosSelecionados.length} serviço(s) adicionado(s) ao agendamento.`,
                 duracao: 4000
             });
-            onSuccess();
+            onSuccess(ordemAtualizada);
         } catch (error) {
+            onRollback?.(snapshotServicos);
             mostrarToast({
                 tipo: TiposToast.ERRO,
                 titulo: 'Erro ao adicionar serviços',
                 mensagem: error.message || 'Não foi possível adicionar os serviços.',
                 duracao: 4000
             });
+        } finally {
+            setSalvando(false);
         }
     };
 
@@ -78,7 +149,7 @@ export function ModalAdicionaServico({
     };
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-60 p-4">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4">
             <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-hidden">
                 <div className="p-6 border-b border-gray-200">
                     <div className="flex justify-between items-center">
@@ -97,7 +168,11 @@ export function ModalAdicionaServico({
                 </div>
                 
                 <div className="p-4 overflow-y-auto max-h-96">
-                    {servicosNaoAdicionados.length === 0 ? (
+                    {loadingServicos ? (
+                        <div className="text-center py-8">
+                            <p className="text-gray-500">Carregando serviços...</p>
+                        </div>
+                    ) : servicosNaoAdicionados.length === 0 ? (
                         <div className="text-center py-8">
                             <p className="text-gray-500">Todos os serviços disponíveis já foram adicionados</p>
                         </div>
@@ -138,9 +213,10 @@ export function ModalAdicionaServico({
                         <div className="flex gap-2">
                             <button
                                 onClick={handleConfirm}
+                                disabled={salvando}
                                 className="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors font-medium"
                             >
-                                Confirmar ({servicosSelecionados.length})
+                                {salvando ? 'Salvando...' : `Confirmar (${servicosSelecionados.length})`}
                             </button>
                             <button
                                 onClick={handleCancel}
