@@ -140,7 +140,7 @@ export function Historico() {
     };
 
     const getStatusBadge = (status) => {
-        const statusInfo = tradutorStatus(status);
+        const statusInfo = tradutorStatus(status.id);
 
         return (
             <span className={statusInfo.classe}>
