@@ -51,7 +51,7 @@ export function Veiculos() {
       icon: 'bi bi-house'
     },
     {
-      label: 'Selecionar Veículo',
+      label: 'Meus Veículos',
       icon: 'bi bi-car-front'
     }
   ];
@@ -72,6 +72,10 @@ export function Veiculos() {
     try {
       const data = await veiculoService.buscarVeiculosPorUsuario(user.id);
       setVeiculos(data);
+
+      if (data.length === 1) {
+        setVeiculoSelecionado(data[0].id);
+      }
 
     } catch (error) {
       setError(error.message);

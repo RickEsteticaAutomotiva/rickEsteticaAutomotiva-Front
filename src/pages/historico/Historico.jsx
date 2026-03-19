@@ -78,7 +78,10 @@ export function Historico() {
                 })
             );
 
-            setAgendamentos(agendamentosEnriquecidos);
+            const ordenados = agendamentosEnriquecidos.sort(
+                (a, b) => new Date(b.dataAgendamento) - new Date(a.dataAgendamento)
+            );
+            setAgendamentos(ordenados);
         } catch (error) {
             mostrarToast({
                 tipo: TiposToast.ERRO,
@@ -137,7 +140,7 @@ export function Historico() {
     };
 
     const getStatusBadge = (status) => {
-        const statusInfo = tradutorStatus(status);
+        const statusInfo = tradutorStatus(status.id);
 
         return (
             <span className={statusInfo.classe}>

@@ -3,12 +3,14 @@ import { PerfilDropdown } from "./perfil-dropdown/PerfilDropdown";
 import { CategoriasMenu } from "./categorias-menu/CategoriasMenu";
 import { InputPesquisa } from "./input-pesquisa/InputPesquisa";
 import { useAuth } from "../../context/AuthContext";
+import { useCarrinho } from "../../context/CarrinhoContext";
 import { ROUTES } from "../../constants/Routes";
 import logo from "../../assets/rick_logo.png";
 import { FavoritosDropdown } from "./favoritos-dropdown/FavoritosDropdown";
 
 export function Header() {
     const { isAuthenticated } = useAuth();
+    const { quantidadeItens } = useCarrinho();
     const location = useLocation();
 
     const showSearch = location.pathname !== ROUTES.LOGIN
@@ -46,8 +48,13 @@ export function Header() {
                 {autenticado && showSearch && <FavoritosDropdown />}
 
                 {showSearch && (
-                    <Link className="cursor-pointer" aria-label="Ver carrinho" to={autenticado ? ROUTES.CARRINHO : ROUTES.LOGIN}>
+                    <Link className="cursor-pointer relative" aria-label="Ver carrinho" to={autenticado ? ROUTES.CARRINHO : ROUTES.LOGIN}>
                         <i className="bi bi-cart3" aria-hidden="true"></i>
+                        {autenticado && quantidadeItens > 0 && (
+                            <span className="absolute -top-1 -right-2 bg-white text-[#B30000] text-[10px] font-bold leading-none rounded-full min-w-[16px] h-4 flex items-center justify-center px-1">
+                                {quantidadeItens > 99 ? '99+' : quantidadeItens}
+                            </span>
+                        )}
                     </Link>
                 )}
             </div>

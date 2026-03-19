@@ -34,7 +34,9 @@ export function Banner({ scrollTargetRef }) {
                             Ver Serviços
                         </button>
                         <a
-                            href="#contato"
+                            href="https://wa.me/5511966594782"
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="flex items-center bg-transparent text-white border-2 border-white px-6 md:px-8 py-3 md:py-4 rounded-lg font-semibold no-underline transition-all hover:bg-white hover:text-[#B30000] hover:-translate-y-0.5"
                         >
                             <i className="bi bi-whatsapp mr-2"></i>

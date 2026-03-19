@@ -126,6 +126,22 @@ export class AuthService {
         return decoded.exp - decoded.iat;
     }
 
+    async esquecerSenha(email) {
+        try {
+            await apiService.post(`${this.BASE_URL}/esqueci-senha`, { email: email.trim().toLowerCase() });
+        } catch (error) {
+            throw new Error(error.message || 'Erro ao solicitar redefinição de senha');
+        }
+    }
+
+    async redefinirSenha(token, novaSenha) {
+        try {
+            await apiService.post(`${this.BASE_URL}/redefinir-senha`, { token, novaSenha });
+        } catch (error) {
+            throw new Error(error.message || 'Erro ao redefinir senha');
+        }
+    }
+
     // Método para limpar dados de autenticação
     clearAuthData() {
         sessionStorage.removeItem('token');

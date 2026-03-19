@@ -4,6 +4,7 @@ import { UseAuth } from '../../hooks/UseAuth';
 import { useToast } from '../../context/ToastContext';
 import { TiposToast } from '../../utils/enum/TiposToast';
 import { formatarPlacaCarro, isPlacaCarro } from '../../utils';
+import { ModalConfirmacao } from '../modal-confirmacao/ModalConfirmacao';
 
 export function ModalVeiculo({ 
   isOpen, 
@@ -23,6 +24,7 @@ export function ModalVeiculo({
   
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [showConfirmacao, setShowConfirmacao] = useState(false);
   const [marcas] = useState([
     'Chevrolet', 'Ford', 'Volkswagen', 'Fiat', 'Honda', 'Toyota', 
     'Hyundai', 'Nissan', 'Renault', 'Peugeot', 'Citroën', 'BMW', 
@@ -156,6 +158,15 @@ export function ModalVeiculo({
       return;
     }
 
+    if (modo === 'editar') {
+      setShowConfirmacao(true);
+      return;
+    }
+
+    await salvarVeiculo();
+  };
+
+  const salvarVeiculo = async () => {
     setLoading(true);
 
     try {
@@ -189,6 +200,7 @@ export function ModalVeiculo({
       });
     } finally {
       setLoading(false);
+      setShowConfirmacao(false);
     }
   };
 
@@ -207,6 +219,7 @@ export function ModalVeiculo({
     }`;
 
   return (
+    <>
     <div
       className="fixed inset-0 bg-black/60 flex items-center justify-center z-[1000] p-2 sm:p-4"
       onClick={handleClose}
@@ -311,5 +324,23 @@ export function ModalVeiculo({
         </form>
       </div>
     </div>
+
+    {showConfirmacao && (
+      <ModalConfirmacao
+        isOpen={showConfirmacao}
+        onClose={() => setShowConfirmacao(false)}
+        onConfirm={salvarVeiculo}
+        titulo="Confirmar Edição"
+        tipo="warning"
+        textoBotaoConfirmar="Confirmar"
+        textoBotaoCancelar="Cancelar"
+        loading={loading}
+      >
+        <p className="text-gray-700 mb-2">
+          Deseja salvar as alterações no veículo <strong>{formData.marca} {formData.modelo}</strong>?
+        </p>
+      </ModalConfirmacao>
+    )}
+    </>
   );
 }

@@ -45,13 +45,10 @@ export function Footer() {
                                 Oferecemos serviços de qualidade premium para manter seu veículo sempre impecável.
                             </p>
                             <div className="flex gap-3">
-                                <a href="https://instagram.com/rickestética" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className={socialClass}>
+                                <a href="https://instagram.com/rick_estetica_automotiva" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className={socialClass}>
                                     <i className="bi bi-instagram"></i>
                                 </a>
-                                <a href="https://facebook.com/rickestética" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className={socialClass}>
-                                    <i className="bi bi-facebook"></i>
-                                </a>
-                                <a href="https://wa.me/5511999999999" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" className={socialClass}>
+                                <a href="https://wa.me/5511966594782" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" className={socialClass}>
                                     <i className="bi bi-whatsapp"></i>
                                 </a>
                             </div>
@@ -83,8 +80,7 @@ export function Footer() {
                             <div className="flex flex-col gap-4">
                                 {[
                                     { icon: 'bi-geo-alt', label: 'Endereço', content: <p>R. Alcatifa, 81<br />São Paulo, SP - 03583-030</p> },
-                                    { icon: 'bi-telephone', label: 'Telefone', content: <p><a href="tel:+5511999999999" className="text-gray-300 hover:text-[#B30000]">(11) 99999-9999</a></p> },
-                                    { icon: 'bi-envelope', label: 'E-mail', content: <p><a href="mailto:contato@rickestetica.com.br" className="text-gray-300 hover:text-[#B30000] break-all">contato@rickestetica.com.br</a></p> },
+                                    { icon: 'bi-telephone', label: 'Telefone', content: <p><a href="tel:+55 11 96659-4782" className="text-gray-300 hover:text-[#B30000]">(11) 96659-4782</a></p> },
                                     { icon: 'bi-clock', label: 'Horário', content: <p>Seg-Sex: 8h30 às 17h30<br />Sáb: 9h às 13h</p> },
                                 ].map(({ icon, label, content }) => (
                                     <div key={label} className="flex gap-4 items-start">

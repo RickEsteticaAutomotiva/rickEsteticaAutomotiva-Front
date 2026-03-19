@@ -4,6 +4,7 @@ import { carrinhoService } from "../../services/CarrinhoService";
 import { servicosService } from "../../services/ServicosService";
 import { CardServico } from '../../components/card-servico/CardServico';
 import { useToast } from '../../context/ToastContext';
+import { useCarrinho } from '../../context/CarrinhoContext';
 import { TiposToast } from '../../utils/enum/TiposToast';
 import { ROUTES } from '../../constants/Routes';
 
@@ -12,6 +13,7 @@ export function CarrinhoMenu({ idUsuario, idServico }) {
     const [servicoAdicionado, setServicoAdicionado] = useState(null);
     const [carregando, setCarregando] = useState(false);
     const { mostrarToast } = useToast();
+    const { atualizarCarrinho } = useCarrinho();
 
     useEffect(() => {
         if (menuAberto) {
@@ -55,7 +57,7 @@ export function CarrinhoMenu({ idUsuario, idServico }) {
             await carrinhoService.adicionarServicoCarrinho(idUsuario, idServico);
             const servicoDetalhes = await servicosService.buscarPorId(idServico);
             setServicoAdicionado(servicoDetalhes);
-            
+            await atualizarCarrinho();
             setMenuAberto(true);
         } catch (error) {
             mostrarToast({
@@ -84,10 +86,10 @@ export function CarrinhoMenu({ idUsuario, idServico }) {
                 {carregando ? (
                     <>
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        <span>Adicionando...</span>
+                        <span className="font-semibold">Adicionando...</span>
                     </>
                 ) : (
-                    <span>Adicionar ao Carrinho</span>
+                    <span className="font-semibold">Adicionar ao Carrinho</span>
                 )}
             </button>
 
