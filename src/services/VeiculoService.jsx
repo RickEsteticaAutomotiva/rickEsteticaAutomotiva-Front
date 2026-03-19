@@ -3,6 +3,15 @@ import { apiService } from './ApiService';
 export class VeiculoService {
     BASE_URL = '/veiculos';
 
+    async buscarPorId(idVeiculo) {
+        try {
+            const response = await apiService.get(`${this.BASE_URL}/${idVeiculo}`);
+            return response;
+        } catch (error) {
+            throw new Error(error.message || 'Erro ao buscar veículo');
+        }
+    }
+
     async buscarVeiculosPorUsuario(idPessoa) {
         try {
             const response = await apiService.get(`${this.BASE_URL}/pessoa/${idPessoa}`);

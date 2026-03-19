@@ -1,21 +1,48 @@
 import { X, Plus } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Label } from './label/Label';
 import { ServicoItem } from './servico-item/ServicoItem';
 import { ModalEditaServico } from './modal-edita-servico/ModalEditaServico';
 import { ModalRemoveServico } from './modal-remove-servico/ModalRemoveServico';
 import { ModalAdicionaServico } from './modal-adiciona-servico/ModalAdicionaServico';
+import { ordemServicoService } from '../../../../services/OrdemServicoService';
+import { useToast } from '../../../../context/ToastContext';
+import { TiposToast } from '../../../../utils/enum/TiposToast';
+import { formatarPreco, formatarHorario } from '../../../../utils';
 
-export function ModalOrdemServico({ isOpen, agendamento, onClose }) {
+export function ModalOrdemServico({ isOpen, agendamento, onClose, onOrdemAtualizada }) {
     const [editaServicoModal, setEditaServicoModal] = useState(false);
     const [showRemoveModal, setShowRemoveModal] = useState(false);
     const [showAddServicoModal, setShowAddServicoModal] = useState(false);
     const [selectedServico, setSelectedServico] = useState(null);
     const [statusServico, setStatusServico] = useState(agendamento?.status);
+    const [servicos, setServicos] = useState(agendamento?.servicos || []);
+    const [loadingStatus, setLoadingStatus] = useState(false);
+    const statusRequestIdRef = useRef(0);
+    const { mostrarToast } = useToast();
+
+    const statusDescricaoPorId = {
+        1: 'AGUARDANDO',
+        2: 'EM_ANDAMENTO',
+        3: 'AGUARDANDO_PECAS',
+        4: 'CANCELADO',
+        5: 'CONCLUIDO'
+    };
+
+    const extrairStatusId = (status) => {
+        if (typeof status === 'object' && status !== null) {
+            return status.id;
+        }
+
+        return status;
+    };
+
+    useEffect(() => {
+        setStatusServico(extrairStatusId(agendamento?.status));
+        setServicos(agendamento?.servicos || []);
+    }, [agendamento]);
 
     if (!isOpen || !agendamento) return null;
-
-    const servicos = agendamento.servicos || [];
 
     const editaServicoClick = (servico) => {
         setSelectedServico(servico);
@@ -38,32 +65,172 @@ export function ModalOrdemServico({ isOpen, agendamento, onClose }) {
         setSelectedServico(null);
     };
 
-    const handleServicoEditado = () => {
+    const normalizarServicos = (listaServicos = []) => {
+        return listaServicos.map((servico) => {
+            if (typeof servico === 'number') {
+                return {
+                    id: servico,
+                    nome: `Serviço #${servico}`,
+                    preco: 0,
+                    valor: formatarPreco(0)
+                };
+            }
+
+            const id = servico?.idServico ?? servico?.servico?.id ?? servico?.id;
+            const preco = servico?.valorAplicado ?? servico?.preco ?? servico?.precoBase ?? 0;
+            const nome = servico?.nome ?? servico?.servico?.nome ?? (id ? `Serviço #${id}` : 'Serviço');
+
+            return {
+                id: id ?? null,
+                nome,
+                preco,
+                valor: formatarPreco(preco)
+            };
+        });
+    };
+
+    const formatarVeiculo = (veiculo) => {
+        if (!veiculo) return '-';
+        if (typeof veiculo === 'string') return veiculo;
+
+        const campos = [veiculo.marca, veiculo.modelo].filter(Boolean);
+        return campos.length > 0 ? campos.join(' ') : (veiculo.placa || '-');
+    };
+
+    const normalizarAgendamento = (ordem) => {
+        const servicosNormalizados = normalizarServicos(ordem?.servicos || []);
+        const statusId = extrairStatusId(ordem?.status);
+        const valorTotal = ordem?.valorTotal ?? ordem?.precoMinimo ?? servicosNormalizados.reduce(
+            (total, servico) => total + (servico.preco || 0),
+            0
+        );
+
+        return {
+            id: ordem?.id,
+            horario: ordem?.horario || (ordem?.dataAgendamento ? formatarHorario(ordem.dataAgendamento) : '--:--'),
+            cliente: ordem?.cliente?.nome || ordem?.cliente || '-',
+            veiculo: formatarVeiculo(ordem?.veiculo),
+            valor: formatarPreco(valorTotal),
+            status: statusId,
+            dataAgendamento: ordem?.dataAgendamento || '-',
+            dataConclusao: ordem?.dtConclusao || ordem?.dataConclusao || '--/--/---- - --:--',
+            observacoes: ordem?.observacoes || 'Sem observações.',
+            servicos: servicosNormalizados
+        };
+    };
+
+    const calcularValorTotalServicos = (listaServicos = []) => {
+        return listaServicos.reduce((total, servico) => {
+            if (typeof servico.preco === 'number') {
+                return total + servico.preco;
+            }
+
+            if (typeof servico.valor === 'string') {
+                const valorNormalizado = servico.valor
+                    .replace('R$', '')
+                    .replace(/\s/g, '')
+                    .replace('.', '')
+                    .replace(',', '.');
+
+                const numero = Number(valorNormalizado);
+                return Number.isNaN(numero) ? total : total + numero;
+            }
+
+            return total;
+        }, 0);
+    };
+
+    const aplicarAtualizacaoLocalServicos = (servicosAtualizados = []) => {
+        setServicos(servicosAtualizados);
+
+        const valorTotal = calcularValorTotalServicos(servicosAtualizados);
+        onOrdemAtualizada?.({
+            ...agendamento,
+            id: agendamento.id,
+            servicos: servicosAtualizados,
+            valor: formatarPreco(valorTotal),
+            tipo: servicosAtualizados[0]?.nome || agendamento.tipo
+        });
+    };
+
+    const aplicarOrdemAtualizada = (ordemAtualizada) => {
+        if (!ordemAtualizada) return;
+
+        const agendamentoNormalizado = normalizarAgendamento(ordemAtualizada);
+        setStatusServico(agendamentoNormalizado.status);
+        setServicos(agendamentoNormalizado.servicos);
+        onOrdemAtualizada?.(agendamentoNormalizado);
+    };
+
+    const handleServicoEditado = (ordemAtualizada) => {
         setEditaServicoModal(false);
         setSelectedServico(null);
-        // Aqui você pode recarregar os dados do agendamento se necessário
+        aplicarOrdemAtualizada(ordemAtualizada);
     };
 
-    const handleServicosAdicionados = () => {
+    const handleServicosAdicionados = (ordemAtualizada) => {
         setShowAddServicoModal(false);
-        // Aqui você pode recarregar os dados do agendamento se necessário
+        aplicarOrdemAtualizada(ordemAtualizada);
     };
 
-    const handleServicoRemovido = () => {
+    const handleServicoRemovido = (ordemAtualizada) => {
         setShowRemoveModal(false);
         setSelectedServico(null);
-        // Aqui você pode recarregar os dados do agendamento se necessário
+        aplicarOrdemAtualizada(ordemAtualizada);
     };
 
     const handleStatusChange = async (novoStatus) => {
-        setStatusServico(novoStatus);
-        // Aqui você pode fazer a chamada à API para atualizar o status
-        // try {
-        //     await api.put(`/agendamentos/${agendamento.id}/status`, { status: novoStatus });
-        // } catch (error) {
-        //     console.error('Erro ao atualizar status:', error);
-        // }
+        const statusAnterior = statusServico;
+        const statusNumerico = Number(novoStatus);
+        const requestId = statusRequestIdRef.current + 1;
+        statusRequestIdRef.current = requestId;
+        const statusDescricaoAtualizada = statusDescricaoPorId[statusNumerico] || null;
+        const statusDescricaoAnterior = agendamento?.statusDescricao || null;
+
+        setStatusServico(statusNumerico);
+        onOrdemAtualizada?.({
+            ...agendamento,
+            status: statusNumerico,
+            statusDescricao: statusDescricaoAtualizada
+        });
+        setLoadingStatus(true);
+
+        try {
+            await ordemServicoService.atualizarStatusGestao(agendamento.id, statusNumerico);
+
+            mostrarToast({
+                tipo: TiposToast.SUCESSO,
+                titulo: 'Status atualizado',
+                mensagem: 'O status da ordem de serviço foi atualizado com sucesso.',
+                duracao: 3000
+            });
+        } catch (error) {
+            if (statusRequestIdRef.current !== requestId) {
+                return;
+            }
+
+            setStatusServico(statusAnterior);
+            onOrdemAtualizada?.({
+                ...agendamento,
+                status: statusAnterior,
+                statusDescricao: statusDescricaoAnterior
+            });
+            mostrarToast({
+                tipo: TiposToast.ERRO,
+                titulo: 'Erro ao atualizar status',
+                mensagem: error.message || 'Não foi possível atualizar o status da ordem de serviço.',
+                duracao: 4000
+            });
+        } finally {
+            if (statusRequestIdRef.current === requestId) {
+                setLoadingStatus(false);
+            }
+        }
     };
+
+    const valorTotalServicos = calcularValorTotalServicos(servicos);
+
+    const valorExibicao = valorTotalServicos > 0 ? formatarPreco(valorTotalServicos) : agendamento.valor;
 
     return (
         <>
@@ -103,9 +270,9 @@ export function ModalOrdemServico({ isOpen, agendamento, onClose }) {
                                 </button>
                             </div>
                             <div className="space-y-2">
-                                {servicos.map((servico) => (
+                                {servicos.map((servico, index) => (
                                     <ServicoItem 
-                                        key={servico.id}
+                                        key={`${servico.id}-${index}`}
                                         servico={servico}
                                         onEdit={editaServicoClick}
                                         onRemove={removeServicoClick}
@@ -114,18 +281,19 @@ export function ModalOrdemServico({ isOpen, agendamento, onClose }) {
                             </div>
                         </div>
 
-                        <Label label="Valor total do Serviço" value={agendamento.valor} />
+                        <Label label="Valor total do Serviço" value={valorExibicao} />
 
                         <div>
                             <label className="text-sm text-gray-500 block mb-1">Status do Serviço</label>
                             <select
                                 value={statusServico}
                                 onChange={(e) => handleStatusChange(e.target.value)}
+                                disabled={loadingStatus}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 text-sm"
                             >
-                                <option value="1">Análise</option>
-                                <option value="2">Agenda Confirmada</option>
-                                <option value="3">Em Execução</option>
+                                <option value="1">Aguardando</option>
+                                <option value="2">Em andamento</option>
+                                <option value="3">Aguardando peças</option>
                                 <option value="4">Cancelado</option>
                                 <option value="5">Concluído</option>
                             </select>
@@ -150,6 +318,8 @@ export function ModalOrdemServico({ isOpen, agendamento, onClose }) {
                 isOpen={showAddServicoModal}
                 ordemServicoId={agendamento.id}
                 servicosAtuais={servicos}
+                onOptimisticUpdate={aplicarAtualizacaoLocalServicos}
+                onRollback={aplicarAtualizacaoLocalServicos}
                 onSuccess={handleServicosAdicionados}
                 onCancel={btnCancelaServico}
             />
@@ -159,6 +329,9 @@ export function ModalOrdemServico({ isOpen, agendamento, onClose }) {
                 isOpen={editaServicoModal}
                 servico={selectedServico}
                 ordemServicoId={agendamento.id}
+                servicosAtuais={servicos}
+                onOptimisticUpdate={aplicarAtualizacaoLocalServicos}
+                onRollback={aplicarAtualizacaoLocalServicos}
                 onSuccess={handleServicoEditado}
                 onCancel={btnCancelaServico}
             />
@@ -168,6 +341,9 @@ export function ModalOrdemServico({ isOpen, agendamento, onClose }) {
                 isOpen={showRemoveModal}
                 servico={selectedServico}
                 ordemServicoId={agendamento.id}
+                servicosAtuais={servicos}
+                onOptimisticUpdate={aplicarAtualizacaoLocalServicos}
+                onRollback={aplicarAtualizacaoLocalServicos}
                 onSuccess={handleServicoRemovido}
                 onCancel={btnCancelaServico}
             />

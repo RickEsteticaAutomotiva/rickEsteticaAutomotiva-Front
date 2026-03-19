@@ -64,8 +64,12 @@ export default function FaturamentoServicos() {
         </h2>
 
         <div className="w-full mb-6">
-          <select disabled className="w-full p-3 rounded-xl border border-gray-300 text-gray-700 bg-white">
-            <option selected >Ultimos 30 dias</option>
+          <select
+            disabled
+            defaultValue="ultimos-30-dias"
+            className="w-full p-3 rounded-xl border border-gray-300 text-gray-700 bg-white"
+          >
+            <option value="ultimos-30-dias">Ultimos 30 dias</option>
           </select>
         </div>
 
