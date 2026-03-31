@@ -5,10 +5,13 @@ import { Breadcrumb } from "../../components/breadcrumb/Breadcrumb";
 import { Footer } from "../../components/footer/Footer";
 import { LoadingState } from "../../components/loading-state/LoadingState";
 import { ModalConfirmacao } from "../../components/modal-confirmacao/ModalConfirmacao";
+import { Paginacao } from "../../components/paginacao/Paginacao";
 import { useAuth } from "../../context/AuthContext";
+import { useCarrinho } from "../../context/CarrinhoContext";
 import { ordemServicoService } from "../../services/OrdemServicoService";
 import { veiculoService } from "../../services/VeiculoService";
 import { servicosService } from "../../services/ServicosService";
+import { carrinhoService } from "../../services/CarrinhoService";
 import { ROUTES } from "../../constants/Routes";
 import { tradutorStatus, formatarDataCompleta, formatarHorario, formatarPreco } from '../../utils/index';
 import { useToast } from '../../context/ToastContext';
@@ -20,9 +23,13 @@ export function Historico() {
     const [showModalCancelamento, setShowModalCancelamento] = useState(false);
     const [agendamentoParaCancelar, setAgendamentoParaCancelar] = useState(null);
     const [loadingCancelamento, setLoadingCancelamento] = useState(false);
+    const [loadingRefazer, setLoadingRefazer] = useState(false);
+    const [paginaAtual, setPaginaAtual] = useState(0);
+    const AGENDAMENTOS_POR_PAGINA = 5;
     const { user, isAuthenticated } = useAuth();
     const navigate = useNavigate();
     const { mostrarToast } = useToast();
+    const { atualizarCarrinho } = useCarrinho();
 
     const breadcrumbItems = [
         {
@@ -99,6 +106,16 @@ export function Historico() {
         setShowModalCancelamento(true);
     };
 
+    const handleMudarPagina = (novaPagina) => {
+        setPaginaAtual(novaPagina);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const totalPaginas = Math.ceil(agendamentos.length / AGENDAMENTOS_POR_PAGINA);
+    const indiceInicio = paginaAtual * AGENDAMENTOS_POR_PAGINA;
+    const indiceFim = indiceInicio + AGENDAMENTOS_POR_PAGINA;
+    const agendamentosPaginados = agendamentos.slice(indiceInicio, indiceFim);
+
     const confirmarCancelamento = async () => {
         if (!agendamentoParaCancelar) return;
 
@@ -137,6 +154,47 @@ export function Historico() {
     const cancelarCancelamento = () => {
         setShowModalCancelamento(false);
         setAgendamentoParaCancelar(null);
+    };
+
+    const handleRefazerPedido = async (agendamento) => {
+        setLoadingRefazer(true);
+        try {
+            if (!agendamento.servicos || agendamento.servicos.length === 0) {
+                mostrarToast({
+                    tipo: TiposToast.ERRO,
+                    titulo: 'Nenhum serviço encontrado',
+                    mensagem: 'Este agendamento não possui serviços para refazer.',
+                    duracao: 4000
+                });
+                setLoadingRefazer(false);
+                return;
+            }
+
+            const promises = agendamento.servicos.map(servico =>
+                carrinhoService.adicionarServicoCarrinho(user.id, servico.id)
+            );
+
+            await Promise.all(promises);
+            await atualizarCarrinho();
+
+            mostrarToast({
+                tipo: TiposToast.SUCESSO,
+                titulo: 'Serviços adicionados',
+                mensagem: `${agendamento.servicos.length} serviço(s) adicionado(s) ao carrinho.`,
+                duracao: 3000
+            });
+
+            navigate(ROUTES.CARRINHO);
+        } catch (error) {
+            mostrarToast({
+                tipo: TiposToast.ERRO,
+                titulo: 'Erro ao refazer pedido',
+                mensagem: error.message || 'Não foi possível adicionar os serviços ao carrinho. Tente novamente.',
+                duracao: 5000
+            });
+        } finally {
+            setLoadingRefazer(false);
+        }
     };
 
     const getStatusBadge = (status) => {
@@ -184,8 +242,9 @@ export function Historico() {
                             </Link>
                         </div>
                     ) : (
-                        <div className="grid gap-6">
-                            {agendamentos.map((agendamento) => (
+                        <>
+                            <div className="grid gap-6">
+                                {agendamentosPaginados.map((agendamento) => (
                                 <div key={agendamento.id} className="bg-white rounded-xl shadow-md overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-lg">
                                     <div className="p-6 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                                         <div className="flex items-center gap-4">
@@ -252,26 +311,47 @@ export function Historico() {
                                         )}
                                     </div>
 
-                                    <div className="px-6 py-4 border-t border-gray-100 flex justify-between items-center">
+                                    <div className="px-6 py-4 border-t border-gray-100 flex justify-between items-center gap-4">
                                         <div className="text-sm text-gray-500">
                                             {agendamento.dtConclusao && (
                                                 <span>Concluído em: {formatarDataCompleta(agendamento.dtConclusao)}</span>
                                             )}
                                         </div>
                                         
-                                        {agendamento.status === 1 && (
-                                            <button
-                                                className="bg-red-50 text-red-600 border border-red-200 px-4 py-2 rounded-lg hover:bg-red-600 hover:text-white transition-colors text-sm font-medium"
-                                                onClick={() => handleCancelar(agendamento)}
-                                            >
-                                                <i className="bi bi-x-circle mr-2"></i>
-                                                Cancelar Agendamento
-                                            </button>
-                                        )}
+                                        <div className="flex gap-3">
+                                            {agendamento.status === 5 && (
+                                                <button
+                                                    className="bg-[#B30000] text-white px-4 py-2 rounded-lg hover:bg-[#990000] transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                                    onClick={() => handleRefazerPedido(agendamento)}
+                                                    disabled={loadingRefazer}
+                                                >
+                                                    <i className="bi bi-arrow-counterclockwise"></i>
+                                                    {loadingRefazer ? 'Adicionando...' : 'Refazer Pedido'}
+                                                </button>
+                                            )}
+                                            
+                                            {agendamento.status === 1 && (
+                                                <button
+                                                    className="bg-red-50 text-red-600 border border-red-200 px-4 py-2 rounded-lg hover:bg-red-600 hover:text-white transition-colors text-sm font-medium"
+                                                    onClick={() => handleCancelar(agendamento)}
+                                                >
+                                                    <i className="bi bi-x-circle mr-2"></i>
+                                                    Cancelar Agendamento
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             ))}
-                        </div>
+                            </div>
+                            {totalPaginas > 1 && (
+                                <Paginacao 
+                                    paginaAtual={paginaAtual}
+                                    totalPaginas={totalPaginas}
+                                    onMudarPagina={handleMudarPagina}
+                                />
+                            )}
+                        </>
                     )}
                 </div>
             </div>

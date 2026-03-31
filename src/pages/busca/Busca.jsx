@@ -3,6 +3,7 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { Header } from "../../components/header/Header";
 import { CardServico } from '../../components/card-servico/CardServico';
 import { Footer } from '../../components/footer/Footer';
+import { Paginacao } from '../../components/paginacao/Paginacao';
 import { ROUTES } from '../../constants/Routes';
 import { servicosService } from '../../services/ServicosService';
 
@@ -11,33 +12,43 @@ export function Busca() {
     const [resultados, setResultados] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [paginaAtual, setPaginaAtual] = useState(0);
+    const [totalPaginas, setTotalPaginas] = useState(0);
     const termoPesquisa = searchParams.get('pesquisa');
+    const TAMANHO_PAGINA = 16;
 
     useEffect(() => {
         if (termoPesquisa) {
-            buscarServicos(termoPesquisa);
+            buscarServicos(termoPesquisa, 0);
         }
     }, [termoPesquisa]);
 
-    const buscarServicos = async (termo) => {
+    const buscarServicos = async (termo, pagina = 0) => {
         setLoading(true);
         setError(null);
+        setPaginaAtual(pagina);
 
         try {
             const response = await servicosService.pesquisar(termo, {
-                pagina: 0,
-                tamanho: 50,
+                pagina,
+                tamanho: TAMANHO_PAGINA,
                 ordenarPor: 'nome'
             });
 
-            const servicos = response?.content || response || [];
-            setResultados(servicos);
+            setResultados(response.content || []);
+            setTotalPaginas(response.totalPages || 0);
         } catch (error) {
             setError('Erro ao buscar serviços');
             setResultados([]);
+            setTotalPaginas(0);
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleMudarPagina = (novaPagina) => {
+        buscarServicos(termoPesquisa, novaPagina);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     return (
@@ -51,7 +62,7 @@ export function Busca() {
                             Resultados da busca
                         </h1>
                         <p className="text-gray-500">
-                            Mostrando resultados para: <span className="font-semibold text-red-600">"{termoPesquisa}"</span>
+                            Mostrando {resultados.length} resultados para: <span className="font-semibold text-red-600">"{termoPesquisa}"</span>
                         </p>
                     </div>
 
@@ -90,18 +101,27 @@ export function Busca() {
                     )}
 
                     {!loading && !error && resultados.length > 0 && (
-                        <div className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-8 mb-8">
-                            {resultados.map((servico) => (
-                                <CardServico
-                                    key={servico.id}
-                                    id={servico.id}
-                                    nome={servico.nome}
-                                    preco={servico.preco}
-                                    descricao={servico.descricao}
-                                    imagem={servico.imagem}
+                        <>
+                            <div className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-8 mb-8">
+                                {resultados.map((servico) => (
+                                    <CardServico
+                                        key={servico.id}
+                                        id={servico.id}
+                                        nome={servico.nome}
+                                        preco={servico.preco}
+                                        descricao={servico.descricao}
+                                        imagem={servico.imagem}
+                                    />
+                                ))}
+                            </div>
+                            {totalPaginas > 1 && (
+                                <Paginacao 
+                                    paginaAtual={paginaAtual}
+                                    totalPaginas={totalPaginas}
+                                    onMudarPagina={handleMudarPagina}
                                 />
-                            ))}
-                        </div>
+                            )}
+                        </>
                     )}
                 </div>
             </div>
