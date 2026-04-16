@@ -15,6 +15,7 @@ export const ROUTES = {
   HOME: '/gerente',
   AGENDAMENTO: 'agendamento',
   DASHBOARD: 'dashboard',
-  ORDENS_SERVICO: 'ordens-servico'
+  ORDENS_SERVICO: 'ordens-servico',
+  PERFIL: 'perfil'
 }
 };

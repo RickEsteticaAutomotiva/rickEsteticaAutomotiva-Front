@@ -8,7 +8,7 @@ import { ModalAdicionaServico } from './modal-adiciona-servico/ModalAdicionaServ
 import { ordemServicoService } from '../../../../services/OrdemServicoService';
 import { useToast } from '../../../../context/ToastContext';
 import { TiposToast } from '../../../../utils/enum/TiposToast';
-import { formatarPreco, formatarHorario } from '../../../../utils';
+import { formatarPreco, formatarHorario, formatarDataHorario } from '../../../../utils';
 
 export function ModalOrdemServico({ isOpen, agendamento, onClose, onOrdemAtualizada }) {
     const [editaServicoModal, setEditaServicoModal] = useState(false);
@@ -41,6 +41,21 @@ export function ModalOrdemServico({ isOpen, agendamento, onClose, onOrdemAtualiz
         setStatusServico(extrairStatusId(agendamento?.status));
         setServicos(agendamento?.servicos || []);
     }, [agendamento]);
+
+    useEffect(() => {
+        if (!isOpen) return;
+
+        const overflowBodyOriginal = document.body.style.overflow;
+        const overflowHtmlOriginal = document.documentElement.style.overflow;
+
+        document.body.style.overflow = 'hidden';
+        document.documentElement.style.overflow = 'hidden';
+
+        return () => {
+            document.body.style.overflow = overflowBodyOriginal;
+            document.documentElement.style.overflow = overflowHtmlOriginal;
+        };
+    }, [isOpen]);
 
     if (!isOpen || !agendamento) return null;
 
@@ -232,17 +247,31 @@ export function ModalOrdemServico({ isOpen, agendamento, onClose, onOrdemAtualiz
 
     const valorExibicao = valorTotalServicos > 0 ? formatarPreco(valorTotalServicos) : agendamento.valor;
 
+    const formatarDataParaExibicao = (data, fallback = '-') => {
+        if (!data) return fallback;
+
+        const dataConvertida = new Date(data);
+        if (Number.isNaN(dataConvertida.getTime())) {
+            return data;
+        }
+
+        return formatarDataHorario(data);
+    };
+
+    const dataAgendamentoFormatada = formatarDataParaExibicao(agendamento.dataAgendamento);
+    const dataConclusaoFormatada = formatarDataParaExibicao(agendamento.dataConclusao, '--/--/---- - --:--');
+
     return (
         <>
             <div className="fixed inset-0 bg-black/45 bg-opacity-90 flex items-center justify-center z-50 p-4">
-                <div className="bg-white rounded-lg rounded-t-3xl max-w-md w-full max-h-[90vh] overflow-y-auto"
+                <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto"
                     style={{
                         scrollbarWidth: 'none',
                         msOverflowStyle: 'none',
                     }}
                     >
 
-                    <div className="bg-red-600 text-white p-4 rounded-b-2xl flex justify-between items-center">
+                    <div className="sticky top-0 z-20 bg-red-600 text-white p-4 rounded-t-2xl flex justify-between items-center shadow-sm">
                         <h2 className="text-lg font-semibold">Ordem de serviço</h2>
                         <button 
                             onClick={onClose}
@@ -299,9 +328,9 @@ export function ModalOrdemServico({ isOpen, agendamento, onClose, onOrdemAtualiz
                             </select>
                         </div>
 
-                        <Label label="Data do Agendamento" value={agendamento.dataAgendamento} />
+                        <Label label="Data do Agendamento" value={dataAgendamentoFormatada} />
 
-                        <Label label="Data da Conclusão" value={agendamento.dataConclusao} />
+                        <Label label="Data da Conclusão" value={dataConclusaoFormatada} />
 
                         <div>
                             <label className="text-sm text-gray-500">Observações</label>

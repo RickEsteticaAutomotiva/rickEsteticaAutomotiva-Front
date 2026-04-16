@@ -1,5 +1,5 @@
 import { Search } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { OrdemServicoItem } from './ordem-servico-item/OrdemServicoItem';
 import { ModalOrdemServico } from '../agendamento/modal-ordem-servico/ModalOrdemServico';
 import { DropdownButton } from '../../../components/gerente/dropdown-button/DropdownButton';
@@ -8,10 +8,12 @@ import { ordemServicoService } from '../../../services/OrdemServicoService';
 import { useToast } from '../../../context/ToastContext';
 import { TiposToast } from '../../../utils/enum/TiposToast';
 import { formatarHorario, formatarPreco } from '../../../utils';
+import { Paginacao } from '../../../components/paginacao/Paginacao';
 
 
 
 export function OrdensServico() {
+    const ITENS_POR_PAGINA = 5;
     const [periodoSelecionado, setPeriodoSelecionado] = useState({ id: 3, valor: 'Mês' });
     const [dropdownAberto, setDropdownAberto] = useState(false);
     const [modalFiltroAberto, setModalFiltroAberto] = useState(false);
@@ -19,6 +21,7 @@ export function OrdensServico() {
     const [ordemSelecionada, setOrdemSelecionada] = useState(null);
     const [filtrosAplicados, setFiltrosAplicados] = useState({});
     const [ordensServico, setOrdensServico] = useState([]);
+    const [paginaAtual, setPaginaAtual] = useState(0);
     const [loading, setLoading] = useState(true);
     const [loadingDetalhe, setLoadingDetalhe] = useState(false);
     const { mostrarToast } = useToast();
@@ -127,6 +130,10 @@ export function OrdensServico() {
         buscarOrdensServico();
     }, [periodoSelecionado, filtrosAplicados]);
 
+    useEffect(() => {
+        setPaginaAtual(0);
+    }, [periodoSelecionado, filtrosAplicados, ordensServico.length]);
+
     const abrirModal = async (ordem) => {
         setOrdemSelecionada(normalizarOrdem(ordem));
         setModalAbertoOrdem(true);
@@ -193,6 +200,45 @@ export function OrdensServico() {
         return Object.values(filtrosAplicados).filter(valor => valor !== '').length;
     };
 
+    const totalPaginas = useMemo(() => Math.max(1, Math.ceil(ordensServico.length / ITENS_POR_PAGINA)), [ordensServico.length]);
+
+    const ordensPaginadas = useMemo(() => {
+        const inicio = paginaAtual * ITENS_POR_PAGINA;
+        return ordensServico.slice(inicio, inicio + ITENS_POR_PAGINA);
+    }, [ordensServico, paginaAtual]);
+
+    const handleMudarPagina = (novaPagina) => {
+        if (novaPagina < 0 || novaPagina >= totalPaginas) return;
+        setPaginaAtual(novaPagina);
+    };
+
+    let conteudoLista;
+
+    if (loading) {
+        conteudoLista = <p className="text-center text-gray-500 py-4">Carregando ordens de serviço...</p>;
+    } else if (ordensServico.length === 0) {
+        conteudoLista = <p className="text-center text-gray-500 py-4">Nenhuma ordem de serviço encontrada.</p>;
+    } else {
+        conteudoLista = (
+            <>
+                {ordensPaginadas.map((ordem) => (
+                    <OrdemServicoItem
+                        key={ordem.id}
+                        ordem={ordem}
+                        onItemClick={abrirModal}
+                    />
+                ))}
+                {totalPaginas > 1 && (
+                    <Paginacao
+                        paginaAtual={paginaAtual}
+                        totalPaginas={totalPaginas}
+                        onMudarPagina={handleMudarPagina}
+                    />
+                )}
+            </>
+        );
+    }
+
     return (
         <div>
             <div className="flex items-center justify-between mb-4 bg-white rounded-2xl p-2 ps-4">
@@ -208,30 +254,17 @@ export function OrdensServico() {
                 </div>
             </div>
 
-            <div 
+            <button
+                type="button"
                 className="flex items-center justify-between mb-4 bg-white rounded-2xl p-4 cursor-pointer"
                 onClick={() => setModalFiltroAberto(true)}
             >
                 <span className="text-sm">Filtros ({contarFiltrosAtivos()})</span>
-                <button>
-                    <Search size={20} />
-                </button>
-            </div>
+                <Search size={20} />
+            </button>
         
             <div className="pt-4 space-y-3">
-                {loading ? (
-                    <p className="text-center text-gray-500 py-4">Carregando ordens de serviço...</p>
-                ) : ordensServico.length === 0 ? (
-                    <p className="text-center text-gray-500 py-4">Nenhuma ordem de serviço encontrada.</p>
-                ) : (
-                    ordensServico.map((ordem) => (
-                        <OrdemServicoItem
-                            key={ordem.id}
-                            ordem={ordem}
-                            onItemClick={abrirModal}
-                        />
-                    ))
-                )}
+                {conteudoLista}
             </div>
 
             {/* Botão Nova Ordem */}

@@ -10,6 +10,7 @@ import { veiculoService } from '../../../services/VeiculoService';
 import { useToast } from '../../../context/ToastContext';
 import { TiposToast } from '../../../utils/enum/TiposToast';
 import { formatarHorario, formatarPreco } from '../../../utils';
+import { Paginacao } from '../../../components/paginacao/Paginacao';
 
 const formatarVeiculo = (veiculo) => {
     if (!veiculo) return '-';
@@ -111,9 +112,11 @@ const resolverReferenciasOrdem = async (ordem) => {
 };
 
 export function AgendamentoGerente() {
+    const ITENS_POR_PAGINA = 6;
     const [modalAberto, setModalAberto] = useState(false);
     const [agendamentoSelecionado, setAgendamentoSelecionado] = useState(null);
     const [agendamentos, setAgendamentos] = useState([]);
+    const [paginaAtual, setPaginaAtual] = useState(0);
     const [loading, setLoading] = useState(true);
     const [loadingDetalhe, setLoadingDetalhe] = useState(false);
     const { mostrarToast } = useToast();
@@ -150,6 +153,10 @@ export function AgendamentoGerente() {
     useEffect(() => {
         buscarAgendamentos();
     }, []);
+
+    useEffect(() => {
+        setPaginaAtual(0);
+    }, [agendamentos.length]);
 
     const abrirModal = async (agendamento) => {
         if (!agendamento) return;
@@ -208,6 +215,45 @@ export function AgendamentoGerente() {
         });
     };
 
+    const totalPaginas = Math.max(1, Math.ceil(agendamentos.length / ITENS_POR_PAGINA));
+    const inicio = paginaAtual * ITENS_POR_PAGINA;
+    const agendamentosPaginados = agendamentos.slice(inicio, inicio + ITENS_POR_PAGINA);
+
+    const handleMudarPagina = (novaPagina) => {
+        if (novaPagina < 0 || novaPagina >= totalPaginas) return;
+        setPaginaAtual(novaPagina);
+    };
+
+    let conteudoLista;
+
+    if (loading) {
+        conteudoLista = <p className="text-center text-gray-500 py-4">Carregando agendamentos...</p>;
+    } else if (agendamentos.length === 0) {
+        conteudoLista = <p className="text-center text-gray-500 py-4">Nenhum agendamento encontrado.</p>;
+    } else {
+        conteudoLista = (
+            <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+                    {agendamentosPaginados.map((agendamento) => (
+                        <CardAgendamento
+                            key={agendamento.id}
+                            agendamento={agendamento}
+                            imagem={<Clock />}
+                            onDetalhesClick={abrirModal}
+                        />
+                    ))}
+                </div>
+                {totalPaginas > 1 && (
+                    <Paginacao
+                        paginaAtual={paginaAtual}
+                        totalPaginas={totalPaginas}
+                        onMudarPagina={handleMudarPagina}
+                    />
+                )}
+            </>
+        );
+    }
+
     return (
         <div className="mt-4">
             <div className="flex justify-center bg-white rounded-2xl p-5 mb-6 shadow-sm">
@@ -241,22 +287,7 @@ export function AgendamentoGerente() {
             <h2 className="text-2xl font-semibold text-center mb-6">Todos</h2>
 
             <div>
-                {loading ? (
-                    <p className="text-center text-gray-500 py-4">Carregando agendamentos...</p>
-                ) : agendamentos.length === 0 ? (
-                    <p className="text-center text-gray-500 py-4">Nenhum agendamento encontrado.</p>
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-                        {agendamentos.map((agendamento) => (
-                            <CardAgendamento
-                                key={agendamento.id}
-                                agendamento={agendamento}
-                                imagem={<Clock />}
-                                onDetalhesClick={abrirModal}
-                            />
-                        ))}
-                    </div>
-                )}
+                {conteudoLista}
             </div>
 
             <ModalOrdemServico

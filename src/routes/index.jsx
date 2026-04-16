@@ -1,8 +1,9 @@
 import { lazy, Suspense } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { ROUTES } from "../constants/Routes";
 import { LoadingState } from "../components/loading-state/LoadingState";
 import { PrivateRoute, GerenteRoute } from "./PrivateRoute";
+import { useAuth } from "../context/AuthContext";
 
 // Code splitting por rota — cada página só é carregada quando acessada
 const Home             = lazy(() => import("../pages/home/Home").then(m => ({ default: m.Home })));
@@ -22,8 +23,19 @@ const HomeGerente      = lazy(() => import("../pages/gerente/home/HomeGerente").
 const AgendamentoGerente = lazy(() => import("../pages/gerente/agendamento/AgendamentoGerente").then(m => ({ default: m.AgendamentoGerente })));
 const Dashboard        = lazy(() => import("../pages/gerente/dashboard/Dashboard").then(m => ({ default: m.Dashboard })));
 const OrdensServico    = lazy(() => import("../pages/gerente/ordens-servico/OrdensServico").then(m => ({ default: m.OrdensServico })));
+const PerfilGerente    = lazy(() => import("../pages/gerente/perfil/PerfilGerente").then(m => ({ default: m.PerfilGerente })));
 
 export default function AppRoutes() {
+  const { user, loading } = useAuth();
+  const location = useLocation();
+
+  const isGerente = user?.roles?.includes('ROLE_GERENTE');
+  const isGerentePath = location.pathname === ROUTES.GERENTE.HOME || location.pathname.startsWith(`${ROUTES.GERENTE.HOME}/`);
+
+  if (!loading && isGerente && !isGerentePath) {
+    return <Navigate to={ROUTES.GERENTE.HOME} replace />;
+  }
+
   return (
     <Suspense fallback={<LoadingState />}>
       <Routes>
@@ -49,6 +61,7 @@ export default function AppRoutes() {
           <Route path={ROUTES.GERENTE.AGENDAMENTO}   element={<AgendamentoGerente />} />
           <Route path={ROUTES.GERENTE.DASHBOARD}     element={<Dashboard />} />
           <Route path={ROUTES.GERENTE.ORDENS_SERVICO} element={<OrdensServico />} />
+          <Route path={ROUTES.GERENTE.PERFIL}        element={<PerfilGerente />} />
         </Route>
       </Routes>
     </Suspense>
