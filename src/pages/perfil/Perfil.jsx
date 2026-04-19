@@ -10,6 +10,8 @@ import { Footer } from '../../components/footer/Footer';
 import { useToast } from '../../context/ToastContext';
 import { TiposToast } from '../../utils/enum/TiposToast';
 import { ModalConfirmacao } from '../../components/modal-confirmacao/ModalConfirmacao';
+import { validarSenhaForte } from '../../utils/validacao/senhaValidacao';
+import { PasswordChecklist } from '../../components/password-checklist/PasswordChecklist';
 
 export function Perfil() {
   const [formData, setFormData] = useState({
@@ -23,7 +25,9 @@ export function Perfil() {
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState({});
   const [isEditing, setIsEditing] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const [showSenhaAtual, setShowSenhaAtual] = useState(false);
+  const [showNovaSenha, setShowNovaSenha] = useState(false);
+  const [showConfirmarSenha, setShowConfirmarSenha] = useState(false);
   const [senhaData, setSenhaData] = useState({
     senhaAtual: "",
     novaSenha: "",
@@ -71,7 +75,7 @@ export function Perfil() {
         cpf: data.cpf || "",
         dataNascimento: data.dataNascimento || ""
       });
-    } catch (error) {
+    } catch {
       mostrarToast({
         tipo: TiposToast.ERRO,
         titulo: 'Erro ao carregar perfil',
@@ -132,10 +136,9 @@ export function Perfil() {
       newErrors.senhaAtual = "Senha atual é obrigatória";
     }
 
-    if (!senhaData.novaSenha) {
-      newErrors.novaSenha = "Nova senha é obrigatória";
-    } else if (senhaData.novaSenha.length < 6) {
-      newErrors.novaSenha = "Nova senha deve ter pelo menos 6 caracteres";
+    const senhaValidation = validarSenhaForte(senhaData.novaSenha);
+    if (!senhaValidation.isValid) {
+      newErrors.novaSenha = senhaValidation.errors;
     }
 
     if (!senhaData.confirmarSenha) {
@@ -400,13 +403,15 @@ export function Perfil() {
                   <div>
                     <label htmlFor="senhaAtual" className="block font-semibold text-gray-700 mb-1.5 text-sm">Senha atual</label>
                     <div className="relative">
-                      <input type={showPassword ? "text" : "password"} id="senhaAtual" name="senhaAtual"
+                      <input type={showSenhaAtual ? "text" : "password"} id="senhaAtual" name="senhaAtual"
                         value={senhaData.senhaAtual} onChange={handlePasswordInputChange} disabled={saving}
                         className={`w-full pr-12 px-4 py-3.5 border-2 rounded-lg text-base transition-all focus:outline-none focus:border-[#B30000] focus:ring-2 focus:ring-[#B30000]/10 disabled:bg-gray-50 disabled:text-gray-400${errors.senhaAtual ? ' border-red-500 bg-red-50' : ' border-gray-200 bg-white'}`}
                         placeholder="Digite sua senha atual" />
-                      <button type="button" onClick={() => setShowPassword(!showPassword)}
+                      <button
+                        type="button"
+                        onClick={() => setShowSenhaAtual(!showSenhaAtual)}
                         className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 p-1 hover:text-[#B30000] transition-colors">
-                        <i className={`bi ${showPassword ? 'bi-eye-slash' : 'bi-eye'}`}></i>
+                        <i className={`bi ${showSenhaAtual ? 'bi-eye-slash' : 'bi-eye'}`}></i>
                       </button>
                     </div>
                     {errors.senhaAtual && <span className="block text-red-500 text-sm mt-1.5">{errors.senhaAtual}</span>}
@@ -414,19 +419,49 @@ export function Perfil() {
 
                   <div>
                     <label htmlFor="novaSenha" className="block font-semibold text-gray-700 mb-1.5 text-sm">Nova senha</label>
-                    <input type={showPassword ? "text" : "password"} id="novaSenha" name="novaSenha"
-                      value={senhaData.novaSenha} onChange={handlePasswordInputChange} disabled={saving}
-                      className={`w-full px-4 py-3.5 border-2 rounded-lg text-base transition-all focus:outline-none focus:border-[#B30000] focus:ring-2 focus:ring-[#B30000]/10 disabled:bg-gray-50 disabled:text-gray-400${errors.novaSenha ? ' border-red-500 bg-red-50' : ' border-gray-200 bg-white'}`}
-                      placeholder="Digite a nova senha (mínimo 6 caracteres)" />
-                    {errors.novaSenha && <span className="block text-red-500 text-sm mt-1.5">{errors.novaSenha}</span>}
+                    <div className="relative">
+                      <input type={showNovaSenha ? "text" : "password"} id="novaSenha" name="novaSenha"
+                        value={senhaData.novaSenha} onChange={handlePasswordInputChange} disabled={saving}
+                        className={`w-full pr-12 px-4 py-3.5 border-2 rounded-lg text-base transition-all focus:outline-none focus:border-[#B30000] focus:ring-2 focus:ring-[#B30000]/10 disabled:bg-gray-50 disabled:text-gray-400${errors.novaSenha ? ' border-red-500 bg-red-50' : ' border-gray-200 bg-white'}`}
+                        placeholder="Digite a nova senha (minimo 8 caracteres)"
+                        minLength={8} />
+                      <button
+                        type="button"
+                        onClick={() => setShowNovaSenha(!showNovaSenha)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 p-1 hover:text-[#B30000] transition-colors"
+                      >
+                        <i className={`bi ${showNovaSenha ? 'bi-eye-slash' : 'bi-eye'}`}></i>
+                      </button>
+                    </div>
+                    <PasswordChecklist senha={senhaData.novaSenha} />
+                    {errors.novaSenha && (
+                      Array.isArray(errors.novaSenha) ? (
+                        <ul className="mt-1.5 space-y-1">
+                          {errors.novaSenha.map((erro) => (
+                            <li key={erro} className="text-red-500 text-sm">{erro}</li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <span className="block text-red-500 text-sm mt-1.5">{errors.novaSenha}</span>
+                      )
+                    )}
                   </div>
 
                   <div>
                     <label htmlFor="confirmarSenha" className="block font-semibold text-gray-700 mb-1.5 text-sm">Confirmar nova senha</label>
-                    <input type={showPassword ? "text" : "password"} id="confirmarSenha" name="confirmarSenha"
-                      value={senhaData.confirmarSenha} onChange={handlePasswordInputChange} disabled={saving}
-                      className={`w-full px-4 py-3.5 border-2 rounded-lg text-base transition-all focus:outline-none focus:border-[#B30000] focus:ring-2 focus:ring-[#B30000]/10 disabled:bg-gray-50 disabled:text-gray-400${errors.confirmarSenha ? ' border-red-500 bg-red-50' : ' border-gray-200 bg-white'}`}
-                      placeholder="Confirme a nova senha" />
+                    <div className="relative">
+                      <input type={showConfirmarSenha ? "text" : "password"} id="confirmarSenha" name="confirmarSenha"
+                        value={senhaData.confirmarSenha} onChange={handlePasswordInputChange} disabled={saving}
+                        className={`w-full pr-12 px-4 py-3.5 border-2 rounded-lg text-base transition-all focus:outline-none focus:border-[#B30000] focus:ring-2 focus:ring-[#B30000]/10 disabled:bg-gray-50 disabled:text-gray-400${errors.confirmarSenha ? ' border-red-500 bg-red-50' : ' border-gray-200 bg-white'}`}
+                        placeholder="Confirme a nova senha" />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmarSenha(!showConfirmarSenha)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 p-1 hover:text-[#B30000] transition-colors"
+                      >
+                        <i className={`bi ${showConfirmarSenha ? 'bi-eye-slash' : 'bi-eye'}`}></i>
+                      </button>
+                    </div>
                     {errors.confirmarSenha && <span className="block text-red-500 text-sm mt-1.5">{errors.confirmarSenha}</span>}
                   </div>
 

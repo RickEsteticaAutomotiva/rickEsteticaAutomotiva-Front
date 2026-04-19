@@ -7,6 +7,8 @@ import { ROUTES } from "../../constants/Routes";
 import { useToast } from '../../context/ToastContext';
 import { TiposToast } from '../../utils/enum/TiposToast';
 import { Footer } from "../../components/footer/Footer";
+import { validarSenhaForte } from "../../utils/validacao/senhaValidacao";
+import { PasswordChecklist } from "../../components/password-checklist/PasswordChecklist";
 
 export function Cadastrar() {
   const [formData, setFormData] = useState({
@@ -100,10 +102,9 @@ export function Cadastrar() {
       newErrors.email = "Email inválido";
     }
 
-    if (!formData.senha) {
-      newErrors.senha = "Senha é obrigatória";
-    } else if (formData.senha.length < 6) {
-      newErrors.senha = "Senha deve ter pelo menos 6 caracteres";
+    const senhaValidation = validarSenhaForte(formData.senha);
+    if (!senhaValidation.isValid) {
+      newErrors.senha = senhaValidation.errors;
     }
 
     if (!formData.confirmarSenha) {
@@ -178,7 +179,7 @@ export function Cadastrar() {
         dataNascimento: formData.dataNascimento
       };
 
-      const response = await authService.cadastrar(userData);
+      await authService.cadastrar(userData);
       
       // Fazer login automático após cadastro
       await login(userData.email, userData.senha);
@@ -334,8 +335,8 @@ export function Cadastrar() {
                     onChange={handleInputChange}
                     disabled={loading}
                     className={`w-full pr-12 px-4 py-3.5 border-2 rounded-lg text-base transition-all focus:outline-none focus:border-[#B30000] focus:ring-2 focus:ring-[#B30000]/10 disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed${errors.senha ? ' border-red-500 bg-red-50' : ' border-gray-200 bg-white'}`}
-                    placeholder="Mínimo 6 caracteres"
-                    minLength={6}
+                    placeholder="Minimo 8 caracteres"
+                    minLength={8}
                   />
                   <button
                     type="button"
@@ -346,8 +347,17 @@ export function Cadastrar() {
                     <i className={`bi bi-eye${showPassword ? '-slash' : ''}`}></i>
                   </button>
                 </div>
+                <PasswordChecklist senha={formData.senha} />
                 {errors.senha && (
-                  <span className="block text-red-500 text-sm mt-1.5">{errors.senha}</span>
+                  Array.isArray(errors.senha) ? (
+                    <ul className="mt-1.5 space-y-1">
+                      {errors.senha.map((erro) => (
+                        <li key={erro} className="text-red-500 text-sm">{erro}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <span className="block text-red-500 text-sm mt-1.5">{errors.senha}</span>
+                  )
                 )}
               </div>
 
