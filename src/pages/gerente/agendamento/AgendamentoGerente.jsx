@@ -128,7 +128,7 @@ export function AgendamentoGerente() {
                 pagina: 0,
                 tamanho: 50,
                 ordenarPor: 'dataAgendamento',
-                direcao: 'asc'
+                direcao: 'desc'
             });
 
             const lista = response?.content || response || [];

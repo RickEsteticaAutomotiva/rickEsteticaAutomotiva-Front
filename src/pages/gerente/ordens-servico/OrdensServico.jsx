@@ -105,7 +105,7 @@ export function OrdensServico() {
                 pagina: 0,
                 tamanho: 50,
                 ordenarPor: 'dataAgendamento',
-                direcao: 'asc',
+                direcao: 'desc',
                 status: filtrosAplicados.status || undefined,
                 dataInicio: filtrosAplicados.dataAgendamento || undefined,
                 dataFim: filtrosAplicados.dataConclusao || undefined
@@ -272,7 +272,7 @@ export function OrdensServico() {
                 <button
                     onClick={() => abrirModal(criarNovaOrdemBase())}
                     disabled={loadingDetalhe}
-                    className="w-full bg-red-600 text-white py-3 rounded-lg font-semibold shadow-lg"
+                    className="w-full bg-red-600 text-white py-3 rounded-lg font-semibold shadow-lg cursor-pointer"
                 >
                     {loadingDetalhe ? 'Carregando...' : 'Nova ordem de serviço'}
                 </button>

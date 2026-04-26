@@ -104,7 +104,7 @@ export class ServicosService {
 
     async atualizarServico(id, servicoData) {
         try {
-            const response = await apiService.put(`${this.BASE_URL}/${id}`, servicoData);
+            const response = await apiService.patch(`${this.BASE_URL}/${id}`, servicoData);
             return response;
         } catch (error) {
             throw new Error(error.message || 'Erro ao atualizar serviço');

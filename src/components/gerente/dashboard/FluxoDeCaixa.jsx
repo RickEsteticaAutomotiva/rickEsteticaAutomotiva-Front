@@ -46,7 +46,7 @@ export default function FluxoDeCaixa() {
   const pctCusto = dados?.percentualCusto || 0;
 
   return (
-    <div className="flex justify-center py-6 bg-gray-100">
+    <div className="flex justify-center py-6">
       <div className="bg-white rounded-2xl shadow-sm p-6 w-full max-w-2xl">
 
         <div className="flex items-center justify-between mb-2">

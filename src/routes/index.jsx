@@ -23,6 +23,8 @@ const HomeGerente      = lazy(() => import("../pages/gerente/home/HomeGerente").
 const AgendamentoGerente = lazy(() => import("../pages/gerente/agendamento/AgendamentoGerente").then(m => ({ default: m.AgendamentoGerente })));
 const Dashboard        = lazy(() => import("../pages/gerente/dashboard/Dashboard").then(m => ({ default: m.Dashboard })));
 const OrdensServico    = lazy(() => import("../pages/gerente/ordens-servico/OrdensServico").then(m => ({ default: m.OrdensServico })));
+const ServicosGerente  = lazy(() => import("../pages/gerente/servicos/Servicos").then(m => ({ default: m.Servicos })));
+const CategoriasGerente = lazy(() => import("../pages/gerente/categorias/Categorias").then(m => ({ default: m.Categorias })));
 const PerfilGerente    = lazy(() => import("../pages/gerente/perfil/PerfilGerente").then(m => ({ default: m.PerfilGerente })));
 
 export default function AppRoutes() {
@@ -61,6 +63,8 @@ export default function AppRoutes() {
           <Route path={ROUTES.GERENTE.AGENDAMENTO}   element={<AgendamentoGerente />} />
           <Route path={ROUTES.GERENTE.DASHBOARD}     element={<Dashboard />} />
           <Route path={ROUTES.GERENTE.ORDENS_SERVICO} element={<OrdensServico />} />
+          <Route path={ROUTES.GERENTE.SERVICOS}      element={<ServicosGerente />} />
+          <Route path={ROUTES.GERENTE.CATEGORIAS}    element={<CategoriasGerente />} />
           <Route path={ROUTES.GERENTE.PERFIL}        element={<PerfilGerente />} />
         </Route>
       </Routes>

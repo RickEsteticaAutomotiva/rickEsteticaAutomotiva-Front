@@ -16,6 +16,8 @@ export const ROUTES = {
   AGENDAMENTO: 'agendamento',
   DASHBOARD: 'dashboard',
   ORDENS_SERVICO: 'ordens-servico',
+  SERVICOS: 'servicos',
+  CATEGORIAS: 'categorias',
   PERFIL: 'perfil'
 }
 };

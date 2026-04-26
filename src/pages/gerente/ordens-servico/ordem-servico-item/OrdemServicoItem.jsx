@@ -1,4 +1,5 @@
 import { Plus } from 'lucide-react';
+import { StatusAgendamento, formatarDataSimples } from '../../../../utils';
 
 export function OrdemServicoItem({ ordem, onItemClick }) {
     const normalizarDescricaoStatus = (descricao) => {
@@ -34,7 +35,7 @@ export function OrdemServicoItem({ ordem, onItemClick }) {
         };
     };
 
-    const statusVisual = obterStatusVisual(ordem?.status, ordem?.statusDescricao);
+    const statusVisual = obterStatusVisual(ordem?.status, StatusAgendamento[ordem?.status]?.label);
 
     return (
         <div className="bg-white rounded-lg p-4 shadow-sm">
@@ -42,6 +43,7 @@ export function OrdemServicoItem({ ordem, onItemClick }) {
                 <div className="min-w-0">
                     <h3 className="font-semibold text-gray-800 truncate">{ordem.titulo || `OS #${ordem.id || '-'}`}</h3>
                     <p className="text-sm text-gray-500 truncate">{ordem.tipo} • {ordem.cliente}</p>
+                    <p className="text-xs text-gray-400 mt-1">{formatarDataSimples(ordem.dataAgendamento)}</p>
                     <span className={`inline-flex mt-2 px-2.5 py-1 rounded-full text-[11px] font-semibold tracking-wide uppercase ${statusVisual.classe}`}>
                         {statusVisual.label}
                     </span>

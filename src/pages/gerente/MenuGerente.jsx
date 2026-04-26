@@ -1,7 +1,7 @@
 import "./MenuGerente.css";
 import { Outlet, useLocation } from "react-router-dom";
 import { useState } from "react";
-import { Home, BarChart3, Calendar, FileText, LogOut, User } from "lucide-react";
+import { Home, BarChart3, Calendar, FileText, LogOut, User, Wrench, Tags } from "lucide-react";
 import { MenuLink } from "../../components/gerente/menu-link/MenuLink";
 import { UseAuth } from "../../hooks/UseAuth";
 import { ROUTES } from "../../constants/Routes";
@@ -31,8 +31,12 @@ export function MenuGerente() {
                 return "Agendamentos";
             case `${ROUTES.GERENTE.HOME}/${ROUTES.GERENTE.ORDENS_SERVICO}`:
                 return "Ordens de Serviço";
+            case `${ROUTES.GERENTE.HOME}/${ROUTES.GERENTE.SERVICOS}`:
+                return "Serviços";
+            case `${ROUTES.GERENTE.HOME}/${ROUTES.GERENTE.CATEGORIAS}`:
+                return "Categorias";
             case `${ROUTES.GERENTE.HOME}/${ROUTES.GERENTE.PERFIL}`:
-                return "Meu Perfil";
+                return "Perfil";
             default:
                 return "Home";
         }
@@ -107,6 +111,20 @@ export function MenuGerente() {
                     text="Ordens de Serviço"
                     onClick={toggleMenu}
                     icon={FileText}
+                />
+
+                <MenuLink 
+                    to="/gerente/servicos" 
+                    text="Gerenciar Serviços"
+                    onClick={toggleMenu}
+                    icon={Wrench}
+                />
+
+                <MenuLink 
+                    to="/gerente/categorias" 
+                    text="Gerenciar Categorias"
+                    onClick={toggleMenu}
+                    icon={Tags}
                 />
 
                 <MenuLink
