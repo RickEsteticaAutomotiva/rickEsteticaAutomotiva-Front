@@ -95,7 +95,7 @@ class ApiService {
                             throw new Error('Recurso não encontrado');
                             
                         case 500:
-                            throw new Error('Erro interno do servidor');
+                            throw new Error(data?.message || data?.error || 'Erro interno do servidor');
                             
                         default:
                             throw new Error(data?.message || `Erro ${status}`);

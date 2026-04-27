@@ -7,73 +7,62 @@ import { TiposToast } from '../../../../utils/enum/TiposToast';
 export function ModalFiltro({ 
     isOpen, 
     onClose, 
-    onAplicarFiltros
+    onAplicarFiltros,
+    filtrosIniciais = {}
 }) {
     const { mostrarToast } = useToast();
-    
-    const [filtros, setFiltros] = useState({
-        categoria: '',
-        status: '',
-        servico: '',
-        dataAgendamento: '',
-        dataConclusao: ''
-    });
 
-    const [categoriaDropdownAberto, setCategoriaDropdownAberto] = useState(false);
-    const [categoriaSelecionada, setCategoriaSelecionada] = useState({ id: 3, valor: 'Detalhamento' });
+    const criarEstadoFiltros = (origem = {}) => ({
+        status: origem.status ?? '',
+        filtro: origem.filtro ?? '',
+        dataAgendamento: origem.dataAgendamento ?? '',
+        dataConclusao: origem.dataConclusao ?? ''
+    });
+    
+    const [filtros, setFiltros] = useState(criarEstadoFiltros(filtrosIniciais));
 
     const [statusDropdownAberto, setStatusDropdownAberto] = useState(false);
-    const [statusSelecionado, setStatusSelecionado] = useState({ id: 3, valor: 'Concluído' });
-
-    const [servicoDropdownAberto, setServicoDropdownAberto] = useState(false);
-    const [servicoSelecionado, setServicoSelecionado] = useState({ id: 3, valor: 'Polimento' });
+    const [statusSelecionado, setStatusSelecionado] = useState({ id: null, valor: 'Selecionar' });
 
     const dateInicioRef = useRef(null);
     const dateFimRef = useRef(null);
 
-    const categorias = [
-        { id: 1, valor: 'Lavagem' },
-        { id: 2, valor: 'Polimento' },
-        { id: 3, valor: 'Detalhamento' }
-    ];
-
     const statusOptions = [
-        { id: 1, valor: 'Agendado' },
+        { id: 1, valor: 'Em análise' },
         { id: 2, valor: 'Em Andamento' },
-        { id: 3, valor: 'Concluído' },
+        { id: 3, valor: 'Aguardando Peças' },
         { id: 4, valor: 'Cancelado' }
+        ,{ id: 5, valor: 'Concluído' }
     ];
 
-    const servicoOptions = [
-        { id: 1, valor: 'Lavagem Simples' },
-        { id: 2, valor: 'Lavagem Completa' },
-        { id: 3, valor: 'Polimento' },
-        { id: 4, valor: 'Enceramento' }
-    ];
+    const resolverSelecionado = (lista, id) => {
+        if (!id) {
+            return { id: null, valor: 'Selecionar' };
+        }
+
+        const encontrado = lista.find((item) => String(item.id) === String(id));
+        return encontrado || { id: null, valor: 'Selecionar' };
+    };
 
     useEffect(() => {
-        setFiltros(prev => ({...prev, categoria: categoriaSelecionada.id}));
-    }, [categoriaSelecionada]);
+        if (!isOpen) {
+            return;
+        }
+
+        setFiltros(criarEstadoFiltros(filtrosIniciais));
+    }, [isOpen, filtrosIniciais]);
 
     useEffect(() => {
-        setFiltros(prev => ({...prev, status: statusSelecionado.id}));
+        setStatusSelecionado(resolverSelecionado(statusOptions, filtros.status));
+    }, [filtros.status]);
+
+    useEffect(() => {
+        setFiltros(prev => ({ ...prev, status: statusSelecionado?.id || '' }));
     }, [statusSelecionado]);
 
-    useEffect(() => {
-        setFiltros(prev => ({...prev, servico: servicoSelecionado.id}));
-    }, [servicoSelecionado]);
-
     const limparFiltros = () => {
-        setFiltros({
-            categoria: '',
-            status: '',
-            servico: '',
-            dataAgendamento: '',
-            dataConclusao: ''
-        });
-        setCategoriaSelecionada({ id: null, valor: '' });
-        setStatusSelecionado({ id: null, valor: '' });
-        setServicoSelecionado({ id: null, valor: '' });
+        setFiltros(criarEstadoFiltros());
+        setStatusSelecionado({ id: null, valor: 'Selecionar' });
     };
 
     const aplicarFiltros = () => {
@@ -97,7 +86,7 @@ export function ModalFiltro({
     };
 
     const contarFiltrosAtivos = () => {
-        return Object.values(filtros).filter(valor => valor !== '').length;
+        return Object.values(filtros).filter((valor) => valor !== '' && valor !== null && valor !== undefined).length;
     };
 
     useEffect(() => {
@@ -146,23 +135,6 @@ export function ModalFiltro({
 
                 {/* Content - Scrollable */}
                 <div className="flex-1 overflow-y-auto p-6 space-y-6">
-                    {/* Categoria */}
-                    <div>
-                        <div className="flex items-center justify-between mb-2">
-                            <label className="text-sm font-medium text-gray-900">Categoria</label>
-                            <div className="relative">
-                                <DropdownButton
-                                    valorSelecionado={categoriaSelecionada}
-                                    setValorSelecionado={setCategoriaSelecionada}
-                                    dropdownAberto={categoriaDropdownAberto}
-                                    setDropdownAberto={setCategoriaDropdownAberto}
-                                    valores={categorias}    
-                                    comSelecionar={true}            
-                                />
-                            </div>
-                        </div>
-                    </div>
-
                     {/* Status */}
                     <div>
                         <div className="flex items-center justify-between mb-2">
@@ -180,21 +152,16 @@ export function ModalFiltro({
                         </div>
                     </div>
 
-                    {/* Serviço */}
+                    {/* Busca livre */}
                     <div>
-                        <div className="flex items-center justify-between mb-2">
-                            <label className="text-sm font-medium text-gray-900">Serviço</label>
-                            <div className="relative">
-                                <DropdownButton
-                                    valorSelecionado={servicoSelecionado}
-                                    setValorSelecionado={setServicoSelecionado}
-                                    dropdownAberto={servicoDropdownAberto}
-                                    setDropdownAberto={setServicoDropdownAberto}
-                                    valores={servicoOptions}     
-                                    comSelecionar={true}             
-                                />
-                            </div>
-                        </div>
+                        <label className="block text-sm font-medium text-gray-900 mb-2">Busca</label>
+                        <input
+                            type="text"
+                            value={filtros.filtro}
+                            onChange={(e) => setFiltros(prev => ({ ...prev, filtro: e.target.value }))}
+                            placeholder="Cliente, veículo, serviço ou código da OS"
+                            className="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                        />
                     </div>
 
                     {/* Data do agendamento */}

@@ -32,7 +32,7 @@ export function MenuGerente() {
 
     return (
         <div className="min-h-screen bg-gray-100">
-           <header className="bg-red-700 text-white sticky rounded-b-3xl pb-8">
+           <header className="bg-red-700 text-white sticky pb-8">
         <div className="px-5 py-4 flex items-center justify-between">
             <button
                 className="flex flex-col gap-1 p-1"

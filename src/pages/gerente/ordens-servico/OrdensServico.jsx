@@ -1,33 +1,50 @@
 import { Search } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { OrdemServicoItem } from './ordem-servico-item/OrdemServicoItem';
 import { ModalOrdemServico } from '../agendamento/modal-ordem-servico/ModalOrdemServico';
 import { DropdownButton } from '../../../components/gerente/dropdown-button/DropdownButton';
 import { ModalFiltro } from './modal-filtro/ModalFiltro';
+import { ModalCriarOrdemServico } from './modal-criar-ordem/ModalCriarOrdemServico';
 import { ordemServicoService } from '../../../services/OrdemServicoService';
 import { useToast } from '../../../context/ToastContext';
 import { TiposToast } from '../../../utils/enum/TiposToast';
-import { formatarHorario, formatarPreco } from '../../../utils';
+import { formatarDataHorarioCompleto, formatarHorario, formatarPreco } from '../../../utils';
+import { Paginacao } from '../../../components/paginacao/Paginacao';
 
 
 
 export function OrdensServico() {
-    const [periodoSelecionado, setPeriodoSelecionado] = useState({ id: 3, valor: 'Mês' });
+    const [periodoSelecionado, setPeriodoSelecionado] = useState({ id: 0, valor: 'Todos' });
     const [dropdownAberto, setDropdownAberto] = useState(false);
+    const [dropdownOrdenacaoAberto, setDropdownOrdenacaoAberto] = useState(false);
+    const [ordenacaoSelecionada, setOrdenacaoSelecionada] = useState({ id: 'emAnalise', valor: 'Em análise' });
     const [modalFiltroAberto, setModalFiltroAberto] = useState(false);
     const [modalAbertoOrdem, setModalAbertoOrdem] = useState(false);
+    const [modalCriarAberto, setModalCriarAberto] = useState(false);
     const [ordemSelecionada, setOrdemSelecionada] = useState(null);
-    const [filtrosAplicados, setFiltrosAplicados] = useState({});
+    const [filtrosAplicados, setFiltrosAplicados] = useState({ status: '', filtro: '', dataAgendamento: '', dataConclusao: '' });
     const [ordensServico, setOrdensServico] = useState([]);
+    const [paginaAtual, setPaginaAtual] = useState(0);
+    const [totalPaginas, setTotalPaginas] = useState(0);
+    const [tamanhoPagina] = useState(12);
     const [loading, setLoading] = useState(true);
     const [loadingDetalhe, setLoadingDetalhe] = useState(false);
     const { mostrarToast } = useToast();
     
     const periodos = [
+        { id: 0, valor: 'Todos' },
         { id: 1, valor: 'Dia' },
         { id: 2, valor: 'Semana' },
         { id: 3, valor: 'Mês' },
         { id: 4, valor: 'Ano' }
+    ];
+
+    const ordenacoes = [
+        { id: 'emAnalise', valor: 'Em análise', ordenarPor: 'status.id,dataAgendamento', direcao: 'asc' },
+        { id: 'dataRecente', valor: 'Data mais recente', ordenarPor: 'dataAgendamento,id', direcao: 'desc' },
+        { id: 'dataAntiga', valor: 'Data mais antiga', ordenarPor: 'dataAgendamento,id', direcao: 'asc' },
+        { id: 'valorMaior', valor: 'Maior valor', ordenarPor: 'precoMinimo,id', direcao: 'desc' },
+        { id: 'valorMenor', valor: 'Menor valor', ordenarPor: 'precoMinimo,id', direcao: 'asc' }
     ];
     
     const formatarVeiculo = (veiculo) => {
@@ -77,6 +94,8 @@ export function OrdensServico() {
             'Sem serviço';
         const modeloVeiculo = obterModeloVeiculo(ordem?.veiculo);
         const titulo = ordem?.id ? `OS #${ordem.id} - ${modeloVeiculo}` : `Nova OS - ${modeloVeiculo}`;
+        const dataAgendamentoOriginal = ordem?.dataAgendamento || null;
+        const dataConclusaoOriginal = ordem?.dtConclusao || ordem?.dataConclusao || null;
 
         return {
             id: ordem?.id,
@@ -86,32 +105,168 @@ export function OrdensServico() {
             cliente: ordem?.cliente?.nome || ordem?.cliente || '-',
             veiculo: formatarVeiculo(ordem?.veiculo),
             valor: formatarPreco(valorTotal),
+            valorNumerico: Number(valorTotal) || 0,
             status: statusId,
             statusDescricao,
-            dataAgendamento: ordem?.dataAgendamento || '-',
-            dataConclusao: ordem?.dtConclusao || ordem?.dataConclusao || '--/--/---- - --:--',
+            dataAgendamento: dataAgendamentoOriginal ? formatarDataHorarioCompleto(dataAgendamentoOriginal) : '-',
+            dataAgendamentoOriginal,
+            dataConclusao: dataConclusaoOriginal ? formatarDataHorarioCompleto(dataConclusaoOriginal) : '--/--/---- às --:--',
             observacoes: ordem?.observacoes || 'Sem observações.',
             servicos
         };
     };
 
-    const buscarOrdensServico = async () => {
+    const formatarDataFiltro = (data) => {
+        return data.toISOString().split('T')[0];
+    };
+
+    const extrairPaginacao = (response) => {
+        if (Array.isArray(response)) {
+            return {
+                lista: response,
+                totalPaginas: response.length > 0 ? 1 : 0
+            };
+        }
+
+        const lista = Array.isArray(response?.content)
+            ? response.content
+            : (Array.isArray(response?.data?.content) ? response.data.content : []);
+
+        const totalPaginasBackend =
+            response?.totalPages ??
+            response?.totalPaginas ??
+            response?.page?.totalPages ??
+            response?.data?.totalPages ??
+            response?.data?.totalPaginas ??
+            response?.data?.page?.totalPages;
+
+        const totalPaginasResolvido = Number(totalPaginasBackend);
+        const totalPaginas = Number.isFinite(totalPaginasResolvido) && totalPaginasResolvido > 0
+            ? totalPaginasResolvido
+            : (lista.length > 0 ? 1 : 0);
+
+        return {
+            lista,
+            totalPaginas
+        };
+    };
+
+    const resolverFaixaDatas = () => {
+        if (filtrosAplicados?.dataAgendamento || filtrosAplicados?.dataConclusao) {
+            return {
+                dataInicio: filtrosAplicados?.dataAgendamento || undefined,
+                dataFim: filtrosAplicados?.dataConclusao || undefined
+            };
+        }
+
+        if (periodoSelecionado.id === 0) {
+            return {
+                dataInicio: undefined,
+                dataFim: undefined
+            };
+        }
+
+        const hoje = new Date();
+        const inicio = new Date(hoje);
+
+        if (periodoSelecionado.id === 1) {
+            inicio.setHours(0, 0, 0, 0);
+        }
+
+        if (periodoSelecionado.id === 2) {
+            inicio.setDate(hoje.getDate() - 7);
+        }
+
+        if (periodoSelecionado.id === 3) {
+            inicio.setMonth(hoje.getMonth() - 1);
+        }
+
+        if (periodoSelecionado.id === 4) {
+            inicio.setFullYear(hoje.getFullYear() - 1);
+        }
+
+        return {
+            dataInicio: formatarDataFiltro(inicio),
+            dataFim: formatarDataFiltro(hoje)
+        };
+    };
+
+    const resolverOrdenacaoApi = () => {
+        const selecionada = ordenacoes.find((item) => item.id === ordenacaoSelecionada.id);
+
+        return {
+            ordenarPor: selecionada?.ordenarPor,
+            direcao: selecionada?.direcao
+        };
+    };
+
+    const aplicarOrdenacaoLocal = (lista = []) => {
+        const resultado = [...lista];
+
+        const compararData = (a, b, asc = true) => {
+            const dataA = new Date(a?.dataAgendamentoOriginal || a?.dataAgendamento || 0).getTime();
+            const dataB = new Date(b?.dataAgendamentoOriginal || b?.dataAgendamento || 0).getTime();
+            const seguroA = Number.isNaN(dataA) ? 0 : dataA;
+            const seguroB = Number.isNaN(dataB) ? 0 : dataB;
+            return asc ? seguroA - seguroB : seguroB - seguroA;
+        };
+
+        if (ordenacaoSelecionada.id === 'dataRecente') {
+            resultado.sort((a, b) => compararData(a, b, false));
+            return resultado;
+        }
+
+        if (ordenacaoSelecionada.id === 'dataAntiga') {
+            resultado.sort((a, b) => compararData(a, b, true));
+            return resultado;
+        }
+
+        if (ordenacaoSelecionada.id === 'valorMaior') {
+            resultado.sort((a, b) => (b?.valorNumerico || 0) - (a?.valorNumerico || 0));
+            return resultado;
+        }
+
+        if (ordenacaoSelecionada.id === 'valorMenor') {
+            resultado.sort((a, b) => (a?.valorNumerico || 0) - (b?.valorNumerico || 0));
+            return resultado;
+        }
+
+        resultado.sort((a, b) => {
+            const aEmAnalise = Number(a?.status) === 1 ? 0 : 1;
+            const bEmAnalise = Number(b?.status) === 1 ? 0 : 1;
+
+            if (aEmAnalise !== bEmAnalise) {
+                return aEmAnalise - bEmAnalise;
+            }
+
+            return compararData(a, b, true);
+        });
+
+        return resultado;
+    };
+
+    const buscarOrdensServico = useCallback(async () => {
         setLoading(true);
         try {
+            const faixaDatas = resolverFaixaDatas();
+            const ordenacaoApi = resolverOrdenacaoApi();
             const response = await ordemServicoService.listarOrdensGestao({
-                pagina: 0,
-                tamanho: 50,
-                ordenarPor: 'dataAgendamento',
-                direcao: 'asc',
+                pagina: paginaAtual,
+                tamanho: tamanhoPagina,
                 status: filtrosAplicados.status || undefined,
-                dataInicio: filtrosAplicados.dataAgendamento || undefined,
-                dataFim: filtrosAplicados.dataConclusao || undefined
+                filtro: filtrosAplicados.filtro || undefined,
+                dataInicio: faixaDatas.dataInicio,
+                dataFim: faixaDatas.dataFim,
+                ordenarPor: ordenacaoApi.ordenarPor,
+                direcao: ordenacaoApi.direcao
             });
 
-            const lista = response?.content || response || [];
-            setOrdensServico(lista.map(normalizarOrdem));
+            const { lista, totalPaginas: totalPaginasResponse } = extrairPaginacao(response);
+            setOrdensServico(aplicarOrdenacaoLocal(lista.map(normalizarOrdem)));
+            setTotalPaginas(totalPaginasResponse);
         } catch (error) {
             setOrdensServico([]);
+            setTotalPaginas(0);
             mostrarToast({
                 tipo: TiposToast.ERRO,
                 titulo: 'Erro ao carregar ordens',
@@ -121,11 +276,11 @@ export function OrdensServico() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [filtrosAplicados, mostrarToast, ordenacaoSelecionada.id, paginaAtual, periodoSelecionado.id, tamanhoPagina]);
 
     useEffect(() => {
         buscarOrdensServico();
-    }, [periodoSelecionado, filtrosAplicados]);
+    }, [buscarOrdensServico]);
 
     const abrirModal = async (ordem) => {
         setOrdemSelecionada(normalizarOrdem(ordem));
@@ -159,9 +314,13 @@ export function OrdensServico() {
     const handleOrdemAtualizada = (ordemAtualizada) => {
         if (!ordemAtualizada?.id) return;
 
-        setOrdensServico((prev) => prev.map((item) =>
-            item.id === ordemAtualizada.id ? { ...item, ...ordemAtualizada } : item
-        ));
+        setOrdensServico((prev) => prev.map((item) => {
+            if (item.id !== ordemAtualizada.id) {
+                return item;
+            }
+
+            return { ...item, ...ordemAtualizada };
+        }));
 
         setOrdemSelecionada((prev) => {
             if (!prev || prev.id !== ordemAtualizada.id) {
@@ -172,39 +331,69 @@ export function OrdensServico() {
         });
     };
 
-    const criarNovaOrdemBase = () => ({
-        id: null,
-        horario: '--:--',
-        cliente: 'Selecione o cliente',
-        veiculo: 'Selecione o veículo',
-        valor: 'R$ 0,00',
-        status: 1,
-        dataAgendamento: '--/--/---- - --:--',
-        dataConclusao: '--/--/---- - --:--',
-        observacoes: 'Sem observações.',
-        servicos: []
-    });
-
     const handleAplicarFiltros = (filtros) => {
         setFiltrosAplicados(filtros);
+        setPaginaAtual(0);
+    };
+
+    const handleMudarPagina = (novaPagina) => {
+        if (novaPagina < 0 || novaPagina >= totalPaginas || novaPagina === paginaAtual) {
+            return;
+        }
+
+        setPaginaAtual(novaPagina);
+    };
+
+    useEffect(() => {
+        setPaginaAtual(0);
+    }, [ordenacaoSelecionada.id, periodoSelecionado.id]);
+
+    const handleOrdemCriada = async (ordemCriada) => {
+        await buscarOrdensServico();
+
+        if (!ordemCriada?.id) {
+            return;
+        }
+
+        try {
+            const detalhe = await ordemServicoService.buscarPorId(ordemCriada.id);
+            setOrdemSelecionada(normalizarOrdem(detalhe));
+            setModalAbertoOrdem(true);
+        } catch {
+            // A listagem já foi atualizada; sem detalhe não bloqueia o fluxo.
+        }
     };
 
     const contarFiltrosAtivos = () => {
-        return Object.values(filtrosAplicados).filter(valor => valor !== '').length;
+        return Object.values(filtrosAplicados).filter((valor) => valor !== '').length;
     };
 
     return (
         <div>
             <div className="flex items-center justify-between mb-4 bg-white rounded-2xl p-2 ps-4">
-                <span className="text-sm font-medium">Período</span>
-                <div className="relative">
-                   <DropdownButton
-                        valorSelecionado={periodoSelecionado}
-                        setValorSelecionado={setPeriodoSelecionado}
-                        dropdownAberto={dropdownAberto}
-                        setDropdownAberto={setDropdownAberto}
-                        valores={periodos}                
-                    />
+                <div className="flex items-center justify-between w-full gap-3">
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium">Período</span>
+                        <div className="relative">
+                            <DropdownButton
+                                valorSelecionado={periodoSelecionado}
+                                setValorSelecionado={setPeriodoSelecionado}
+                                dropdownAberto={dropdownAberto}
+                                setDropdownAberto={setDropdownAberto}
+                                valores={periodos}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="relative">
+                        <DropdownButton
+                            valorSelecionado={ordenacaoSelecionada}
+                            setValorSelecionado={setOrdenacaoSelecionada}
+                            dropdownAberto={dropdownOrdenacaoAberto}
+                            setDropdownAberto={setDropdownOrdenacaoAberto}
+                            valores={ordenacoes}
+                        />
+                    </div>
                 </div>
             </div>
 
@@ -234,10 +423,18 @@ export function OrdensServico() {
                 )}
             </div>
 
+            {!loading && ordensServico.length > 0 && totalPaginas > 0 && (
+                <Paginacao
+                    paginaAtual={paginaAtual}
+                    totalPaginas={totalPaginas}
+                    onMudarPagina={handleMudarPagina}
+                />
+            )}
+
             {/* Botão Nova Ordem */}
             <div className="sticky bottom-4 mt-8 left-4 right-4 z-10">
                 <button
-                    onClick={() => abrirModal(criarNovaOrdemBase())}
+                    onClick={() => setModalCriarAberto(true)}
                     disabled={loadingDetalhe}
                     className="w-full bg-red-600 text-white py-3 rounded-lg font-semibold shadow-lg"
                 >
@@ -249,7 +446,14 @@ export function OrdensServico() {
             <ModalFiltro
                 isOpen={modalFiltroAberto}
                 onClose={() => setModalFiltroAberto(false)}
-                onAplicarFiltros={handleAplicarFiltros}        
+                onAplicarFiltros={handleAplicarFiltros}
+                filtrosIniciais={filtrosAplicados}
+            />
+
+            <ModalCriarOrdemServico
+                isOpen={modalCriarAberto}
+                onClose={() => setModalCriarAberto(false)}
+                onCriada={handleOrdemCriada}
             />
 
             <ModalOrdemServico

@@ -22,16 +22,13 @@ export class ServicosService {
             }
 
             const url = `${this.BASE_URL}?${queryParams.toString()}`;
-            console.log('[ServicosService.buscarTodos] GET', url);
             
             try {
                 const response = await apiService.get(url);
-                console.log('[ServicosService.buscarTodos] Response:', response);
                 return response;
             } catch (error1) {
                 console.warn('[ServicosService.buscarTodos] Erro com parâmetros, tentando endpoint simples:', error1?.message);
                 const response = await apiService.get(this.BASE_URL);
-                console.log('[ServicosService.buscarTodos] Response (fallback):', response);
                 return response;
             }
         } catch (error) {

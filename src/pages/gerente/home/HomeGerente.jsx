@@ -3,6 +3,7 @@ import { Calendar, BanknoteArrowUp, ChartNoAxesColumnIncreasing , Star, Clock } 
 import { CardLargo } from "../../../components/gerente/card/card-largo/CardLargo";
 import { CardMedio } from "../../../components/gerente/card/card-medio/CardMedio";
 import { DashboardService } from "../../../services/DashboardService";
+import { formatarHorario } from "../../../utils";
 
 export function HomeGerente(){
     const dashboardService = new DashboardService();
@@ -27,8 +28,8 @@ export function HomeGerente(){
         if (!agendamento) return "--:--";
         if (agendamento.hora) return agendamento.hora;
 
-        if (typeof agendamento.dataHora === "string" && agendamento.dataHora.length >= 16) {
-            return agendamento.dataHora.slice(11, 16);
+        if (agendamento.dataHora) {
+            return formatarHorario(agendamento.dataHora);
         }
 
         return "--:--";
