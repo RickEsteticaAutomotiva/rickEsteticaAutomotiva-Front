@@ -5,19 +5,26 @@ export class OrdemServicoService {
     BASE_URL_GESTAO = '/ordem-servicos-gestao';
 
     STATUS_POR_ID = {
-        1: 'AGUARDANDO',
-        2: 'EM_ANDAMENTO',
-        3: 'AGUARDANDO_PECAS',
+        1: 'ANÁLISE',
+        2: 'AGENDA_CONFIRMADA',
+        3: 'EM_EXECUÇÃO',
         4: 'CANCELADO',
-        5: 'CONCLUIDO'
+        5: 'CONCLUÍDO'
     };
 
     ID_POR_STATUS = {
+        ANALISE: 1,
+        'ANÁLISE': 1,
+        'AGENDA_CONFIRMADA': 2,
+        'AGENDA CONFIRMADA': 2,
+        EM_EXECUCAO: 3,
+        'EM_EXECUÇÃO': 3,
+        CANCELADO: 4,
+        CONCLUIDO: 5,
+        'CONCLUÍDO': 5,
         AGUARDANDO: 1,
         EM_ANDAMENTO: 2,
-        AGUARDANDO_PECAS: 3,
-        CANCELADO: 4,
-        CONCLUIDO: 5
+        AGUARDANDO_PECAS: 3
     };
 
     normalizarStatusParaBackend(status) {

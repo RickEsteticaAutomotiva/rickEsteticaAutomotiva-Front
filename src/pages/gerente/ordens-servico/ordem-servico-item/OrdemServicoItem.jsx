@@ -21,9 +21,9 @@ export function OrdemServicoItem({ ordem, onItemClick }) {
         };
 
         const labelsPorId = {
-            1: 'Em análise',
-            2: 'Em andamento',
-            3: 'Aguardando peças',
+            1: 'Análise',
+            2: 'Agenda confirmada',
+            3: 'Em execução',
             4: 'Cancelado',
             5: 'Concluído'
         };

@@ -25,11 +25,11 @@ export function ModalOrdemServico({ isOpen, agendamento, onClose, onOrdemAtualiz
     const { mostrarToast } = useToast();
 
     const statusDescricaoPorId = {
-        1: 'EM_ANALISE',
-        2: 'EM_ANDAMENTO',
-        3: 'AGUARDANDO_PECAS',
+        1: 'ANÁLISE',
+        2: 'AGENDA_CONFIRMADA',
+        3: 'EM_EXECUÇÃO',
         4: 'CANCELADO',
-        5: 'CONCLUIDO'
+        5: 'CONCLUÍDO'
     };
 
     const extrairStatusId = (status) => {
@@ -214,7 +214,7 @@ export function ModalOrdemServico({ isOpen, agendamento, onClose, onOrdemAtualiz
             mostrarToast({
                 tipo: TiposToast.ALERTA,
                 titulo: 'Ordem concluída',
-                mensagem: 'Esta ordem já foi concluída. Não é permitido retornar para Em análise, Em andamento ou Aguardando peças.',
+                mensagem: 'Esta ordem já foi concluída. Não é permitido retornar para Análise, Agenda confirmada ou Em execução.',
                 duracao: 4000
             });
             return;
@@ -377,9 +377,9 @@ export function ModalOrdemServico({ isOpen, agendamento, onClose, onOrdemAtualiz
                                 disabled={loadingStatus}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 text-sm"
                             >
-                                <option value="1">Em análise</option>
-                                <option value="2">Em andamento</option>
-                                <option value="3">Aguardando peças</option>
+                                <option value="1">Análise</option>
+                                <option value="2">Agenda confirmada</option>
+                                <option value="3">Em execução</option>
                                 <option value="4">Cancelado</option>
                                 <option value="5">Concluído</option>
                             </select>

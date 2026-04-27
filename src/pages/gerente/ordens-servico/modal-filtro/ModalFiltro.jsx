@@ -28,11 +28,11 @@ export function ModalFiltro({
     const dateFimRef = useRef(null);
 
     const statusOptions = [
-        { id: 1, valor: 'Em análise' },
-        { id: 2, valor: 'Em Andamento' },
-        { id: 3, valor: 'Aguardando Peças' },
-        { id: 4, valor: 'Cancelado' }
-        ,{ id: 5, valor: 'Concluído' }
+        { id: 1, valor: 'Análise' },
+        { id: 2, valor: 'Agenda confirmada' },
+        { id: 3, valor: 'Em execução' },
+        { id: 4, valor: 'Cancelado' },
+        { id: 5, valor: 'Concluído' }
     ];
 
     const resolverSelecionado = (lista, id) => {
