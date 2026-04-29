@@ -44,14 +44,14 @@ export function ModalCriarOrdemServico({ isOpen, onClose, onCriada }) {
                     usuarioEhGerente
                         ? veiculoService.buscarTodos({
                             pagina: 0,
-                            tamanho: 200,
+                            tamanho: 9,
                             ordenarPor: 'id',
                             direcao: 'desc'
                         })
                         : veiculoService.buscarVeiculosPorUsuario(user.id),
                     servicosService.buscarTodos({
                         pagina: 0,
-                        tamanho: 200,
+                        tamanho: 9,
                         ordenarPor: 'nome',
                         filtro: ''
                     })
