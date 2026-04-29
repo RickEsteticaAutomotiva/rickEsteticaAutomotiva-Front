@@ -6,6 +6,7 @@ import { Calendario } from "../../components/calendario/Calendario";
 import { ModalConfirmacao } from "../../components/modal-confirmacao/ModalConfirmacao";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from '../../context/ToastContext';
+import { useCarrinho } from "../../context/CarrinhoContext";
 import { TiposToast } from '../../utils/enum/TiposToast';
 import { ROUTES } from "../../constants/Routes";
 import { carrinhoService } from '../../services/CarrinhoService';
@@ -26,6 +27,7 @@ export function Agendamento() {
     const location = useLocation();
     const { user } = useAuth();
     const { mostrarToast } = useToast();
+    const { atualizarCarrinho } = useCarrinho();
 
     const breadcrumbItems = [
         { label: 'Início', href: ROUTES.HOME, icon: 'bi bi-house' },
@@ -45,38 +47,8 @@ export function Agendamento() {
         }
 
         setVeiculoSelecionado(veiculo);
-        setDataSelecionada(getProximaDataDisponivel());
         buscarServicosCarrinho();
     }, [user]);
-
-    const getProximaDataDisponivel = () => {
-        const horarios = ['08:00', '09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
-        const agora = new Date();
-        const limiteComMargem = new Date(agora.getTime() + 60 * 60 * 1000);
-
-        const data = new Date();
-        data.setHours(0, 0, 0, 0);
-
-        while (true) {
-            if (data.getDay() !== 0) {
-                const isHoje = data.toDateString() === agora.toDateString();
-                if (!isHoje) {
-                    return data;
-                }
-                // Para hoje, verificar se ainda há algum horário disponível
-                const temHorarioDisponivel = horarios.some(h => {
-                    const [horas, minutos] = h.split(':').map(Number);
-                    const horarioDate = new Date();
-                    horarioDate.setHours(horas, minutos, 0, 0);
-                    return horarioDate > limiteComMargem;
-                });
-                if (temHorarioDisponivel) {
-                    return data;
-                }
-            }
-            data.setDate(data.getDate() + 1);
-        }
-    };
 
     const buscarServicosCarrinho = async () => {
         if (!user || !user.id) {
@@ -86,6 +58,15 @@ export function Agendamento() {
         try {
             const servicos = await carrinhoService.buscarCarrinhoUsuario(user.id);
             setServicosCarrinho(servicos || []);
+            
+            // Após buscar serviços, buscar o próximo dia com horários disponíveis
+            if (servicos && servicos.length > 0) {
+                const servicosIds = servicos.map(s => s.idServico || s.id);
+                const proximoDia = await buscarProximoDiaComHorarios(new Date(), servicosIds);
+                if (proximoDia) {
+                    setDataSelecionada(proximoDia);
+                }
+            }
         } catch (error) {
             mostrarToast({
                 tipo: TiposToast.ERRO,
@@ -95,6 +76,29 @@ export function Agendamento() {
             });
             setServicosCarrinho([]);
         }
+    };
+
+    const buscarProximoDiaComHorarios = async (dataInicial, servicosIds) => {
+        const maxDias = 30;
+        let data = new Date(dataInicial);
+        data.setHours(0, 0, 0, 0);
+
+        for (let i = 0; i < maxDias; i++) {
+            // Pular domingos (dia 0)
+            if (data.getDay() !== 0) {
+                try {
+                    const horarios = await ordemServicoService.buscarHorariosDisponiveis(data, servicosIds);
+                    if (horarios && Array.isArray(horarios) && horarios.length > 0) {
+                        return new Date(data); // Retorna uma cópia da data
+                    }
+                } catch (error) {
+                    console.error(`Erro ao buscar horários para ${data.toDateString()}:`, error);
+                }
+            }
+            data.setDate(data.getDate() + 1);
+        }
+
+        return null; // Nenhum dia disponível encontrado
     };
 
     const handleDateSelect = (date) => {
@@ -167,6 +171,9 @@ export function Agendamento() {
 
             await ordemServicoService.criarOrdemServico(agendamento);
 
+            // Atualizar o carrinho após agendamento bem-sucedido
+            await atualizarCarrinho();
+
             setShowModalConfirmacao(false);
             setShowModalSucesso(true);
         } catch (error) {
@@ -227,6 +234,7 @@ export function Agendamento() {
                                 onTimeSelect={handleTimeSelect}
                                 selectedDate={dataSelecionada}
                                 selectedTime={horarioSelecionado}
+                                servicosIds={servicosCarrinho.map(s => s.idServico || s.id)}
                             />
                         </div>
                     </div>
