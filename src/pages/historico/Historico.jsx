@@ -13,7 +13,7 @@ import { veiculoService } from "../../services/VeiculoService";
 import { servicosService } from "../../services/ServicosService";
 import { carrinhoService } from "../../services/CarrinhoService";
 import { ROUTES } from "../../constants/Routes";
-import { tradutorStatus, formatarDataCompleta, formatarHorario, formatarPreco } from '../../utils/index';
+import { tradutorStatus, formatarDataCompleta, formatarHorario, formatarPreco, StatusAgendamento } from '../../utils/index';
 import { useToast } from '../../context/ToastContext';
 import { TiposToast } from '../../utils/enum/TiposToast';
 
@@ -86,7 +86,7 @@ export function Historico() {
             );
 
             const ordenados = agendamentosEnriquecidos.sort(
-                (a, b) => new Date(b.dataAgendamento) - new Date(a.dataAgendamento)
+                (a, b) => new Date(b.id) - new Date(a.id)
             );
             setAgendamentos(ordenados);
         } catch (error) {
@@ -123,13 +123,7 @@ export function Historico() {
         try {
             await ordemServicoService.atualizarStatus(agendamentoParaCancelar.id, 4);
             
-            setAgendamentos(prevAgendamentos =>
-                prevAgendamentos.map(agendamento =>
-                    agendamento.id === agendamentoParaCancelar.id
-                        ? { ...agendamento, status: 4 }
-                        : agendamento
-                )
-            );
+            await buscarHistorico();
 
             setShowModalCancelamento(false);
             setAgendamentoParaCancelar(null);
@@ -330,7 +324,7 @@ export function Historico() {
                                                 </button>
                                             )}
                                             
-                                            {agendamento.status === 1 && (
+                                            {agendamento.status.id == 1 && (
                                                 <button
                                                     className="bg-red-50 text-red-600 border border-red-200 px-4 py-2 rounded-lg hover:bg-red-600 hover:text-white transition-colors text-sm font-medium"
                                                     onClick={() => handleCancelar(agendamento)}

@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '../../context/ToastContext';
 import { TiposToast } from '../../utils/enum/TiposToast';
+import { ordemServicoService } from '../../services/OrdemServicoService';
 
 export function Calendario({ 
   onDateSelect, 
   onTimeSelect, 
   selectedDate, 
   selectedTime,
+  servicosIds = [],
   disabled = false 
 }) {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -15,29 +17,32 @@ export function Calendario({
   const { mostrarToast } = useToast();
 
   useEffect(() => {
-    if (selectedDate) {
-      fetchAvailableTimes(selectedDate);
+    if (selectedDate && servicosIds.length > 0) {
+      fetchAvailableTimes(selectedDate, servicosIds);
     }
-  }, [selectedDate]);
+  }, [selectedDate, servicosIds]);
 
-  const fetchAvailableTimes = async (date) => {
+  const fetchAvailableTimes = async (date, servicosIds) => {
     setLoadingTimes(true);
 
     try {
-      // Simular chamada da API
-      await new Promise(resolve => setTimeout(resolve, 500));
+      const horariosDisponiveis = await ordemServicoService.buscarHorariosDisponiveis(date, servicosIds);
+      
+      // Converter resposta para formato HH:MM
+      // A resposta do backend: [{ inicio: "09:00:00", fim: "10:00:00" }, ...]
+      const times = Array.isArray(horariosDisponiveis)
+        ? horariosDisponiveis
+            .map(horario => {
+              // Extrair apenas a hora (HH:MM) do campo 'inicio'
+              const inicio = horario?.inicio?.substring(0, 5);
+              return inicio && /^\d{2}:\d{2}$/.test(inicio) ? inicio : null;
+            })
+            .filter(Boolean) // Remove nulos/inválidos
+        : [];
 
-      // Mock de horários disponíveis
-      const times = [
-        '08:00', '09:00', '10:00', '11:00',
-        '13:00', '14:00', '15:00', '16:00', '17:00'
-      ];
-
-      const occupiedTimes = [];
-      const freeTimes = times.filter(t => !occupiedTimes.includes(t));
-
-      setAvailableTimes(freeTimes);
+      setAvailableTimes(times);
     } catch (error) {
+      console.error('Erro ao buscar horários disponíveis:', error);
       mostrarToast({
         tipo: TiposToast.ERRO,
         titulo: 'Erro ao carregar horários',
