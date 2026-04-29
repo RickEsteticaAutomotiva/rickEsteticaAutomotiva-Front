@@ -1,4 +1,4 @@
-import { Plus } from 'lucide-react';
+import { Search } from 'lucide-react';
 
 export function OrdemServicoItem({ ordem, onItemClick }) {
     const normalizarDescricaoStatus = (descricao) => {
@@ -21,11 +21,11 @@ export function OrdemServicoItem({ ordem, onItemClick }) {
         };
 
         const labelsPorId = {
-            1: 'Aguardando',
-            2: 'Em andamento',
-            3: 'Aguardando pecas',
+            1: 'Análise',
+            2: 'Agenda confirmada',
+            3: 'Em execução',
             4: 'Cancelado',
-            5: 'Concluido'
+            5: 'Concluído'
         };
 
         return {
@@ -50,7 +50,7 @@ export function OrdemServicoItem({ ordem, onItemClick }) {
                     onClick={() => onItemClick && onItemClick(ordem)}
                     className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
                 >
-                    <Plus size={16} className="text-gray-600" />
+                    <Search size={16} className="text-gray-600" />
                 </button>
             </div>
         </div>

@@ -34,8 +34,6 @@ export function ModalAdicionaServico({
                     filtro: ''
                 });
 
-                console.log('[ModalAdicionaServico] Response:', response);
-
                 const lista = response?.content || response?.data || response || [];
                 const listaArray = Array.isArray(lista) ? lista : [];
 
@@ -45,8 +43,6 @@ export function ModalAdicionaServico({
                     valor: formatarPreco(servico?.preco || 0),
                     preco: servico?.preco || 0
                 })).filter((servico) => servico?.id);
-
-                console.log('[ModalAdicionaServico] Servços normalizados:', servicosNormalizados);
 
                 setServicosDisponiveis(servicosNormalizados);
             } catch (error) {

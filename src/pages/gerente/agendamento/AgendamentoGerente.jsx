@@ -9,7 +9,8 @@ import { servicosService } from '../../../services/ServicosService';
 import { veiculoService } from '../../../services/VeiculoService';
 import { useToast } from '../../../context/ToastContext';
 import { TiposToast } from '../../../utils/enum/TiposToast';
-import { formatarHorario, formatarPreco } from '../../../utils';
+import { formatarPlacaCarro } from '../../../utils';
+import { formatarDataCompleta, formatarDataHorarioCompleto, formatarHorario, formatarPreco } from '../../../utils';
 
 const formatarVeiculo = (veiculo) => {
     if (!veiculo) return '-';
@@ -42,25 +43,77 @@ const normalizarServicos = (servicos = []) => {
     });
 };
 
+const resolverDataAgendamento = (ordem) => {
+    return ordem?.dataAgendamento || ordem?.dataHora || ordem?.data || null;
+};
+
+const resolverPlacaVeiculo = (veiculo) => {
+    if (!veiculo) return null;
+
+    if (typeof veiculo === 'string') {
+        return veiculo.trim() || null;
+    }
+
+    return veiculo.placa || veiculo.numeroPlaca || veiculo.licensePlate || veiculo.placaMercosul || null;
+};
+
+const resolverVeiculoId = (ordem) => {
+    const veiculo = ordem?.veiculoId ?? ordem?.veiculo;
+
+    if (typeof veiculo === 'number') {
+        return veiculo;
+    }
+
+    if (typeof veiculo === 'string' && /^\d+$/.test(veiculo.trim())) {
+        return Number(veiculo);
+    }
+
+    return null;
+};
+
 const normalizarAgendamento = (ordem) => {
     const servicos = normalizarServicos(ordem?.servicos || []);
     const valorTotal = ordem?.valorTotal ?? ordem?.precoMinimo ?? servicos.reduce(
         (total, servico) => total + (servico.preco || 0),
         0
     );
+    const dataAgendamentoOriginal = resolverDataAgendamento(ordem);
+    const dataConclusaoOriginal = ordem?.dtConclusao || ordem?.dataConclusao || null;
+    const veiculoDetalhado = typeof ordem?.veiculo === 'object' && ordem?.veiculo !== null ? ordem.veiculo : null;
+    const placaBruta = resolverPlacaVeiculo(veiculoDetalhado || ordem?.veiculo);
+    const placaVeiculo = placaBruta ? formatarPlacaCarro(placaBruta) : null;
 
     return {
         id: ordem?.id,
-        horario: ordem?.horario || (ordem?.dataAgendamento ? formatarHorario(ordem.dataAgendamento) : '--:--'),
+        horario: ordem?.horario || (dataAgendamentoOriginal ? formatarHorario(dataAgendamentoOriginal) : '--:--'),
         cliente: ordem?.cliente?.nome || ordem?.cliente || '-',
         veiculo: formatarVeiculo(ordem?.veiculo),
+        veiculoDetalhado,
+        placaVeiculo,
         valor: formatarPreco(valorTotal),
         status: ordem?.status,
-        dataAgendamento: ordem?.dataAgendamento || '-',
-        dataConclusao: ordem?.dtConclusao || ordem?.dataConclusao || '--/--/---- - --:--',
+        dataAgendamento: dataAgendamentoOriginal ? formatarDataHorarioCompleto(dataAgendamentoOriginal) : '-',
+        dataAgendamentoOriginal,
+        dataConclusao: dataConclusaoOriginal ? formatarDataHorarioCompleto(dataConclusaoOriginal) : '--/--/---- às --:--',
         observacoes: ordem?.observacoes || 'Sem observações.',
         servicos
     };
+};
+
+const extrairListaAgendamentos = (response) => {
+    if (Array.isArray(response)) {
+        return response;
+    }
+
+    if (Array.isArray(response?.data)) {
+        return response.data;
+    }
+
+    if (Array.isArray(response?.content)) {
+        return response.content;
+    }
+
+    return [];
 };
 
 const resolverReferenciasOrdem = async (ordem) => {
@@ -68,6 +121,7 @@ const resolverReferenciasOrdem = async (ordem) => {
 
     const ordemResolvida = { ...ordem };
     const servicosOrigem = ordem?.servicos || ordem?.itensServico || ordem?.itens || [];
+    const veiculoId = resolverVeiculoId(ordemResolvida);
 
     if (Array.isArray(servicosOrigem) && servicosOrigem.length > 0 && typeof servicosOrigem[0] === 'number') {
         const idsUnicos = [...new Set(servicosOrigem)];
@@ -99,11 +153,11 @@ const resolverReferenciasOrdem = async (ordem) => {
         });
     }
 
-    if (typeof ordemResolvida.veiculo === 'number') {
+    if (veiculoId !== null) {
         try {
-            ordemResolvida.veiculo = await veiculoService.buscarPorId(ordemResolvida.veiculo);
+            ordemResolvida.veiculo = await veiculoService.buscarPorId(veiculoId);
         } catch {
-            ordemResolvida.veiculo = `Veículo ${ordemResolvida.veiculo}`;
+            ordemResolvida.veiculo = `Veículo ${veiculoId}`;
         }
     }
 
@@ -117,18 +171,14 @@ export function AgendamentoGerente() {
     const [loading, setLoading] = useState(true);
     const [loadingDetalhe, setLoadingDetalhe] = useState(false);
     const { mostrarToast } = useToast();
+    const dataHojeFormatada = formatarDataCompleta(new Date());
 
-    const buscarAgendamentos = async () => {
+    const buscarAgendamentosHoje = async () => {
         setLoading(true);
         try {
-            const response = await ordemServicoService.listarOrdensGestao({
-                pagina: 0,
-                tamanho: 50,
-                ordenarPor: 'dataAgendamento',
-                direcao: 'asc'
-            });
+            const response = await ordemServicoService.buscarAgendamentosHoje();
+            const lista = extrairListaAgendamentos(response);
 
-            const lista = response?.content || response || [];
             const listaResolvida = await Promise.all(
                 lista.map((ordem) => resolverReferenciasOrdem(ordem))
             );
@@ -138,8 +188,8 @@ export function AgendamentoGerente() {
             setAgendamentos([]);
             mostrarToast({
                 tipo: TiposToast.ERRO,
-                titulo: 'Erro ao carregar agendamentos',
-                mensagem: error.message || 'Não foi possível carregar os agendamentos.',
+                titulo: 'Erro ao carregar agendamentos de hoje',
+                mensagem: error.message || 'Não foi possível carregar os agendamentos de hoje.',
                 duracao: 4000
             });
         } finally {
@@ -148,7 +198,7 @@ export function AgendamentoGerente() {
     };
 
     useEffect(() => {
-        buscarAgendamentos();
+        buscarAgendamentosHoje();
     }, []);
 
     const abrirModal = async (agendamento) => {
@@ -187,8 +237,8 @@ export function AgendamentoGerente() {
         }
 
         return [...pendentes].sort((a, b) => {
-            const dataA = new Date(a.dataAgendamento).getTime();
-            const dataB = new Date(b.dataAgendamento).getTime();
+            const dataA = new Date(a.dataAgendamentoOriginal || a.dataAgendamento || 0).getTime();
+            const dataB = new Date(b.dataAgendamentoOriginal || b.dataAgendamento || 0).getTime();
             return dataA - dataB;
         })[0];
     }, [agendamentos]);
@@ -238,13 +288,16 @@ export function AgendamentoGerente() {
                     />                                  
                 </div>
             </div>
-            <h2 className="text-2xl font-semibold text-center mb-6">Todos</h2>
+            <div className="mb-6 text-center">
+                <h2 className="text-2xl font-semibold">Agendamentos de hoje</h2>
+                <p className="text-sm text-gray-500 capitalize">{dataHojeFormatada}</p>
+            </div>
 
             <div>
                 {loading ? (
-                    <p className="text-center text-gray-500 py-4">Carregando agendamentos...</p>
+                    <p className="text-center text-gray-500 py-4">Carregando agendamentos de hoje...</p>
                 ) : agendamentos.length === 0 ? (
-                    <p className="text-center text-gray-500 py-4">Nenhum agendamento encontrado.</p>
+                    <p className="text-center text-gray-500 py-4">Nenhum agendamento encontrado para hoje.</p>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
                         {agendamentos.map((agendamento) => (

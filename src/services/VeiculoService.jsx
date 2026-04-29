@@ -3,6 +3,47 @@ import { apiService } from './ApiService';
 export class VeiculoService {
     BASE_URL = '/veiculos';
 
+    async buscarTodos(parametros = {}) {
+        try {
+            const {
+                pagina,
+                tamanho,
+                ordenarPor,
+                direcao,
+                filtro
+            } = parametros;
+
+            const queryParams = new URLSearchParams();
+
+            if (pagina !== undefined && pagina !== null) {
+                queryParams.set('pagina', pagina.toString());
+            }
+
+            if (tamanho !== undefined && tamanho !== null) {
+                queryParams.set('tamanho', tamanho.toString());
+            }
+
+            if (ordenarPor) {
+                queryParams.set('ordenarPor', ordenarPor);
+            }
+
+            if (direcao) {
+                queryParams.set('direcao', direcao);
+            }
+
+            if (filtro && filtro.trim()) {
+                queryParams.set('filtro', filtro.trim());
+            }
+
+            const sufixoQuery = queryParams.toString();
+            const endpoint = sufixoQuery ? `${this.BASE_URL}?${sufixoQuery}` : this.BASE_URL;
+            const response = await apiService.get(endpoint);
+            return response;
+        } catch (error) {
+            throw new Error(error.message || 'Erro ao buscar veículos');
+        }
+    }
+
     async buscarPorId(idVeiculo) {
         try {
             const response = await apiService.get(`${this.BASE_URL}/${idVeiculo}`);

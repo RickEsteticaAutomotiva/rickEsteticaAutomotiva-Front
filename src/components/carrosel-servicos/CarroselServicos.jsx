@@ -36,7 +36,6 @@ export function CarroselServicos({ categoria, titulo }) {
         try {
             const data = await servicosService.buscarPorCategoria(categoria);
             const servicosArray = data?.content || [];
-            console.log(`Serviços categoria ${categoria}:`, servicosArray);
             setServicos(servicosArray);
         } catch (error) {
             mostrarToast({

@@ -4,27 +4,90 @@ export class OrdemServicoService {
     BASE_URL = '/ordem-servicos';
     BASE_URL_GESTAO = '/ordem-servicos-gestao';
 
+    STATUS_POR_ID = {
+        1: 'ANÁLISE',
+        2: 'AGENDA_CONFIRMADA',
+        3: 'EM_EXECUÇÃO',
+        4: 'CANCELADO',
+        5: 'CONCLUÍDO'
+    };
+
+    ID_POR_STATUS = {
+        ANALISE: 1,
+        'ANÁLISE': 1,
+        'AGENDA_CONFIRMADA': 2,
+        'AGENDA CONFIRMADA': 2,
+        EM_EXECUCAO: 3,
+        'EM_EXECUÇÃO': 3,
+        CANCELADO: 4,
+        CONCLUIDO: 5,
+        'CONCLUÍDO': 5,
+        AGUARDANDO: 1,
+        EM_ANDAMENTO: 2,
+        AGUARDANDO_PECAS: 3
+    };
+
+    normalizarStatusParaBackend(status) {
+        if (status === undefined || status === null || status === '') {
+            return null;
+        }
+
+        if (typeof status === 'number') {
+            return status;
+        }
+
+        if (typeof status === 'string') {
+            const numeroStatus = Number(status);
+            if (!Number.isNaN(numeroStatus)) {
+                return numeroStatus;
+            }
+
+            return this.ID_POR_STATUS[status] ?? status;
+        }
+
+        return status;
+    }
+
+    async buscarAgendamentosHoje() {
+        try {
+            const response = await apiService.get(`${this.BASE_URL}/hoje`);
+            return response;
+        } catch (error) {
+            throw new Error(error.message || 'Erro ao buscar agendamentos de hoje');
+        }
+    }
+
     async listarOrdensGestao(parametros = {}) {
         try {
             const {
                 status,
+                filtro,
                 dataInicio,
                 dataFim,
                 pagina = 0,
                 tamanho = 20,
-                ordenarPor = 'dataAgendamento',
-                direcao = 'desc'
-            } = parametros;
-
-            const queryParams = new URLSearchParams({
-                pagina: pagina.toString(),
-                tamanho: tamanho.toString(),
                 ordenarPor,
                 direcao
-            });
+            } = parametros;
+
+            const queryParams = new URLSearchParams();
+            queryParams.set('pagina', pagina.toString());
+            queryParams.set('tamanho', tamanho.toString());
 
             if (status !== undefined && status !== null && status !== '') {
                 queryParams.set('status', status.toString());
+            }
+
+            if (filtro && filtro.trim()) {
+                queryParams.set('filtro', filtro.trim());
+            }
+
+            if (ordenarPor) {
+                queryParams.set('ordenarPor', ordenarPor);
+            }
+
+            if (direcao) {
+                queryParams.set('direcao', direcao);
             }
 
             if (dataInicio) {
@@ -60,6 +123,33 @@ export class OrdemServicoService {
         }
     }
 
+    async criarOrdemServicoGestao(ordemData) {
+        const servicosNormalizados = Array.isArray(ordemData?.servicos)
+            ? ordemData.servicos.map((servico) => Number(servico)).filter((id) => !Number.isNaN(id))
+            : [];
+
+        const veiculo = ordemData?.veiculo ?? ordemData?.veiculoId;
+        const payload = {
+            dataAgendamento: ordemData?.dataAgendamento,
+            ...(veiculo !== undefined && veiculo !== null ? { veiculo: Number(veiculo) } : {}),
+            servicos: servicosNormalizados,
+            ...(ordemData?.precoMinimo !== undefined ? { precoMinimo: ordemData.precoMinimo } : {}),
+            ...(ordemData?.observacoes ? { observacoes: ordemData.observacoes } : {})
+        };
+
+        try {
+            const response = await apiService.post(this.BASE_URL_GESTAO, payload);
+            return response;
+        } catch (error) {
+            console.error('[OrdemServicoService.criarOrdemServicoGestao] Falha ao criar ordem', {
+                endpoint: this.BASE_URL_GESTAO,
+                payload,
+                mensagem: error?.message
+            });
+            throw new Error(error?.message || 'Erro ao criar ordem de serviço pela gestão');
+        }
+    }
+
     async buscarOrdemServicoPorUsuario(usuarioId) {
         try {
             const response = await apiService.get(`${this.BASE_URL}/usuario/${usuarioId}`);
@@ -90,10 +180,35 @@ export class OrdemServicoService {
 
     async atualizarStatusGestao(id, novoStatus) {
         try {
-            const response = await apiService.patch(`${this.BASE_URL_GESTAO}/${id}`, { status: novoStatus });
+            const statusNormalizado = this.normalizarStatusParaBackend(novoStatus);
+            const response = await apiService.patch(`${this.BASE_URL_GESTAO}/${id}`, { status: statusNormalizado });
             return response;
         } catch (error) {
             throw new Error(error.message || 'Erro ao atualizar status da ordem de serviço');
+        }
+    }
+
+    async atualizarDadosGestao(id, dadosOrdem = {}) {
+        const statusNormalizado = this.normalizarStatusParaBackend(dadosOrdem?.status);
+
+        const payload = {
+            ...(dadosOrdem?.dataAgendamento ? { dataAgendamento: dadosOrdem.dataAgendamento } : {}),
+            ...(dadosOrdem?.observacoes !== undefined ? { observacoes: dadosOrdem.observacoes } : {}),
+            ...(statusNormalizado !== undefined && statusNormalizado !== null && statusNormalizado !== ''
+                ? { status: statusNormalizado }
+                : {})
+        };
+
+        if (Object.keys(payload).length === 0) {
+            throw new Error('Nenhum dado válido foi informado para atualização da ordem.');
+        }
+
+        try {
+            const response = await apiService.patch(`${this.BASE_URL_GESTAO}/${id}`, payload);
+            const resultado = response?.data ?? response;
+            return resultado;
+        } catch (error) {
+            throw new Error(error.message || 'Erro ao atualizar dados da ordem de serviço');
         }
     }
 
@@ -118,17 +233,11 @@ export class OrdemServicoService {
             throw new Error('Nenhum serviço válido foi informado para adição.');
         }
 
-        console.log('[OrdemServicoService.adicionarServicos] ID Ordem:', id, 'Serviços:', payloadServicos);
-
         try {
             const endpoint = `${this.BASE_URL_GESTAO}/${id}/servicos`;
             const body = { servicos: payloadServicos };
-            console.log(`[OrdemServicoService.adicionarServicos] POST ${endpoint}`, body);
             await apiService.post(endpoint, body);
-
-            console.log('[OrdemServicoService.adicionarServicos] Todos os serviços adicionados, buscando ordem atualizada...');
             const response = await apiService.get(`${this.BASE_URL_GESTAO}/${id}`);
-            console.log('[OrdemServicoService.adicionarServicos] Resposta final:', response);
             return response;
         } catch (error) {
             console.error('[OrdemServicoService.adicionarServicos] Erro:', error);

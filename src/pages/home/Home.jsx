@@ -24,7 +24,6 @@ export function Home() {
         setError(null);
         try {
             const data = await categoriaService.buscarTodas();
-            console.log('Categorias carregadas:', data);
             setCategorias(data || []);
         } catch (err) {
             setError('Não foi possível carregar os serviços. Tente novamente.');

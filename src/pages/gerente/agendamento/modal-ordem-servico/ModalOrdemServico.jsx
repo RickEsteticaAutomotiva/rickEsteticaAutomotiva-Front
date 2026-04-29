@@ -8,7 +8,7 @@ import { ModalAdicionaServico } from './modal-adiciona-servico/ModalAdicionaServ
 import { ordemServicoService } from '../../../../services/OrdemServicoService';
 import { useToast } from '../../../../context/ToastContext';
 import { TiposToast } from '../../../../utils/enum/TiposToast';
-import { formatarPreco, formatarHorario } from '../../../../utils';
+import { formatarDataHorarioCompleto, formatarPreco, formatarHorario } from '../../../../utils';
 
 export function ModalOrdemServico({ isOpen, agendamento, onClose, onOrdemAtualizada }) {
     const [editaServicoModal, setEditaServicoModal] = useState(false);
@@ -18,15 +18,18 @@ export function ModalOrdemServico({ isOpen, agendamento, onClose, onOrdemAtualiz
     const [statusServico, setStatusServico] = useState(agendamento?.status);
     const [servicos, setServicos] = useState(agendamento?.servicos || []);
     const [loadingStatus, setLoadingStatus] = useState(false);
+    const [savingDados, setSavingDados] = useState(false);
+    const [dataAgendamentoEdicao, setDataAgendamentoEdicao] = useState('');
+    const [observacoesEdicao, setObservacoesEdicao] = useState('');
     const statusRequestIdRef = useRef(0);
     const { mostrarToast } = useToast();
 
     const statusDescricaoPorId = {
-        1: 'AGUARDANDO',
-        2: 'EM_ANDAMENTO',
-        3: 'AGUARDANDO_PECAS',
+        1: 'ANÁLISE',
+        2: 'AGENDA_CONFIRMADA',
+        3: 'EM_EXECUÇÃO',
         4: 'CANCELADO',
-        5: 'CONCLUIDO'
+        5: 'CONCLUÍDO'
     };
 
     const extrairStatusId = (status) => {
@@ -40,6 +43,23 @@ export function ModalOrdemServico({ isOpen, agendamento, onClose, onOrdemAtualiz
     useEffect(() => {
         setStatusServico(extrairStatusId(agendamento?.status));
         setServicos(agendamento?.servicos || []);
+
+        const dataOriginal = agendamento?.dataAgendamentoOriginal;
+        if (dataOriginal) {
+            const data = new Date(dataOriginal);
+
+            if (!Number.isNaN(data.getTime())) {
+                const offsetMinutos = data.getTimezoneOffset();
+                const dataLocal = new Date(data.getTime() - offsetMinutos * 60000);
+                setDataAgendamentoEdicao(dataLocal.toISOString().slice(0, 16));
+            } else {
+                setDataAgendamentoEdicao('');
+            }
+        } else {
+            setDataAgendamentoEdicao('');
+        }
+
+        setObservacoesEdicao(agendamento?.observacoes === 'Sem observações.' ? '' : (agendamento?.observacoes || ''));
     }, [agendamento]);
 
     if (!isOpen || !agendamento) return null;
@@ -104,17 +124,21 @@ export function ModalOrdemServico({ isOpen, agendamento, onClose, onOrdemAtualiz
             (total, servico) => total + (servico.preco || 0),
             0
         );
+        const dataAgendamentoOriginal = ordem?.dataAgendamento || ordem?.dataHora || null;
+        const dataConclusaoOriginal = ordem?.dtConclusao || ordem?.dataConclusao || null;
+        const observacoesNormalizadas = ordem?.observacoes ?? ordem?.descricao ?? 'Sem observações.';
 
         return {
             id: ordem?.id,
-            horario: ordem?.horario || (ordem?.dataAgendamento ? formatarHorario(ordem.dataAgendamento) : '--:--'),
+            horario: ordem?.horario || (dataAgendamentoOriginal ? formatarHorario(dataAgendamentoOriginal) : '--:--'),
             cliente: ordem?.cliente?.nome || ordem?.cliente || '-',
             veiculo: formatarVeiculo(ordem?.veiculo),
             valor: formatarPreco(valorTotal),
             status: statusId,
-            dataAgendamento: ordem?.dataAgendamento || '-',
-            dataConclusao: ordem?.dtConclusao || ordem?.dataConclusao || '--/--/---- - --:--',
-            observacoes: ordem?.observacoes || 'Sem observações.',
+            dataAgendamento: dataAgendamentoOriginal ? formatarDataHorarioCompleto(dataAgendamentoOriginal) : '-',
+            dataAgendamentoOriginal,
+            dataConclusao: dataConclusaoOriginal ? formatarDataHorarioCompleto(dataConclusaoOriginal) : '--/--/---- às --:--',
+            observacoes: observacoesNormalizadas,
             servicos: servicosNormalizados
         };
     };
@@ -182,6 +206,20 @@ export function ModalOrdemServico({ isOpen, agendamento, onClose, onOrdemAtualiz
     const handleStatusChange = async (novoStatus) => {
         const statusAnterior = statusServico;
         const statusNumerico = Number(novoStatus);
+        const statusAnteriorNumerico = Number(statusAnterior);
+        const possuiDataConclusao = !!agendamento?.dataConclusao && agendamento.dataConclusao !== '--/--/---- às --:--';
+        const tentandoVoltarParaFluxoAtivo = [1, 2, 3].includes(statusNumerico);
+
+        if ((statusAnteriorNumerico === 5 || possuiDataConclusao) && tentandoVoltarParaFluxoAtivo) {
+            mostrarToast({
+                tipo: TiposToast.ALERTA,
+                titulo: 'Ordem concluída',
+                mensagem: 'Esta ordem já foi concluída. Não é permitido retornar para Análise, Agenda confirmada ou Em execução.',
+                duracao: 4000
+            });
+            return;
+        }
+
         const requestId = statusRequestIdRef.current + 1;
         statusRequestIdRef.current = requestId;
         const statusDescricaoAtualizada = statusDescricaoPorId[statusNumerico] || null;
@@ -228,6 +266,54 @@ export function ModalOrdemServico({ isOpen, agendamento, onClose, onOrdemAtualiz
         }
     };
 
+    const handleSalvarDados = async () => {
+        if (!agendamento?.id) {
+            return;
+        }
+
+        if (!dataAgendamentoEdicao) {
+            mostrarToast({
+                tipo: TiposToast.ALERTA,
+                titulo: 'Data obrigatória',
+                mensagem: 'Informe a data de agendamento para salvar as alterações.',
+                duracao: 3000
+            });
+            return;
+        }
+
+        const dataAgendamentoFormatada = dataAgendamentoEdicao.length === 16
+            ? `${dataAgendamentoEdicao}:00`
+            : dataAgendamentoEdicao;
+
+        setSavingDados(true);
+        try {
+            const statusAtual = Number(statusServico);
+            const ordemAtualizada = await ordemServicoService.atualizarDadosGestao(agendamento.id, {
+                dataAgendamento: dataAgendamentoFormatada,
+                observacoes: observacoesEdicao.trim(),
+                status: Number.isNaN(statusAtual) ? statusServico : statusAtual
+            });
+
+            aplicarOrdemAtualizada(ordemAtualizada);
+
+            mostrarToast({
+                tipo: TiposToast.SUCESSO,
+                titulo: 'Dados atualizados',
+                mensagem: 'Data e observações da ordem foram atualizadas com sucesso.',
+                duracao: 3000
+            });
+        } catch (error) {
+            mostrarToast({
+                tipo: TiposToast.ERRO,
+                titulo: 'Erro ao salvar alterações',
+                mensagem: error.message || 'Não foi possível atualizar os dados da ordem de serviço.',
+                duracao: 4000
+            });
+        } finally {
+            setSavingDados(false);
+        }
+    };
+
     const valorTotalServicos = calcularValorTotalServicos(servicos);
 
     const valorExibicao = valorTotalServicos > 0 ? formatarPreco(valorTotalServicos) : agendamento.valor;
@@ -242,7 +328,7 @@ export function ModalOrdemServico({ isOpen, agendamento, onClose, onOrdemAtualiz
                     }}
                     >
 
-                    <div className="bg-red-600 text-white p-4 rounded-b-2xl flex justify-between items-center">
+                    <div className="sticky top-0 z-10 bg-red-600 text-white p-4 flex justify-between items-center">
                         <h2 className="text-lg font-semibold">Ordem de serviço</h2>
                         <button 
                             onClick={onClose}
@@ -291,24 +377,44 @@ export function ModalOrdemServico({ isOpen, agendamento, onClose, onOrdemAtualiz
                                 disabled={loadingStatus}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 text-sm"
                             >
-                                <option value="1">Aguardando</option>
-                                <option value="2">Em andamento</option>
-                                <option value="3">Aguardando peças</option>
+                                <option value="1">Análise</option>
+                                <option value="2">Agenda confirmada</option>
+                                <option value="3">Em execução</option>
                                 <option value="4">Cancelado</option>
                                 <option value="5">Concluído</option>
                             </select>
                         </div>
 
-                        <Label label="Data do Agendamento" value={agendamento.dataAgendamento} />
+                        <div>
+                            <label className="text-sm text-gray-500 block mb-1">Data do Agendamento</label>
+                            <input
+                                type="datetime-local"
+                                value={dataAgendamentoEdicao}
+                                onChange={(e) => setDataAgendamentoEdicao(e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 text-sm"
+                            />
+                        </div>
 
                         <Label label="Data da Conclusão" value={agendamento.dataConclusao} />
 
                         <div>
-                            <label className="text-sm text-gray-500">Observações</label>
-                            <p className="font-medium text-sm leading-relaxed">
-                                {agendamento.observacoes}
-                            </p>
+                            <label className="text-sm text-gray-500 block mb-1">Observações</label>
+                            <textarea
+                                value={observacoesEdicao}
+                                onChange={(e) => setObservacoesEdicao(e.target.value)}
+                                rows={4}
+                                placeholder="Adicione observações da ordem de serviço"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 text-sm resize-none"
+                            />
                         </div>
+
+                        <button
+                            onClick={handleSalvarDados}
+                            disabled={savingDados}
+                            className="w-full py-2.5 px-4 bg-red-600 text-white rounded-md font-medium hover:bg-red-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                        >
+                            {savingDados ? 'Salvando alterações...' : 'Salvar alterações'}
+                        </button>
                     </div>
                 </div>
             </div>
