@@ -23,10 +23,19 @@ export class CategoriaService {
 
     async atualizarCategoria(id, categoria) {
         try {
-            const response = await apiService.put(`${this.BASE_URL}/${id}`, categoria);
+            const response = await apiService.patch(`${this.BASE_URL}/${id}`, categoria);
             return response;
         } catch (error) {
             throw new Error(error.message || 'Erro ao atualizar categoria');
+        }
+    }
+
+    async deletarCategoria(id) {
+        try {
+            const response = await apiService.delete(`${this.BASE_URL}/${id}`);
+            return response;
+        } catch (error) {
+            throw new Error(error.message || 'Erro ao deletar categoria');
         }
     }
 }
