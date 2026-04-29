@@ -281,11 +281,11 @@ export function AgendamentoGerente() {
                             <CardPequeno texto={proximoAgendamento?.valor || 'R$ 0,00'} label="Valor" icon={BanknoteArrowUp} />
                         </div>
                     </div>
-                                    
+
                     <Button
                         texto={loadingDetalhe ? "Carregando..." : "Detalhes"}
                         onClick={() => proximoAgendamento && abrirModal(proximoAgendamento)}
-                    />                                  
+                    />
                 </div>
             </div>
             <div className="mb-6 text-center">

@@ -72,7 +72,7 @@ export function Login() {
     setLoading(true);
 
     try {
-      await login(formData.email.toLowerCase().trim(), formData.senha);
+      const response = await login(formData.email.toLowerCase().trim(), formData.senha);
       
       // Salvar preferência de "lembrar-me" se necessário
       if (rememberMe) {
@@ -83,7 +83,8 @@ export function Login() {
         localStorage.removeItem('userEmail');
       }
       
-      navigate(ROUTES.HOME);
+      const isGerente = response?.user?.roles?.includes('ROLE_GERENTE');
+      navigate(isGerente ? ROUTES.GERENTE.HOME : ROUTES.HOME);
       
     } catch (error) {
       mostrarToast({
