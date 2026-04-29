@@ -4,6 +4,8 @@ import { Header } from "../../components/header/Header";
 import { Footer } from "../../components/footer/Footer";
 import { authService } from "../../services/AuthService";
 import { ROUTES } from "../../constants/Routes";
+import { validarSenhaForte } from "../../utils/validacao/senhaValidacao";
+import { PasswordChecklist } from "../../components/password-checklist/PasswordChecklist";
 
 export function RedefinirSenha() {
   const [searchParams] = useSearchParams();
@@ -25,10 +27,9 @@ export function RedefinirSenha() {
   const validate = () => {
     const newErrors = {};
 
-    if (!formData.novaSenha) {
-      newErrors.novaSenha = "Nova senha é obrigatória";
-    } else if (formData.novaSenha.length < 6) {
-      newErrors.novaSenha = "Senha deve ter pelo menos 6 caracteres";
+    const senhaValidation = validarSenhaForte(formData.novaSenha);
+    if (!senhaValidation.isValid) {
+      newErrors.novaSenha = senhaValidation.errors;
     }
 
     if (!formData.confirmarSenha) {
@@ -166,10 +167,10 @@ export function RedefinirSenha() {
                   value={formData.novaSenha}
                   onChange={handleChange}
                   disabled={loading}
-                  minLength={6}
+                  minLength={8}
                   autoFocus
                   className={`w-full pl-12 pr-12 py-3.5 border-2 rounded-lg text-base transition-all focus:outline-none focus:border-[#B30000] focus:ring-2 focus:ring-[#B30000]/10 disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed${errors.novaSenha ? ' border-red-500 bg-red-50' : ' border-gray-200 bg-white'}`}
-                  placeholder="Mínimo 6 caracteres"
+                  placeholder="Minimo 8 caracteres"
                   autoComplete="new-password"
                 />
                 <button
@@ -182,8 +183,17 @@ export function RedefinirSenha() {
                   <i className={`bi bi-eye${showPassword ? '-slash' : ''}`}></i>
                 </button>
               </div>
+              <PasswordChecklist senha={formData.novaSenha} />
               {errors.novaSenha && (
-                <span className="block text-red-500 text-sm mt-1.5">{errors.novaSenha}</span>
+                Array.isArray(errors.novaSenha) ? (
+                  <ul className="mt-1.5 space-y-1">
+                    {errors.novaSenha.map((erro) => (
+                      <li key={erro} className="text-red-500 text-sm">{erro}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <span className="block text-red-500 text-sm mt-1.5">{errors.novaSenha}</span>
+                )
               )}
             </div>
 
