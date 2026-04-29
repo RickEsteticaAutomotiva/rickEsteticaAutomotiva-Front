@@ -1,7 +1,7 @@
 import { Button } from "../../../components/button/Button";
 import { CardAgendamento } from "../../../components/gerente/card/card-agendamento/CardAgendamento";
 import { CardPequeno } from "../../../components/gerente/card/card-pequeno/CardPequeno";
-import { Clock, BanknoteArrowUp, MessageCircle } from 'lucide-react';
+import { Clock, BanknoteArrowUp } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { ModalOrdemServico } from "./modal-ordem-servico/ModalOrdemServico";
 import { ordemServicoService } from '../../../services/OrdemServicoService';
@@ -57,20 +57,6 @@ const resolverPlacaVeiculo = (veiculo) => {
     return veiculo.placa || veiculo.numeroPlaca || veiculo.licensePlate || veiculo.placaMercosul || null;
 };
 
-const resolverTelefoneCliente = (cliente) => {
-    if (!cliente || typeof cliente !== 'object') return null;
-
-    const telefone = cliente.telefone;
-
-    if (!telefone) return null;
-
-    const apenasDigitos = String(telefone).replace(/\D/g, '');
-
-    if (!apenasDigitos) return null;
-
-    return apenasDigitos.startsWith('55') ? apenasDigitos : `55${apenasDigitos}`;
-};
-
 const resolverVeiculoId = (ordem) => {
     const veiculo = ordem?.veiculoId ?? ordem?.veiculo;
 
@@ -94,17 +80,13 @@ const normalizarAgendamento = (ordem) => {
     const dataAgendamentoOriginal = resolverDataAgendamento(ordem);
     const dataConclusaoOriginal = ordem?.dtConclusao || ordem?.dataConclusao || null;
     const veiculoDetalhado = typeof ordem?.veiculo === 'object' && ordem?.veiculo !== null ? ordem.veiculo : null;
-    const clienteDetalhado = typeof ordem?.cliente === 'object' && ordem?.cliente !== null ? ordem.cliente : null;
     const placaBruta = resolverPlacaVeiculo(veiculoDetalhado || ordem?.veiculo);
     const placaVeiculo = placaBruta ? formatarPlacaCarro(placaBruta) : null;
-    const telefoneCliente = resolverTelefoneCliente(clienteDetalhado);
 
     return {
         id: ordem?.id,
         horario: ordem?.horario || (dataAgendamentoOriginal ? formatarHorario(dataAgendamentoOriginal) : '--:--'),
         cliente: ordem?.cliente?.nome || ordem?.cliente || '-',
-        telefoneCliente,
-        whatsappLink: telefoneCliente ? `https://wa.me/${telefoneCliente}` : null,
         veiculo: formatarVeiculo(ordem?.veiculo),
         veiculoDetalhado,
         placaVeiculo,
@@ -281,7 +263,6 @@ export function AgendamentoGerente() {
             <div className="flex justify-center bg-white rounded-2xl p-5 mb-6 shadow-sm">
                 <div className="flex flex-col items-center gap-5">
                     <h2 className="text-2xl font-semibold text-center">Próximo agendamento</h2>
-                    <p className="text-lg font-medium text-gray-700">{proximoAgendamento?.cliente || '-'}</p>
                     <div className="flex justify-center items-center gap-10">
                         <div className="flex flex-col gap-7">
                             <CardPequeno
@@ -301,28 +282,10 @@ export function AgendamentoGerente() {
                         </div>
                     </div>
                                     
-                    <div className="flex items-center gap-2">
-                        <Button
-                            texto={loadingDetalhe ? "Carregando..." : "Detalhes"}
-                            onClick={() => proximoAgendamento && abrirModal(proximoAgendamento)}
-                        />
-
-                        <a
-                            href={proximoAgendamento?.whatsappLink || undefined}
-                            target={proximoAgendamento?.whatsappLink ? "_blank" : undefined}
-                            rel={proximoAgendamento?.whatsappLink ? "noopener noreferrer" : undefined}
-                            aria-label="Abrir conversa no WhatsApp"
-                            className={`inline-flex items-center gap-2 rounded-lg px-4 py-1.5 font-semibold transition-colors duration-200 ${
-                                proximoAgendamento?.whatsappLink
-                                    ? 'bg-green-600 text-white hover:bg-green-500'
-                                    : 'bg-gray-200 text-gray-400 pointer-events-none cursor-not-allowed'
-                            }`}
-                            title={proximoAgendamento?.whatsappLink ? 'Abrir WhatsApp do cliente' : 'Cliente sem telefone cadastrado'}
-                        >
-                            <MessageCircle size={18} />
-                            WhatsApp
-                        </a>
-                    </div>                                  
+                    <Button
+                        texto={loadingDetalhe ? "Carregando..." : "Detalhes"}
+                        onClick={() => proximoAgendamento && abrirModal(proximoAgendamento)}
+                    />                                  
                 </div>
             </div>
             <div className="mb-6 text-center">
