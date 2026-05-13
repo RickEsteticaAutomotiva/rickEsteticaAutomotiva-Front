@@ -1,54 +1,38 @@
-# Rick Estética Automotiva - Frontend
+# React + Vite
 
-Sistema de gerenciamento para a Rick Estética Automotiva. Este projeto lida com o cadastro e gerenciamento de veículos para clientes.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## Pré-requisitos
+Currently, two official plugins are available:
 
-Antes de executar este projeto, certifique-se de ter:
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-- Node.js instalado
-- [Backend da Rick Estética Automotiva](https://github.com/RickEsteticaAutomotiva/RickEsteticaAutomotiva) em execução
-- JSON Server para o banco de dados mock
+## Expanding the ESLint configuration
 
-## Instalação
+If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
 
-1. Clone este repositório:
+
+## Acessar o Projeto do Celular na Mesma Rede
+
+**1. Inicie o servidor com acesso à rede:**
 ```bash
-git clone <url-do-repositório>
+npm run dev -- --host 0.0.0.0 --port 3000
 ```
 
-2. Instale as dependências:
+**2. Encontre o IP da sua máquina:**
 ```bash
-npm install
+ipconfig
+```
+Procure pelo **IPv4 Address** (exemplo: `192.168.1.100`)
+
+**3. No celular, acesse:**
+```
+http://SEU_IP:3000
 ```
 
-## Executando o Projeto
-
-1. Inicie o servidor do banco de dados mock:
-```bash
-npx json-server --watch db.json --port 8081
+**Exemplo:**
+```
+http://192.168.1.100:3000
 ```
 
-2. Inicie a aplicação frontend:
-```bash
-npm start
-```
-
-A aplicação estará disponível em `http://localhost:3000`
-
-## Funcionalidades
-
-- Autenticação de usuários (login/cadastro)
-- Gerenciamento de veículos (operações CRUD)
-- Design responsivo com navegação lateral
-- Validações de formulários para:
-  - CPF
-  - Números de telefone
-  - Placas de veículos
-
-## Tecnologias Utilizadas
-
-- HTML/CSS
-- JavaScript (ES6+)
-- Express.js
-- JSON Server
+> ⚠️ **Certifique-se que o celular e o PC estão conectados à mesma rede WiFi**
