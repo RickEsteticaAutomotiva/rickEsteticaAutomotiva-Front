@@ -12,7 +12,7 @@ export function ToastProvider({ children }) {
     const [toasts, setToasts] = useState([]);
 
     const mostrarToast = useCallback(({ tipo = 'info', titulo, subtitulo, mensagem, duracao = 3000 }) => {
-        const id = crypto.randomUUID();
+        const id = Date.now().toString() + Math.random().toString(36);
         setToasts(prev => [...prev, { id, tipo, titulo, subtitulo, mensagem, duracao }]);
         return id;
     }, []);
