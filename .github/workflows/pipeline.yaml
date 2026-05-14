@@ -23,6 +23,6 @@ jobs:
 
       - name: Deploy na EC2
         run: |
-          cd app
+          cd /home/ubuntu/app
           docker compose pull
           docker compose up -d
