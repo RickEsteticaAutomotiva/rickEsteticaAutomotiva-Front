@@ -321,14 +321,9 @@ export function ModalOrdemServico({ isOpen, agendamento, onClose, onOrdemAtualiz
     return (
         <>
             <div className="fixed inset-0 bg-black/45 bg-opacity-90 flex items-center justify-center z-50 p-4">
-                <div className="bg-white rounded-lg rounded-t-3xl max-w-md w-full max-h-[90vh] overflow-y-auto"
-                    style={{
-                        scrollbarWidth: 'none',
-                        msOverflowStyle: 'none',
-                    }}
-                    >
+                <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-hidden flex flex-col">
 
-                    <div className="sticky top-0 z-10 bg-red-600 text-white p-4 flex justify-between items-center">
+                    <div className="bg-red-600 text-white p-4 flex justify-between items-center rounded-t-lg flex-shrink-0">
                         <h2 className="text-lg font-semibold">Ordem de serviço</h2>
                         <button 
                             onClick={onClose}
@@ -338,7 +333,13 @@ export function ModalOrdemServico({ isOpen, agendamento, onClose, onOrdemAtualiz
                         </button>
                     </div>
 
-                    <div className="p-4 space-y-4">
+                    <div className="overflow-y-auto flex-1"
+                        style={{
+                            scrollbarWidth: 'none',
+                            msOverflowStyle: 'none',
+                        }}
+                    >
+                        <div className="p-4 space-y-4">
                         <Label label="Cliente" value={agendamento.cliente} />
 
                         <Label label="Carro" value={agendamento.veiculo} />
@@ -415,6 +416,7 @@ export function ModalOrdemServico({ isOpen, agendamento, onClose, onOrdemAtualiz
                         >
                             {savingDados ? 'Salvando alterações...' : 'Salvar alterações'}
                         </button>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -43,7 +43,7 @@ export function MenuGerente() {
 
     return (
         <div className="min-h-screen bg-gray-100">
-            <header className="bg-red-700 text-white sticky pb-8">
+            <header className={`bg-red-700 text-white sticky relative ${location.pathname === ROUTES.GERENTE.HOME ? 'pb-6' : 'pb-0'}`}>
                 <div className="px-5 py-4 flex items-center justify-between">
                     <button
                         className="flex flex-col gap-1 p-1"
@@ -54,13 +54,16 @@ export function MenuGerente() {
                         <span className="w-5 h-0.5 bg-white block"></span>
                         <span className="w-5 h-0.5 bg-white block"></span>
                     </button>
-                    <h1 className="text-2xl font-semibold absolute left-1/2 transform -translate-x-1/2 text-center max-w-xs truncate">{getPageTitle()}</h1>
+                    {location.pathname !== ROUTES.GERENTE.HOME && (
+                        <h1 className="text-2xl font-semibold absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center max-w-xs truncate m-0 leading-tight">{getPageTitle()}</h1>
+                    )}
                     <div className="w-8"></div>
                 </div>
 
                 {location.pathname === ROUTES.GERENTE.HOME && (
-                    <div className="flex justify-center px-5 pb-6">
-                        <h2 className="text-3xl font-semibold">Bem vindo, {user?.nome || 'Gerente'}!</h2>
+                    <div className="flex flex-col items-center px-5 pt-1 pb-1 text-center">
+                        <h2 className="text-2xl font-semibold m-0 leading-none">Bem vindo,</h2>
+                        <p className="text-xl font-medium mt-0 leading-tight">{user?.nome || 'Gerente'}!</p>
                     </div>
                 )}
             </header>
