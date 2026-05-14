@@ -299,8 +299,7 @@ export function AgendamentoGerente() {
                             <CardPequeno texto={proximoAgendamento?.veiculo || '-'} label="Veículo" />
                             <CardPequeno texto={proximoAgendamento?.valor || 'R$ 0,00'} label="Valor" icon={BanknoteArrowUp} />
                         </div>
-                    </div>
-                                    
+                    </div>       
                     <div className="flex items-center gap-2">
                         <Button
                             texto={loadingDetalhe ? "Carregando..." : "Detalhes"}
@@ -322,7 +321,12 @@ export function AgendamentoGerente() {
                             <MessageCircle size={18} />
                             WhatsApp
                         </a>
-                    </div>                                  
+                    </div>                       
+
+                    <Button
+                        texto={loadingDetalhe ? "Carregando..." : "Detalhes"}
+                        onClick={() => proximoAgendamento && abrirModal(proximoAgendamento)}
+                    />
                 </div>
             </div>
             <div className="mb-6 text-center">

@@ -279,6 +279,29 @@ export class OrdemServicoService {
             throw new Error(error.message || 'Erro ao remover serviço da ordem de serviço');
         }
     }
+
+    async buscarHorariosDisponiveis(data, servicosIds = []) {
+        try {
+            // Formatar data como YYYY-MM-DD
+            const dataFormatada = data instanceof Date
+                ? data.toISOString().split('T')[0]
+                : data;
+
+            const queryParams = new URLSearchParams();
+            queryParams.set('data', dataFormatada);
+
+            // Adicionar IDs dos serviços como parâmetros múltiplos
+            servicosIds.forEach(id => {
+                queryParams.append('servicosIds', id);
+            });
+
+            const response = await apiService.get(`${this.BASE_URL}/horarios-disponiveis?${queryParams.toString()}`);
+            return response || [];
+        } catch (error) {
+            console.error('[OrdemServicoService.buscarHorariosDisponiveis] Erro:', error);
+            throw new Error(error.message || 'Erro ao buscar horários disponíveis');
+        }
+    }
 }
 
 export const ordemServicoService = new OrdemServicoService();
