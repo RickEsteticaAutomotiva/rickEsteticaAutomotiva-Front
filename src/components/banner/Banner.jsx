@@ -18,7 +18,7 @@ export function Banner({ scrollTargetRef }) {
                 {/* Texto */}
                 <div className="text-white text-center md:text-left animate-[fade-in-left_1s_ease-out]">
                     <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight mb-4 md:mb-6">
-                        Estética Automotiva de{' '}
+                        Estética {' '}
                         <span className="text-red-300">Excelência</span>
                     </h1>
                     <p className="text-base sm:text-lg leading-relaxed mb-6 md:mb-8 opacity-90">
