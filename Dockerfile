@@ -7,10 +7,7 @@ RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
 
 COPY . .
 
-ARG VITE_API_URL
-ENV VITE_API_URL=$VITE_API_URL
-
-RUN npm run build
+RUN npm run build -- --mode production
 
 FROM nginx:1.27-alpine AS runtime
 
