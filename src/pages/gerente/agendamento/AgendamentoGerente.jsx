@@ -280,7 +280,7 @@ export function AgendamentoGerente() {
                     <h2 className="text-2xl font-semibold text-center">Próximo agendamento</h2>
                     <div className="grid w-full grid-cols-2 gap-x-6 gap-y-7 md:max-w-3xl md:gap-x-12">
                         <CardPequeno
-                            texto={proximoAgendamento?.servicos?.[0]?.nome || 'Sem agendamento'}
+                            texto={proximoAgendamento?.servicos?.[0]?.nome || 'Sem serviço'}
                             label="Servico"
                         />
                         <CardPequeno texto={proximoAgendamento?.veiculo || '-'} label="Veículo" />

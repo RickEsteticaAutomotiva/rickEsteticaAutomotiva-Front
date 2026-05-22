@@ -1,6 +1,6 @@
 import "./MenuGerente.css";
 import { Outlet, useLocation } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Home, BarChart3, Calendar, FileText, LogOut, User, Wrench, Tags } from "lucide-react";
 import { MenuLink } from "../../components/gerente/menu-link/MenuLink";
 import { UseAuth } from "../../hooks/UseAuth";
@@ -10,6 +10,19 @@ export function MenuGerente() {
     const [menuOpen, setMenuOpen] = useState(false);
     const location = useLocation();
     const { user, logout } = UseAuth();
+    const isHomeGerente = location.pathname === ROUTES.GERENTE.HOME;
+
+    useEffect(() => {
+        if (!isHomeGerente) {
+            return undefined;
+        }
+
+        document.body.classList.add('no-scroll');
+
+        return () => {
+            document.body.classList.remove('no-scroll');
+        };
+    }, [isHomeGerente]);
 
     const toggleMenu = () => {
         setMenuOpen(!menuOpen);
@@ -42,9 +55,9 @@ export function MenuGerente() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-100">
-            <header className={`bg-red-700 text-white sticky relative ${location.pathname === ROUTES.GERENTE.HOME ? 'pb-6' : 'pb-0'}`}>
-                <div className="px-5 py-4 flex items-center justify-between">
+        <div className={isHomeGerente ? "h-screen overflow-hidden bg-gray-100" : "min-h-screen bg-gray-100"}>
+            <header className={`bg-red-700 text-white sticky relative ${isHomeGerente ? 'pb-2' : 'pb-0'}`}>
+                <div className="px-5 pt-4 pb-4 flex items-center justify-between">
                     <button
                         className="flex flex-col gap-1 p-1"
                         aria-label="Abrir menu"
@@ -54,13 +67,13 @@ export function MenuGerente() {
                         <span className="w-5 h-0.5 bg-white block"></span>
                         <span className="w-5 h-0.5 bg-white block"></span>
                     </button>
-                    {location.pathname !== ROUTES.GERENTE.HOME && (
+                    {!isHomeGerente && (
                         <h1 className="text-2xl font-semibold absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center max-w-xs truncate m-0 leading-tight">{getPageTitle()}</h1>
                     )}
                     <div className="w-8"></div>
                 </div>
 
-                {location.pathname === ROUTES.GERENTE.HOME && (
+                {isHomeGerente && (
                     <div className="flex flex-col items-center px-5 pt-1 pb-1 text-center">
                         <h2 className="text-2xl font-semibold m-0 leading-none">Bem vindo,</h2>
                         <p className="text-xl font-medium mt-0 leading-tight">{user?.nome || 'Gerente'}!</p>
@@ -152,7 +165,7 @@ export function MenuGerente() {
                     aria-label="Fechar menu"
                 ></button>
             )}
-            <main className="relative z-10 px-4 py-6 md:px-8 md:py-8">
+            <main className={isHomeGerente ? "relative z-10 px-4 pb-4 md:px-8 md:pb-6" : "relative z-10 px-4 py-6 md:px-8 md:py-8"}>
                 <div className="max-w-[1200px] mx-auto">
                     <Outlet />
                 </div>

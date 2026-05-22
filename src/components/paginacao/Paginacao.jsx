@@ -50,13 +50,13 @@ export function Paginacao({
     const temAnterior = paginaAtual > 0;
 
     return (
-        <div className="flex flex-wrap items-center justify-center gap-2 mt-12 mb-8">
+        <div className="flex w-full items-center justify-center gap-2 mt-12 mb-8">
             <button
                 onClick={() => mudarPaginaSegura(paginaAtual - 1)}
                 disabled={!temAnterior}
                 aria-label="Anterior"
                 title="Anterior"
-                className={`flex shrink-0 items-center justify-center whitespace-nowrap px-3 py-2 rounded-lg font-medium transition-colors ${temAnterior
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg font-medium transition-colors ${temAnterior
                         ? 'text-red-600 hover:bg-red-50 cursor-pointer'
                         : 'text-gray-300 cursor-not-allowed'
                     }`}
@@ -64,17 +64,17 @@ export function Paginacao({
                 <i className="bi bi-chevron-left" aria-hidden="true"></i>
             </button>
 
-            <div className="flex items-center gap-1">
+            <div className="flex min-w-0 flex-nowrap items-center justify-center gap-1 overflow-visible">
                 {paginas.map((numero) => (
                     typeof numero === 'string' ? (
-                        <span key={numero} className="px-2 text-gray-400 select-none">
+                        <span key={numero} className="shrink-0 px-1 text-gray-400 select-none">
                             ...
                         </span>
                     ) : (
                         <button
                             key={numero}
                             onClick={() => mudarPaginaSegura(numero)}
-                            className={`w-10 h-10 rounded-lg font-semibold transition-colors ${numero === paginaAtual
+                            className={`h-9 w-9 shrink-0 rounded-lg font-semibold transition-colors sm:h-10 sm:w-10 ${numero === paginaAtual
                                     ? 'bg-red-600 text-white'
                                     : 'text-gray-700 hover:bg-red-50 border border-gray-200'
                                 }`}
@@ -90,7 +90,7 @@ export function Paginacao({
                 disabled={!temProxima}
                 aria-label="Próximo"
                 title="Próximo"
-                className={`flex shrink-0 items-center justify-center whitespace-nowrap px-3 py-2 rounded-lg font-medium transition-colors ${temProxima
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg font-medium transition-colors ${temProxima
                         ? 'text-red-600 hover:bg-red-50 cursor-pointer'
                         : 'text-gray-300 cursor-not-allowed'
                     }`}
