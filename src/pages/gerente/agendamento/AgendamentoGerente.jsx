@@ -87,6 +87,7 @@ const normalizarAgendamento = (ordem) => {
         id: ordem?.id,
         horario: ordem?.horario || (dataAgendamentoOriginal ? formatarHorario(dataAgendamentoOriginal) : '--:--'),
         cliente: ordem?.cliente?.nome || ordem?.cliente || '-',
+        telefone: ordem?.telefone || ordem?.cliente?.telefone || ordem?.clienteTelefone || null,
         veiculo: formatarVeiculo(ordem?.veiculo),
         veiculoDetalhado,
         placaVeiculo,
@@ -114,6 +115,18 @@ const extrairListaAgendamentos = (response) => {
     }
 
     return [];
+};
+
+const resolverLinkWhatsApp = (telefone) => {
+    if (!telefone) return null;
+
+    const apenasDigitos = String(telefone).replace(/\D/g, '');
+
+    if (!apenasDigitos) return null;
+
+    const telefoneComPais = apenasDigitos.startsWith('55') ? apenasDigitos : `55${apenasDigitos}`;
+
+    return `https://wa.me/${telefoneComPais}`;
 };
 
 const resolverReferenciasOrdem = async (ordem) => {
@@ -243,6 +256,8 @@ export function AgendamentoGerente() {
         })[0];
     }, [agendamentos]);
 
+    const linkWhatsAppProximoAgendamento = resolverLinkWhatsApp(proximoAgendamento?.telefone);
+
     const handleOrdemAtualizada = (ordemAtualizada) => {
         if (!ordemAtualizada?.id) return;
 
@@ -260,32 +275,42 @@ export function AgendamentoGerente() {
 
     return (
         <div className="mt-4">
-            <div className="flex justify-center bg-white rounded-2xl p-5 mb-6 shadow-sm">
-                <div className="flex flex-col items-center gap-5">
+            <div className="flex justify-center bg-white rounded-2xl p-5 mb-6 shadow-sm overflow-hidden">
+                <div className="flex w-full flex-col items-center gap-5">
                     <h2 className="text-2xl font-semibold text-center">Próximo agendamento</h2>
-                    <div className="flex justify-center items-center gap-10">
-                        <div className="flex flex-col gap-7">
-                            <CardPequeno
-                                texto={proximoAgendamento?.servicos?.[0]?.nome || 'Sem agendamento'}
-                                label="Servico"
-                            />
-                            <CardPequeno
-                                texto={proximoAgendamento?.horario || '--:--'}
-                                label="Horário"
-                                icon={Clock}
-                            />
-                        </div>
-                        <div className="bg-gray-300 w-px h-full"></div>
-                        <div className="flex flex-col gap-7">
-                            <CardPequeno texto={proximoAgendamento?.veiculo || '-'} label="Veículo" />
-                            <CardPequeno texto={proximoAgendamento?.valor || 'R$ 0,00'} label="Valor" icon={BanknoteArrowUp} />
-                        </div>
+                    <div className="grid w-full grid-cols-2 gap-x-6 gap-y-7 md:max-w-3xl md:gap-x-12">
+                        <CardPequeno
+                            texto={proximoAgendamento?.servicos?.[0]?.nome || 'Sem serviço'}
+                            label="Servico"
+                        />
+                        <CardPequeno texto={proximoAgendamento?.veiculo || '-'} label="Veículo" />
+                        <CardPequeno
+                            texto={proximoAgendamento?.horario || '--:--'}
+                            label="Horário"
+                            icon={Clock}
+                        />
+                        <CardPequeno texto={proximoAgendamento?.valor || 'R$ 0,00'} label="Valor" icon={BanknoteArrowUp} />
                     </div>
 
-                    <Button
-                        texto={loadingDetalhe ? "Carregando..." : "Detalhes"}
-                        onClick={() => proximoAgendamento && abrirModal(proximoAgendamento)}
-                    />
+                    <div className="flex w-full flex-wrap items-center justify-center gap-3">
+                        {linkWhatsAppProximoAgendamento && (
+                            <a
+                                href={linkWhatsAppProximoAgendamento}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex w-36 items-center justify-center gap-2 rounded-lg bg-green-600 px-8 py-1 font-semibold text-white transition-colors duration-200 hover:bg-green-500"
+                                aria-label="Abrir conversa no WhatsApp"
+                            >
+                                <i className="bi bi-whatsapp text-base" aria-hidden="true"></i>
+                                WhatsApp
+                            </a>
+                        )}
+                        <Button
+                            texto={loadingDetalhe ? "Carregando..." : "Detalhes"}
+                            className="w-36 flex items-center justify-center"
+                            onClick={() => proximoAgendamento && abrirModal(proximoAgendamento)}
+                        />
+                    </div>
                 </div>
             </div>
             <div className="mb-6 text-center">

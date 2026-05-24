@@ -29,7 +29,7 @@ export function ModalAdicionaServico({
             try {
                 const response = await servicosService.buscarTodos({
                     pagina: 0,
-                    tamanho: 100,
+                    tamanho: 50,
                     ordenarPor: 'nome',
                     filtro: ''
                 });

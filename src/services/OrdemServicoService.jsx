@@ -178,13 +178,28 @@ export class OrdemServicoService {
         }
     }
 
-    async atualizarStatusGestao(id, novoStatus) {
+    async atualizarStatusGestao(id, novoStatus, motivoCancelamento) {
         try {
             const statusNormalizado = this.normalizarStatusParaBackend(novoStatus);
-            const response = await apiService.patch(`${this.BASE_URL_GESTAO}/${id}`, { status: statusNormalizado });
+            const payload = { status: statusNormalizado };
+            if (motivoCancelamento !== undefined && motivoCancelamento !== null && motivoCancelamento !== '') {
+                payload.motivoCancelamento = motivoCancelamento;
+            }
+            const response = await apiService.patch(`${this.BASE_URL_GESTAO}/${id}`, payload);
             return response;
         } catch (error) {
             throw new Error(error.message || 'Erro ao atualizar status da ordem de serviço');
+        }
+    }
+
+    async cancelarOrdemGestao(id, motivoCancelamento) {
+        try {
+            // Envia o motivo no corpo usando a chave `motivo` conforme novo endpoint
+            const payload = { motivo: motivoCancelamento };
+            const response = await apiService.post(`${this.BASE_URL_GESTAO}/${id}/cancel`, payload);
+            return response;
+        } catch (error) {
+            throw new Error(error.message || 'Erro ao cancelar a ordem de serviço');
         }
     }
 

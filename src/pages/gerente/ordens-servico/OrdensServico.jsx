@@ -17,7 +17,7 @@ export function OrdensServico() {
     const [periodoSelecionado, setPeriodoSelecionado] = useState({ id: 0, valor: 'Todos' });
     const [dropdownAberto, setDropdownAberto] = useState(false);
     const [dropdownOrdenacaoAberto, setDropdownOrdenacaoAberto] = useState(false);
-    const [ordenacaoSelecionada, setOrdenacaoSelecionada] = useState({ id: 'emAnalise', valor: 'Em análise' });
+    const [ordenacaoSelecionada, setOrdenacaoSelecionada] = useState({ id: 'idMaior', valor: 'ID maior' });
     const [modalFiltroAberto, setModalFiltroAberto] = useState(false);
     const [modalAbertoOrdem, setModalAbertoOrdem] = useState(false);
     const [modalCriarAberto, setModalCriarAberto] = useState(false);
@@ -41,6 +41,8 @@ export function OrdensServico() {
 
     const ordenacoes = [
         { id: 'emAnalise', valor: 'Em análise', ordenarPor: 'status.id,dataAgendamento', direcao: 'asc' },
+        { id: 'idMaior', valor: 'ID maior', ordenarPor: 'id', direcao: 'desc' },
+        { id: 'idMenor', valor: 'ID menor', ordenarPor: 'id', direcao: 'asc' },
         { id: 'dataRecente', valor: 'Data mais recente', ordenarPor: 'dataAgendamento,id', direcao: 'desc' },
         { id: 'dataAntiga', valor: 'Data mais antiga', ordenarPor: 'dataAgendamento,id', direcao: 'asc' },
         { id: 'valorMaior', valor: 'Maior valor', ordenarPor: 'precoMinimo,id', direcao: 'desc' },
@@ -228,6 +230,16 @@ export function OrdensServico() {
 
         if (ordenacaoSelecionada.id === 'valorMenor') {
             resultado.sort((a, b) => (a?.valorNumerico || 0) - (b?.valorNumerico || 0));
+            return resultado;
+        }
+
+        if (ordenacaoSelecionada.id === 'idMaior') {
+            resultado.sort((a, b) => (b?.id || 0) - (a?.id || 0));
+            return resultado;
+        }
+
+        if (ordenacaoSelecionada.id === 'idMenor') {
+            resultado.sort((a, b) => (a?.id || 0) - (b?.id || 0));
             return resultado;
         }
 
