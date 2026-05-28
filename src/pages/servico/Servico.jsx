@@ -196,30 +196,14 @@ export function Servico() {
         if (navigator.share) {
             try {
                 await navigator.share(shareData);
-                mostrarToast({
-                    tipo: TiposToast.SUCESSO,
-                    titulo: 'Compartilhado!',
-                    mensagem: 'Serviço compartilhado com sucesso.',
-                    duracao: 3000,
-                });
             } catch (err) {
                 if (err.name !== 'AbortError') {
-                    try {
-                        await navigator.clipboard.writeText(url);
-                        mostrarToast({
-                            tipo: TiposToast.SUCESSO,
-                            titulo: 'Link copiado!',
-                            mensagem: 'O link do serviço foi copiado para a área de transferência.',
-                            duracao: 3000,
-                        });
-                    } catch {
-                        mostrarToast({
-                            tipo: TiposToast.ERRO,
-                            titulo: 'Erro ao compartilhar',
-                            mensagem: 'Não foi possível compartilhar o serviço.',
-                            duracao: 3000,
-                        });
-                    }
+                    mostrarToast({
+                        tipo: TiposToast.ERRO,
+                        titulo: 'Erro ao compartilhar',
+                        mensagem: 'Não foi possível compartilhar o serviço.',
+                        duracao: 3000,
+                    });
                 }
             }
         } else {
@@ -366,27 +350,25 @@ export function Servico() {
                                 <h1 className="text-2xl font-bold text-gray-900 leading-snug">{servico.nome}</h1>
                                 <div className="flex gap-2 flex-shrink-0 mt-1">
                                     <button
-                                        className="p-2 md:p-1.5 cursor-pointer rounded-full bg-gray-100 flex justify-center items-center hover:bg-gray-200 transition-colors active:bg-gray-300"
+                                        className="h-9 w-9 cursor-pointer rounded-full bg-gray-100 flex justify-center items-center hover:bg-gray-200 transition-colors"
                                         onClick={compartilharServico}
                                         title="Compartilhar serviço"
-                                        type="button"
                                     >
-                                        <i className="bi bi-share text-gray-600 text-lg md:text-base"></i>
+                                        <i className="bi bi-share text-gray-600"></i>
                                     </button>
                                     <button
-                                        className={`p-2 md:p-1.5 cursor-pointer rounded-full bg-gray-100 flex justify-center items-center transition-all ${
-                                            loadingFavorito ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-50 active:bg-red-100'
+                                        className={`h-9 w-9 cursor-pointer rounded-full bg-gray-100 flex justify-center items-center transition-all ${
+                                            loadingFavorito ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-50'
                                         }`}
                                         onClick={toggleFavorito}
                                         disabled={loadingFavorito}
-                                        type="button"
                                     >
                                         {loadingFavorito ? (
-                                            <i className="bi bi-arrow-repeat animate-spin text-gray-500 text-lg md:text-base"></i>
+                                            <i className="bi bi-arrow-repeat animate-spin text-gray-500"></i>
                                         ) : isFavorito ? (
-                                            <i className="bi bi-heart-fill text-red-500 text-lg md:text-base"></i>
+                                            <i className="bi bi-heart-fill text-red-500"></i>
                                         ) : (
-                                            <i className="bi bi-heart text-gray-600 text-lg md:text-base"></i>
+                                            <i className="bi bi-heart text-gray-600"></i>
                                         )}
                                     </button>
                                 </div>
