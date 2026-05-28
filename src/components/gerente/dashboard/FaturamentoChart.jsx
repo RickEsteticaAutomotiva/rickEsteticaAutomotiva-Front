@@ -11,9 +11,6 @@ import {
 } from "chart.js";
 import { DashboardService } from "../../../services/DashboardService";
 import { useDashboardRefresh } from "../../../pages/gerente/dashboard/DashboardRefreshContext";
-import { InfoTooltip } from "../../info-tooltip/InfoTooltip";
-
-const chartInfo = 'Últimos 30 dias';
 
 const dashboardService = new DashboardService();
 
@@ -111,10 +108,7 @@ export default function FaturamentoChart() {
 
   return (
     <div className="bg-white p-6 rounded-2xl shadow-sm mt-6">
-      <div className="mb-4 flex items-center gap-1">
-        <h2 className="text-xl font-semibold">Faturamento Diário</h2>
-        <InfoTooltip message={chartInfo} />
-      </div>
+      <h2 className="text-xl font-semibold mb-4">Faturamento Diário</h2>
 
       <div className="h-64 sm:h-72">
         <Line data={data} options={options} />

@@ -5,44 +5,19 @@ export function Paginacao({
 }) {
     const gerarPaginas = () => {
         const paginas = [];
-        const paginasAoRedor = 1;
-        const primeiraPagina = 0;
-        const ultimaPagina = totalPaginas - 1;
+        const maxPaginasVisiveis = 7;
+        let inicio = Math.max(0, paginaAtual - 3);
+        let fim = Math.min(totalPaginas - 1, inicio + maxPaginasVisiveis - 1);
 
-        if (totalPaginas <= 7) {
-            for (let i = 0; i < totalPaginas; i++) {
-                paginas.push(i);
-            }
-            return paginas;
+        if (fim - inicio < maxPaginasVisiveis - 1) {
+            inicio = Math.max(0, fim - maxPaginasVisiveis + 1);
         }
 
-        paginas.push(primeiraPagina);
-
-        const inicioMiolo = Math.max(primeiraPagina + 1, paginaAtual - paginasAoRedor);
-        const fimMiolo = Math.min(ultimaPagina - 1, paginaAtual + paginasAoRedor);
-
-        if (inicioMiolo > primeiraPagina + 1) {
-            paginas.push('...esquerda');
-        }
-
-        for (let i = inicioMiolo; i <= fimMiolo; i++) {
+        for (let i = inicio; i <= fim; i++) {
             paginas.push(i);
         }
 
-        if (fimMiolo < ultimaPagina - 1) {
-            paginas.push('...direita');
-        }
-
-        paginas.push(ultimaPagina);
-
         return paginas;
-    };
-
-    const mudarPaginaSegura = (paginaDestino) => {
-        const paginaLimitada = Math.max(0, Math.min(totalPaginas - 1, paginaDestino));
-        if (paginaLimitada !== paginaAtual) {
-            onMudarPagina(paginaLimitada);
-        }
     };
 
     const paginas = gerarPaginas();
@@ -50,52 +25,44 @@ export function Paginacao({
     const temAnterior = paginaAtual > 0;
 
     return (
-        <div className="flex w-full items-center justify-center gap-2 mt-12 mb-8">
+        <div className="flex items-center justify-center gap-2 mt-12 mb-8">
             <button
-                onClick={() => mudarPaginaSegura(paginaAtual - 1)}
+                onClick={() => onMudarPagina(paginaAtual - 1)}
                 disabled={!temAnterior}
-                aria-label="Anterior"
-                title="Anterior"
-                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg font-medium transition-colors ${temAnterior
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${temAnterior
                         ? 'text-red-600 hover:bg-red-50 cursor-pointer'
                         : 'text-gray-300 cursor-not-allowed'
                     }`}
             >
-                <i className="bi bi-chevron-left" aria-hidden="true"></i>
+                <i className="bi bi-chevron-left"></i>
+                Anterior
             </button>
 
-            <div className="flex min-w-0 flex-nowrap items-center justify-center gap-1 overflow-visible">
+            <div className="flex items-center gap-1">
                 {paginas.map((numero) => (
-                    typeof numero === 'string' ? (
-                        <span key={numero} className="shrink-0 px-1 text-gray-400 select-none">
-                            ...
-                        </span>
-                    ) : (
-                        <button
-                            key={numero}
-                            onClick={() => mudarPaginaSegura(numero)}
-                            className={`h-9 w-9 shrink-0 rounded-lg font-semibold transition-colors sm:h-10 sm:w-10 ${numero === paginaAtual
-                                    ? 'bg-red-600 text-white'
-                                    : 'text-gray-700 hover:bg-red-50 border border-gray-200'
-                                }`}
-                        >
-                            {numero + 1}
-                        </button>
-                    )
+                    <button
+                        key={numero}
+                        onClick={() => onMudarPagina(numero)}
+                        className={`w-10 h-10 rounded-lg font-semibold transition-colors ${numero === paginaAtual
+                                ? 'bg-red-600 text-white'
+                                : 'text-gray-700 hover:bg-red-50 border border-gray-200'
+                            }`}
+                    >
+                        {numero + 1}
+                    </button>
                 ))}
             </div>
 
             <button
-                onClick={() => mudarPaginaSegura(paginaAtual + 1)}
+                onClick={() => onMudarPagina(paginaAtual + 1)}
                 disabled={!temProxima}
-                aria-label="Próximo"
-                title="Próximo"
-                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg font-medium transition-colors ${temProxima
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${temProxima
                         ? 'text-red-600 hover:bg-red-50 cursor-pointer'
                         : 'text-gray-300 cursor-not-allowed'
                     }`}
             >
-                <i className="bi bi-chevron-right" aria-hidden="true"></i>
+                Seguinte
+                <i className="bi bi-chevron-right"></i>
             </button>
         </div>
     );
