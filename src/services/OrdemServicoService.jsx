@@ -50,7 +50,7 @@ export class OrdemServicoService {
 
     async buscarAgendamentosHoje() {
         try {
-            const response = await apiService.get(`${this.BASE_URL}/hoje`);
+            const response = await apiService.get(`${this.BASE_URL_GESTAO}/hoje`);
             return response;
         } catch (error) {
             throw new Error(error.message || 'Erro ao buscar agendamentos de hoje');
@@ -150,6 +150,7 @@ export class OrdemServicoService {
         }
     }
 
+    
     async buscarOrdemServicoPorUsuario(usuarioId) {
         try {
             const response = await apiService.get(`${this.BASE_URL}/usuario/${usuarioId}`);
@@ -212,7 +213,7 @@ export class OrdemServicoService {
         try {
             // Envia o motivo no corpo usando a chave `motivo` conforme novo endpoint
             const payload = { motivo: motivoCancelamento };
-            const response = await apiService.post(`${this.BASE_URL_GESTAO}/${id}/cancel`, payload);
+            const response = await apiService.patch(`${this.BASE_URL_GESTAO}/${id}/cancel`, payload);
             return response;
         } catch (error) {
             throw new Error(error.message || 'Erro ao cancelar a ordem de serviço');
