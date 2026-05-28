@@ -4,7 +4,7 @@ import { Header } from "../../components/header/Header";
 import { Breadcrumb } from "../../components/breadcrumb/Breadcrumb";
 import { Footer } from "../../components/footer/Footer";
 import { LoadingState } from "../../components/loading-state/LoadingState";
-import { ModalConfirmacao } from "../../components/modal-confirmacao/ModalConfirmacao";
+import { ModalCancelamentoMotivo } from "../../components/modal-cancelamento-motivo/ModalCancelamentoMotivo";
 import { Paginacao } from "../../components/paginacao/Paginacao";
 import { useAuth } from "../../context/AuthContext";
 import { useCarrinho } from "../../context/CarrinhoContext";
@@ -13,14 +13,14 @@ import { veiculoService } from "../../services/VeiculoService";
 import { servicosService } from "../../services/ServicosService";
 import { carrinhoService } from "../../services/CarrinhoService";
 import { ROUTES } from "../../constants/Routes";
-import { tradutorStatus, formatarDataCompleta, formatarHorario, formatarPreco, StatusAgendamento } from '../../utils/index';
+import { tradutorStatus, formatarDataCompleta, formatarHorario, formatarPreco } from '../../utils/index';
 import { useToast } from '../../context/ToastContext';
 import { TiposToast } from '../../utils/enum/TiposToast';
 
 export function Historico() {
     const [agendamentos, setAgendamentos] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [showModalCancelamento, setShowModalCancelamento] = useState(false);
+    const [showModalMotivo, setShowModalMotivo] = useState(false);
     const [agendamentoParaCancelar, setAgendamentoParaCancelar] = useState(null);
     const [loadingCancelamento, setLoadingCancelamento] = useState(false);
     const [loadingRefazer, setLoadingRefazer] = useState(false);
@@ -103,7 +103,7 @@ export function Historico() {
 
     const handleCancelar = (agendamento) => {
         setAgendamentoParaCancelar(agendamento);
-        setShowModalCancelamento(true);
+        setShowModalMotivo(true);
     };
 
     const handleMudarPagina = (novaPagina) => {
@@ -116,16 +116,21 @@ export function Historico() {
     const indiceFim = indiceInicio + AGENDAMENTOS_POR_PAGINA;
     const agendamentosPaginados = agendamentos.slice(indiceInicio, indiceFim);
 
-    const confirmarCancelamento = async () => {
+    const confirmarCancelamento = async (motivo) => {
         if (!agendamentoParaCancelar) return;
 
         setLoadingCancelamento(true);
         try {
-            await ordemServicoService.atualizarStatus(agendamentoParaCancelar.id, 4);
+            await ordemServicoService.atualizarStatus(
+                agendamentoParaCancelar.id, 
+                4,
+                motivo.id,
+                motivo.observacao
+            );
             
             await buscarHistorico();
 
-            setShowModalCancelamento(false);
+            setShowModalMotivo(false);
             setAgendamentoParaCancelar(null);
             mostrarToast({
                 tipo: TiposToast.SUCESSO,
@@ -146,7 +151,7 @@ export function Historico() {
     };
 
     const cancelarCancelamento = () => {
-        setShowModalCancelamento(false);
+        setShowModalMotivo(false);
         setAgendamentoParaCancelar(null);
     };
 
@@ -352,46 +357,13 @@ export function Historico() {
 
             <Footer />
 
-            {/* Modal de Cancelamento */}
-            {agendamentoParaCancelar && (
-                <ModalConfirmacao
-                    isOpen={showModalCancelamento}
-                    onClose={cancelarCancelamento}
-                    onConfirm={confirmarCancelamento}
-                    titulo="Cancelar Agendamento"
-                    tipo="danger"
-                    icone="bi bi-exclamation-triangle"
-                    textoBotaoConfirmar="Sim, cancelar"
-                    textoBotaoCancelar="Não cancelar"
-                    loading={loadingCancelamento}
-                >
-                    <div style={{ textAlign: 'left' }}>
-                        <p className="modal-confirmacao-mensagem">
-                            Tem certeza que deseja cancelar o agendamento #{agendamentoParaCancelar.id}?
-                        </p>
-                        
-                        <div style={{
-                            marginTop: '1rem',
-                            padding: '1rem',
-                            backgroundColor: '#fef2f2',
-                            borderRadius: '8px',
-                            border: '1px solid #fecaca'
-                        }}>
-                            <p style={{
-                                fontSize: '0.875rem',
-                                color: '#dc2626',
-                                margin: 0,
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.5rem'
-                            }}>
-                                <i className="bi bi-exclamation-triangle"></i>
-                                Esta ação não pode ser desfeita.
-                            </p>
-                        </div>
-                    </div>
-                </ModalConfirmacao>
-            )}
+            {/* Modal de Seleção de Motivo */}
+            <ModalCancelamentoMotivo
+                isOpen={showModalMotivo}
+                onClose={cancelarCancelamento}
+                onConfirm={confirmarCancelamento}
+                loading={loadingCancelamento}
+            />
         </>
     );
 }

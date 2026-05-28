@@ -169,9 +169,25 @@ export class OrdemServicoService {
         }
     }
 
-    async atualizarStatus(id, novoStatus) {
+    async atualizarStatus(id, novoStatus, motivo = null, observacoes = '') {
         try {
-            const response = await apiService.patch(`${this.BASE_URL}/${id}`, { status: novoStatus });
+            const payload = { status: novoStatus };
+            
+            // Se cancelando
+            if (novoStatus === 4 && motivo) {
+                // Apenas enviar motivo se não for "Outros" (id 4)
+                // Para "Outros", enviamos apenas as observações
+                if (motivo !== 4) {
+                    payload.motivo = motivo;
+                }
+            }
+            
+            // Adicionar observações se fornecidas
+            if (observacoes) {
+                payload.observacoes = observacoes;
+            }
+            
+            const response = await apiService.patch(`${this.BASE_URL}/${id}`, payload);
             return response;
         } catch (error) {
             throw new Error(error.message || 'Erro ao atualizar status da ordem de serviço');
