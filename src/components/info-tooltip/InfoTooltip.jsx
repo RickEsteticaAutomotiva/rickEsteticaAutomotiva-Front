@@ -123,7 +123,8 @@ export function InfoTooltip({ message }) {
                         transform: position.transform,
                     }}
                 >
-                    <div className="bg-gray-800 text-white py-2 px-3 rounded-md text-[0.813rem] leading-snug shadow-lg max-w-[280px] text-center">
+                    <div className="bg-gray-800 text-white py-2.5 px-3 rounded-md text-[0.813rem] leading-snug shadow-lg max-w-[280px] text-left whitespace-pre-line">
+                        <span className="block text-[0.7rem] uppercase tracking-[0.18em] text-gray-300 mb-1">Detalhes</span>
                         {message}
                         <TooltipArrow isAbove={isAbove} />
                     </div>

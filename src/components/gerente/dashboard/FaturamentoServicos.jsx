@@ -3,6 +3,9 @@ import { DashboardService } from "../../../services/DashboardService";
 import { useDashboardRefresh } from "../../../pages/gerente/dashboard/DashboardRefreshContext";
 import { useToast } from '../../../context/ToastContext';
 import { TiposToast } from '../../../utils/enum/TiposToast';
+import { InfoTooltip } from "../../info-tooltip/InfoTooltip";
+
+const servicosInfo = 'Mês atual';
 
 export default function FaturamentoServicos() {
   const { refreshKey } = useDashboardRefresh();
@@ -59,9 +62,12 @@ export default function FaturamentoServicos() {
   return (
     <div className="flex justify-center bg-gray-100">
       <div className="bg-white rounded-2xl shadow-sm p-6 w-full max-w-2xl">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
-          Faturamento por serviço
-        </h2>
+        <div className="mb-4 flex items-center gap-1">
+          <h2 className="text-xl font-semibold text-gray-900">
+            Faturamento por serviço
+          </h2>
+          <InfoTooltip message={servicosInfo} />
+        </div>
 
         <div className="w-full mb-6">
           <select
