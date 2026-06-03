@@ -31,6 +31,14 @@ export function Historico() {
     const { mostrarToast } = useToast();
     const { atualizarCarrinho } = useCarrinho();
 
+    const extrairId = (valor) => {
+        if (valor && typeof valor === 'object') {
+            return valor.id ?? valor.servicoId ?? valor.veiculoId ?? valor.statusId ?? null;
+        }
+
+        return valor ?? null;
+    };
+
     const breadcrumbItems = [
         {
             label: 'Início',
@@ -63,15 +71,30 @@ export function Historico() {
                         let veiculoInfo = null;
                         if (agendamento.veiculo) {
                             const veiculos = await veiculoService.buscarVeiculosPorUsuario(user.id);
-                            veiculoInfo = veiculos.find(v => v.id === agendamento.veiculo);
+                            const veiculoId = extrairId(agendamento.veiculo);
+                            veiculoInfo = veiculos.find(v => v.id === veiculoId) ?? agendamento.veiculo;
                         }
 
                         let servicosInfo = [];
                         if (agendamento.servicos && agendamento.servicos.length > 0) {
-                            const servicosPromises = agendamento.servicos.map(servicoId =>
-                                servicosService.buscarPorId(servicoId)
-                            );
-                            servicosInfo = await Promise.all(servicosPromises);
+                            const servicosPromises = agendamento.servicos.map(async (servico) => {
+                                try {
+                                    if (servico && typeof servico === 'object' && servico.nome && servico.preco !== undefined) {
+                                        return servico;
+                                    }
+
+                                    const servicoId = extrairId(servico);
+                                    if (servicoId === null || servicoId === undefined || servicoId === '') {
+                                        return null;
+                                    }
+
+                                    return await servicosService.buscarPorId(servicoId);
+                                } catch (error) {
+                                    return null;
+                                }
+                            });
+
+                            servicosInfo = (await Promise.all(servicosPromises)).filter(Boolean);
                         }
 
                         return {
@@ -80,7 +103,13 @@ export function Historico() {
                             servicos: servicosInfo
                         };
                     } catch (error) {
-                        return agendamento;
+                        return {
+                            ...agendamento,
+                            veiculo: agendamento.veiculo && typeof agendamento.veiculo === 'object' ? agendamento.veiculo : null,
+                            servicos: Array.isArray(agendamento.servicos)
+                                ? agendamento.servicos.filter((servico) => servico && typeof servico === 'object')
+                                : []
+                        };
                     }
                 })
             );
@@ -169,9 +198,24 @@ export function Historico() {
                 return;
             }
 
-            const promises = agendamento.servicos.map(servico =>
-                carrinhoService.adicionarServicoCarrinho(user.id, servico.id)
-            );
+            const servicosValidos = agendamento.servicos
+                .map((servico) => extrairId(servico))
+                .filter((servicoId) => servicoId !== null && servicoId !== undefined && servicoId !== '');
+
+            if (servicosValidos.length === 0) {
+                mostrarToast({
+                    tipo: TiposToast.ERRO,
+                    titulo: 'Nenhum serviço válido encontrado',
+                    mensagem: 'Não foi possível identificar os serviços deste agendamento.',
+                    duracao: 4000
+                });
+                setLoadingRefazer(false);
+                return;
+            }
+
+            const promises = servicosValidos.map((servicoId) => {
+                return carrinhoService.adicionarServicoCarrinho(user.id, servicoId);
+            });
 
             await Promise.all(promises);
             await atualizarCarrinho();
@@ -197,7 +241,7 @@ export function Historico() {
     };
 
     const getStatusBadge = (status) => {
-        const statusInfo = tradutorStatus(status.id);
+        const statusInfo = tradutorStatus(extrairId(status));
 
         return (
             <span className={statusInfo.classe}>
@@ -267,7 +311,7 @@ export function Historico() {
                                                 Veículo
                                             </div>
                                             <div className="text-gray-500 text-sm">
-                                                {agendamento.veiculo ?
+                                                {agendamento.veiculo && typeof agendamento.veiculo === 'object' ?
                                                     `${agendamento.veiculo.marca} ${agendamento.veiculo.modelo} - ${agendamento.veiculo.placa}` :
                                                     'Dados do veículo não disponíveis'
                                                 }
@@ -318,7 +362,7 @@ export function Historico() {
                                         </div>
                                         
                                         <div className="flex gap-3">
-                                            {agendamento.status === 5 && (
+                                            {extrairId(agendamento.status) === 5 && (
                                                 <button
                                                     className="bg-[#B30000] text-white px-4 py-2 rounded-lg hover:bg-[#990000] transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                                                     onClick={() => handleRefazerPedido(agendamento)}
@@ -329,7 +373,7 @@ export function Historico() {
                                                 </button>
                                             )}
                                             
-                                            {agendamento.status.id == 1 && (
+                                            {extrairId(agendamento.status) === 1 && (
                                                 <button
                                                     className="bg-red-50 text-red-600 border border-red-200 px-4 py-2 rounded-lg hover:bg-red-600 hover:text-white transition-colors text-sm font-medium"
                                                     onClick={() => handleCancelar(agendamento)}
