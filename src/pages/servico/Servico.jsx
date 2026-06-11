@@ -181,8 +181,10 @@ export function Servico() {
         'https://placehold.co/600x600/ede9fe/7c3aed?text=Imagem+5',
     ];
 
-    const imagens = servico?.imagem
-        ? [servico.imagem, servico.imagem, servico.imagem, servico.imagem]
+    const caminhoImagem = servico?.imagem ? `../public/servicos/${servico.imagem}.jpg` : null;
+
+    const imagens = caminhoImagem
+        ? [caminhoImagem]
         : IMAGENS_PLACEHOLDER;
 
     const compartilharServico = async () => {
