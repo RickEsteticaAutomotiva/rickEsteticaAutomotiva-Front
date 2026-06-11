@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Header } from "../../components/header/Header";
 import { Breadcrumb } from "../../components/breadcrumb/Breadcrumb";
@@ -23,6 +23,7 @@ export function Agendamento() {
     const [showModalConfirmacao, setShowModalConfirmacao] = useState(false);
     const [showModalSucesso, setShowModalSucesso] = useState(false);
     const [loadingConfirmacao, setLoadingConfirmacao] = useState(false);
+    const [isMounted, setIsMounted] = useState(true);
     const navigate = useNavigate();
     const location = useLocation();
     const { user } = useAuth();
@@ -37,48 +38,10 @@ export function Agendamento() {
     ];
 
     useEffect(() => {
-        if (!user) return;
+        return () => setIsMounted(false);
+    }, []);
 
-        const veiculo = location.state?.veiculoSelecionado ?? null;
-
-        if (!veiculo) {
-            navigate(ROUTES.VEICULOS);
-            return;
-        }
-
-        setVeiculoSelecionado(veiculo);
-        buscarServicosCarrinho();
-    }, [user]);
-
-    const buscarServicosCarrinho = async () => {
-        if (!user || !user.id) {
-            return;
-        }
-
-        try {
-            const servicos = await carrinhoService.buscarCarrinhoUsuario(user.id);
-            setServicosCarrinho(servicos || []);
-            
-            // Após buscar serviços, buscar o próximo dia com horários disponíveis
-            if (servicos && servicos.length > 0) {
-                const servicosIds = servicos.map(s => s.idServico || s.id);
-                const proximoDia = await buscarProximoDiaComHorarios(new Date(), servicosIds);
-                if (proximoDia) {
-                    setDataSelecionada(proximoDia);
-                }
-            }
-        } catch (error) {
-            mostrarToast({
-                tipo: TiposToast.ERRO,
-                titulo: 'Erro ao carregar carrinho',
-                mensagem: 'Não foi possível buscar seus serviços. Tente novamente.',
-                duracao: 4000
-            });
-            setServicosCarrinho([]);
-        }
-    };
-
-    const buscarProximoDiaComHorarios = async (dataInicial, servicosIds) => {
+    const buscarProximoDiaComHorarios = useCallback(async (dataInicial, servicosIds) => {
         const maxDias = 30;
         let data = new Date(dataInicial);
         data.setHours(0, 0, 0, 0);
@@ -99,7 +62,57 @@ export function Agendamento() {
         }
 
         return null; // Nenhum dia disponível encontrado
-    };
+    }, []);
+
+    const buscarServicosCarrinho = useCallback(async () => {
+        if (!user || !user.id) {
+            return;
+        }
+
+        try {
+            const servicos = await carrinhoService.buscarCarrinhoUsuario(user.id);
+            
+            if (!isMounted) return;
+            
+            setServicosCarrinho(servicos || []);
+            
+            // Após buscar serviços, buscar o próximo dia com horários disponíveis
+            if (servicos && servicos.length > 0) {
+                const servicosIds = servicos.map(s => s.idServico || s.id);
+                const proximoDia = await buscarProximoDiaComHorarios(new Date(), servicosIds);
+                
+                if (!isMounted) return;
+                
+                if (proximoDia) {
+                    setDataSelecionada(proximoDia);
+                }
+            }
+        } catch (error) {
+            if (!isMounted) return;
+            
+            mostrarToast({
+                tipo: TiposToast.ERRO,
+                titulo: 'Erro ao carregar carrinho',
+                mensagem: 'Não foi possível buscar seus serviços. Tente novamente.',
+                duracao: 4000
+            });
+            setServicosCarrinho([]);
+        }
+    }, [user, buscarProximoDiaComHorarios, isMounted, mostrarToast]);
+
+    useEffect(() => {
+        if (!user) return;
+
+        const veiculo = location.state?.veiculoSelecionado ?? null;
+
+        if (!veiculo) {
+            navigate(ROUTES.VEICULOS);
+            return;
+        }
+
+        setVeiculoSelecionado(veiculo);
+        buscarServicosCarrinho();
+    }, [user, location, navigate, buscarServicosCarrinho]);
 
     const handleDateSelect = (date) => {
         setDataSelecionada(date);
