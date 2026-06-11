@@ -13,16 +13,14 @@ export function CardServico({ id, nome, preco, imagem }) {
         <div className="bg-white rounded-xl shadow-sm overflow-hidden transition-all flex flex-col h-full w-full hover:-translate-y-1 hover:shadow-md">
             <Link to={`/servico/${id}`} className="no-underline text-inherit flex flex-col h-full p-4">
                 
-                {/* Se tem imagem E ela não deu erro, renderiza o <img> */}
                 {imagem && !imgErro ? (
                     <img
-                        src={caminhoImagem} // <-- Correção do src aqui
+                        src={caminhoImagem}
                         alt={nome}
                         className="w-full h-48 sm:h-44 object-cover bg-gray-100 rounded-xl"
-                        onError={() => setImgErro(true)} // <-- Se der erro, ativa o fallback do React
+                        onError={() => setImgErro(true)} 
                     />
                 ) : (
-                    /* Fallback: Exibe o ícone caso não tenha imagem no banco OU a imagem quebre */
                     <div className="w-full h-48 sm:h-44 bg-gray-200 flex items-center justify-center rounded-xl">
                         <i className="bi bi-gear text-5xl text-gray-400"></i>
                     </div>
