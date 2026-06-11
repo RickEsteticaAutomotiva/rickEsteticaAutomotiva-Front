@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { DashboardService } from "../../../services/DashboardService";
 import { useDashboardRefresh } from "../../../pages/gerente/dashboard/DashboardRefreshContext";
+import { InfoTooltip } from "../../info-tooltip/InfoTooltip";
+
+const fluxoInfo = 'Últimos 30 dias';
 
 export default function FluxoDeCaixa() {
   const [dados, setDados] = useState(null);
@@ -50,7 +53,10 @@ export default function FluxoDeCaixa() {
       <div className="bg-white rounded-2xl shadow-sm p-6 w-full max-w-2xl">
 
         <div className="flex items-center justify-between mb-2">
-          <h2 className="text-xl font-semibold text-gray-900">Fluxo de caixa</h2>
+          <div className="flex items-center gap-1">
+            <h2 className="text-xl font-semibold text-gray-900">Fluxo de caixa</h2>
+            <InfoTooltip message={fluxoInfo} />
+          </div>
         </div>
 
         <p className="text-2xl font-semibold text-gray-900">
