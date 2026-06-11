@@ -8,6 +8,7 @@ const CardServico = ({ servico, onEditar, onExcluir }) => {
   }
 
   const temImagem = servico.imagem || servico.imagemUrl;
+  const caminhoImagem = servico.imagem ? `../public/servicos/${servico.imagem}.jpg` : servico.imagemUrl;
 
   const obterDuracao = () => {
     if (servico.duracaoHoras) {
@@ -24,7 +25,7 @@ const CardServico = ({ servico, onEditar, onExcluir }) => {
       <div className="relative w-full h-40 bg-gray-100 flex items-center justify-center overflow-hidden">
         {temImagem ? (
           <img
-            src={temImagem}
+            src={caminhoImagem}
             alt={servico.nome || 'Serviço'}
             className="w-full h-full object-cover"
             onError={(e) => {
