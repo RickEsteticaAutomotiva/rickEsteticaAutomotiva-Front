@@ -35,7 +35,7 @@ export function CardAgendamento({ agendamento, imagem, onDetalhesClick }) {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex w-36 items-center justify-center gap-2 rounded-lg bg-green-600 px-8 py-1 font-semibold text-white transition-colors duration-200 hover:bg-green-500"
-                    aria-label="Abrir conversa no WhatsApp"
+                    aria-label="Abrir conversa em WhatsApp"
                 >
                     <i className="bi bi-whatsapp text-base" aria-hidden="true"></i>
                     WhatsApp
