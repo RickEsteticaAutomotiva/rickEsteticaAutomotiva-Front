@@ -50,7 +50,7 @@ export class OrdemServicoService {
 
     async buscarAgendamentosHoje() {
         try {
-            const response = await apiService.get(`${this.BASE_URL_GESTAO}/hoje`);
+            const response = await apiService.get(`${this.BASE_URL}/hoje`);
             return response;
         } catch (error) {
             throw new Error(error.message || 'Erro ao buscar agendamentos de hoje');
@@ -150,7 +150,6 @@ export class OrdemServicoService {
         }
     }
 
-    
     async buscarOrdemServicoPorUsuario(usuarioId) {
         try {
             const response = await apiService.get(`${this.BASE_URL}/usuario/${usuarioId}`);
@@ -170,53 +169,22 @@ export class OrdemServicoService {
         }
     }
 
-    async atualizarStatus(id, novoStatus, motivo = null, observacoes = '') {
+    async atualizarStatus(id, novoStatus) {
         try {
-            const payload = { status: novoStatus };
-            
-            // Se cancelando
-            if (novoStatus === 4 && motivo) {
-                // Apenas enviar motivo se não for "Outros" (id 4)
-                // Para "Outros", enviamos apenas as observações
-                if (motivo !== 4) {
-                    payload.motivo = motivo;
-                }
-            }
-            
-            // Adicionar observações se fornecidas
-            if (observacoes) {
-                payload.observacoes = observacoes;
-            }
-            
-            const response = await apiService.patch(`${this.BASE_URL}/${id}`, payload);
+            const response = await apiService.patch(`${this.BASE_URL}/${id}`, { status: novoStatus });
             return response;
         } catch (error) {
             throw new Error(error.message || 'Erro ao atualizar status da ordem de serviço');
         }
     }
 
-    async atualizarStatusGestao(id, novoStatus, motivoCancelamento) {
+    async atualizarStatusGestao(id, novoStatus) {
         try {
             const statusNormalizado = this.normalizarStatusParaBackend(novoStatus);
-            const payload = { status: statusNormalizado };
-            if (motivoCancelamento !== undefined && motivoCancelamento !== null && motivoCancelamento !== '') {
-                payload.motivoCancelamento = motivoCancelamento;
-            }
-            const response = await apiService.patch(`${this.BASE_URL_GESTAO}/${id}`, payload);
+            const response = await apiService.patch(`${this.BASE_URL_GESTAO}/${id}`, { status: statusNormalizado });
             return response;
         } catch (error) {
             throw new Error(error.message || 'Erro ao atualizar status da ordem de serviço');
-        }
-    }
-
-    async cancelarOrdemGestao(id, motivoCancelamento) {
-        try {
-            // Envia o motivo no corpo usando a chave `motivo` conforme novo endpoint
-            const payload = { motivo: motivoCancelamento };
-            const response = await apiService.patch(`${this.BASE_URL_GESTAO}/${id}/cancel`, payload);
-            return response;
-        } catch (error) {
-            throw new Error(error.message || 'Erro ao cancelar a ordem de serviço');
         }
     }
 

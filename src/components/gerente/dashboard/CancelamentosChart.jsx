@@ -12,9 +12,6 @@ import { DashboardService } from "../../../services/DashboardService";
 import { useDashboardRefresh } from "../../../pages/gerente/dashboard/DashboardRefreshContext";
 import { useToast } from '../../../context/ToastContext';
 import { TiposToast } from '../../../utils/enum/TiposToast';
-import { InfoTooltip } from "../../info-tooltip/InfoTooltip";
-
-const cancelamentosInfo = 'Mês atual';
 
 ChartJS.register(ArcElement, Tooltip, Legend, ChartDataLabels);
 
@@ -107,12 +104,9 @@ export default function CancelamentosChart() {
 
   return (
     <div className="bg-white p-6 rounded-2xl shadow-sm mt-6">
-      <div className="mb-6 flex items-center justify-center gap-1">
-        <h2 className="text-xl font-semibold text-center">
-          Motivos de cancelamentos
-        </h2>
-        <InfoTooltip message={cancelamentosInfo} />
-      </div>
+      <h2 className="text-xl font-semibold text-center mb-6">
+        Motivos de cancelamentos
+      </h2>
 
       <div className="h-72 sm:h-80">
         <Pie data={chartData} options={options} />

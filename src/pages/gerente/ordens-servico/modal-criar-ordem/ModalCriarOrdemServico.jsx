@@ -209,16 +209,16 @@ export function ModalCriarOrdemServico({ isOpen, onClose, onCriada }) {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/45 bg-opacity-90 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg max-w-xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-                <div className="bg-red-600 text-white p-4 flex items-center justify-between sticky top-0 z-10">
+        <div className="fixed inset-0 bg-black/50 z-[60] flex items-end md:items-center justify-center p-3">
+            <div className="bg-white w-full md:max-w-xl overflow-visible">
+                <div className="bg-red-600 text-white p-4 flex items-center justify-between sticky top-0">
                     <h2 className="text-lg font-semibold">Nova ordem de serviço</h2>
                     <button onClick={onClose} className="hover:text-gray-100 transition-colors" aria-label="Fechar">
                         <X size={22} />
                     </button>
                 </div>
 
-                <div className="p-5 space-y-5 overflow-y-auto flex-1">
+                <div className="p-5 space-y-5">
                     {carregando ? (
                         <p className="text-sm text-gray-500">Carregando dados...</p>
                     ) : (
@@ -298,7 +298,7 @@ export function ModalCriarOrdemServico({ isOpen, onClose, onCriada }) {
                     )}
                 </div>
 
-                <div className="p-5 border-t border-gray-100 flex-shrink-0">
+                <div className="p-5 border-t border-gray-100">
                     <button
                         type="button"
                         onClick={handleCriar}
