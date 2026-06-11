@@ -8,6 +8,7 @@ import { ModalAdicionaServico } from './modal-adiciona-servico/ModalAdicionaServ
 import { ordemServicoService } from '../../../../services/OrdemServicoService';
 import { useToast } from '../../../../context/ToastContext';
 import { TiposToast } from '../../../../utils/enum/TiposToast';
+import { MotivosCancelamento } from '../../../../utils/enum/MotivosCancelamento';
 import { formatarDataHorarioCompleto, formatarPreco, formatarHorario } from '../../../../utils';
 
 export function ModalOrdemServico({ isOpen, agendamento, onClose, onOrdemAtualizada }) {
@@ -21,6 +22,9 @@ export function ModalOrdemServico({ isOpen, agendamento, onClose, onOrdemAtualiz
     const [savingDados, setSavingDados] = useState(false);
     const [dataAgendamentoEdicao, setDataAgendamentoEdicao] = useState('');
     const [observacoesEdicao, setObservacoesEdicao] = useState('');
+    const [mostrarMotivoCancelamento, setMostrarMotivoCancelamento] = useState(false);
+    const [motivoCancelamento, setMotivoCancelamento] = useState('');
+    const [pendingStatus, setPendingStatus] = useState(null);
     const statusRequestIdRef = useRef(0);
     const { mostrarToast } = useToast();
 
@@ -62,7 +66,7 @@ export function ModalOrdemServico({ isOpen, agendamento, onClose, onOrdemAtualiz
         setObservacoesEdicao(agendamento?.observacoes === 'Sem observações.' ? '' : (agendamento?.observacoes || ''));
     }, [agendamento]);
 
-    if (!isOpen || !agendamento) return null;
+    if (!isOpen) return null;
 
     const editaServicoClick = (servico) => {
         setSelectedServico(servico);
@@ -115,6 +119,16 @@ export function ModalOrdemServico({ isOpen, agendamento, onClose, onOrdemAtualiz
 
         const campos = [veiculo.marca, veiculo.modelo].filter(Boolean);
         return campos.length > 0 ? campos.join(' ') : (veiculo.placa || '-');
+    };
+
+    const resolverLinkWhatsApp = (telefone) => {
+        if (!telefone) return null;
+
+        const apenasDigitos = String(telefone).replace(/\D/g, '');
+        if (!apenasDigitos) return null;
+
+        const telefoneComPais = apenasDigitos.startsWith('55') ? apenasDigitos : `55${apenasDigitos}`;
+        return `https://wa.me/${telefoneComPais}`;
     };
 
     const normalizarAgendamento = (ordem) => {
@@ -220,6 +234,13 @@ export function ModalOrdemServico({ isOpen, agendamento, onClose, onOrdemAtualiz
             return;
         }
 
+        // If selecting 'Cancelado', ask for a reason before sending the request
+        if (statusNumerico === 4) {
+            setPendingStatus(statusNumerico);
+            setMostrarMotivoCancelamento(true);
+            return;
+        }
+
         const requestId = statusRequestIdRef.current + 1;
         statusRequestIdRef.current = requestId;
         const statusDescricaoAtualizada = statusDescricaoPorId[statusNumerico] || null;
@@ -264,6 +285,76 @@ export function ModalOrdemServico({ isOpen, agendamento, onClose, onOrdemAtualiz
                 setLoadingStatus(false);
             }
         }
+    };
+
+    const confirmarCancelamento = async () => {
+        if (!pendingStatus) return;
+        const motivoId = Number(motivoCancelamento);
+        if (!motivoId) {
+            mostrarToast({
+                tipo: TiposToast.ALERTA,
+                titulo: 'Motivo obrigatório',
+                mensagem: 'Selecione o motivo do cancelamento antes de confirmar.',
+                duracao: 3000
+            });
+            return;
+        }
+
+        const requestId = statusRequestIdRef.current + 1;
+        statusRequestIdRef.current = requestId;
+        const statusDescricaoAtualizada = statusDescricaoPorId[pendingStatus] || null;
+        const statusDescricaoAnterior = agendamento?.statusDescricao || null;
+
+        setLoadingStatus(true);
+        try {
+            await ordemServicoService.cancelarOrdemGestao(agendamento.id, motivoId);
+
+            setStatusServico(pendingStatus);
+
+            onOrdemAtualizada?.({
+                ...agendamento,
+                status: pendingStatus,
+                statusDescricao: statusDescricaoAtualizada
+            });
+
+            mostrarToast({
+                tipo: TiposToast.SUCESSO,
+                titulo: 'Ordem cancelada',
+                mensagem: 'A ordem de serviço foi cancelada com sucesso.',
+                duracao: 3000
+            });
+        } catch (error) {
+            if (statusRequestIdRef.current !== requestId) return;
+
+            setStatusServico(statusAnterior);
+            onOrdemAtualizada?.({
+                ...agendamento,
+                status: statusAnterior,
+                statusDescricao: statusDescricaoAnterior
+            });
+
+            mostrarToast({
+                tipo: TiposToast.ERRO,
+                titulo: 'Erro ao cancelar ordem',
+                mensagem: error.message || 'Não foi possível cancelar a ordem de serviço.',
+                duracao: 4000
+            });
+        } finally {
+            if (statusRequestIdRef.current === requestId) {
+                setLoadingStatus(false);
+            }
+            setMostrarMotivoCancelamento(false);
+            setPendingStatus(null);
+            setMotivoCancelamento('');
+        }
+    };
+
+    const cancelarFluxoCancelamento = () => {
+        setMostrarMotivoCancelamento(false);
+        setPendingStatus(null);
+        setMotivoCancelamento('');
+        // Revert to previous status
+        setStatusServico(statusServico);
     };
 
     const handleSalvarDados = async () => {
@@ -316,19 +407,14 @@ export function ModalOrdemServico({ isOpen, agendamento, onClose, onOrdemAtualiz
 
     const valorTotalServicos = calcularValorTotalServicos(servicos);
 
-    const valorExibicao = valorTotalServicos > 0 ? formatarPreco(valorTotalServicos) : agendamento.valor;
+    const valorExibicao = valorTotalServicos > 0 ? formatarPreco(valorTotalServicos) : (agendamento?.valor ?? 'R$ 0,00');
 
     return (
         <>
             <div className="fixed inset-0 bg-black/45 bg-opacity-90 flex items-center justify-center z-50 p-4">
-                <div className="bg-white rounded-lg rounded-t-3xl max-w-md w-full max-h-[90vh] overflow-y-auto"
-                    style={{
-                        scrollbarWidth: 'none',
-                        msOverflowStyle: 'none',
-                    }}
-                    >
+                <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-hidden flex flex-col">
 
-                    <div className="sticky top-0 z-10 bg-red-600 text-white p-4 flex justify-between items-center">
+                    <div className="bg-red-600 text-white p-4 flex justify-between items-center rounded-t-lg flex-shrink-0">
                         <h2 className="text-lg font-semibold">Ordem de serviço</h2>
                         <button 
                             onClick={onClose}
@@ -338,10 +424,31 @@ export function ModalOrdemServico({ isOpen, agendamento, onClose, onOrdemAtualiz
                         </button>
                     </div>
 
-                    <div className="p-4 space-y-4">
-                        <Label label="Cliente" value={agendamento.cliente} />
+                    <div className="overflow-y-auto flex-1">
+                        <div className="p-4 space-y-4">
+                        <div>
+                            <label className="text-sm text-gray-500">Cliente</label>
+                            <p className="font-medium flex items-center gap-2">
+                                <span>{agendamento?.cliente ?? '-'}</span>
+                            </p>
 
-                        <Label label="Carro" value={agendamento.veiculo} />
+                            {(() => {
+                                const linkWhats = resolverLinkWhatsApp(agendamento?.telefone || agendamento?.cliente?.telefone);
+                                return linkWhats ? (
+                                    <a
+                                        href={linkWhats}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        aria-label="Abrir conversa no WhatsApp"
+                                        className="text-green-600 hover:text-green-700"
+                                    >
+                                        <i className="bi bi-whatsapp text-lg" aria-hidden="true"></i>
+                                    </a>
+                                ) : null;
+                            })()}
+                        </div>
+
+                        <Label label="Carro" value={agendamento?.veiculo} />
 
                         <div>
                             <div className="flex justify-between items-center mb-2">
@@ -385,6 +492,41 @@ export function ModalOrdemServico({ isOpen, agendamento, onClose, onOrdemAtualiz
                             </select>
                         </div>
 
+                        {mostrarMotivoCancelamento && (
+                            <div>
+                                <label className="text-sm text-gray-500 block mb-1">Motivo do cancelamento</label>
+                                <select
+                                    value={motivoCancelamento}
+                                    onChange={(e) => setMotivoCancelamento(e.target.value)}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 text-sm"
+                                >
+                                    <option value="">Selecione um motivo</option>
+                                    {Object.values(MotivosCancelamento).map((m) => (
+                                        <option key={m.id} value={m.id}>
+                                            {m.label}
+                                        </option>
+                                    ))}
+                                </select>
+
+                                <div className="flex gap-2 mt-2">
+                                    <button
+                                        onClick={confirmarCancelamento}
+                                        disabled={loadingStatus}
+                                        className="flex-1 py-2 px-3 bg-rose-600 text-white rounded-md hover:bg-rose-700"
+                                    >
+                                        Confirmar cancelamento
+                                    </button>
+                                    <button
+                                        onClick={cancelarFluxoCancelamento}
+                                        disabled={loadingStatus}
+                                        className="flex-1 py-2 px-3 bg-gray-200 rounded-md hover:bg-gray-300"
+                                    >
+                                        Cancelar
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
                         <div>
                             <label className="text-sm text-gray-500 block mb-1">Data do Agendamento</label>
                             <input
@@ -395,7 +537,7 @@ export function ModalOrdemServico({ isOpen, agendamento, onClose, onOrdemAtualiz
                             />
                         </div>
 
-                        <Label label="Data da Conclusão" value={agendamento.dataConclusao} />
+                        <Label label="Data da Conclusão" value={agendamento?.dataConclusao} />
 
                         <div>
                             <label className="text-sm text-gray-500 block mb-1">Observações</label>
@@ -415,6 +557,7 @@ export function ModalOrdemServico({ isOpen, agendamento, onClose, onOrdemAtualiz
                         >
                             {savingDados ? 'Salvando alterações...' : 'Salvar alterações'}
                         </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -422,7 +565,7 @@ export function ModalOrdemServico({ isOpen, agendamento, onClose, onOrdemAtualiz
             {/* Modal de Adição de Serviço */}
             <ModalAdicionaServico
                 isOpen={showAddServicoModal}
-                ordemServicoId={agendamento.id}
+                ordemServicoId={agendamento?.id}
                 servicosAtuais={servicos}
                 onOptimisticUpdate={aplicarAtualizacaoLocalServicos}
                 onRollback={aplicarAtualizacaoLocalServicos}
@@ -434,7 +577,7 @@ export function ModalOrdemServico({ isOpen, agendamento, onClose, onOrdemAtualiz
             <ModalEditaServico
                 isOpen={editaServicoModal}
                 servico={selectedServico}
-                ordemServicoId={agendamento.id}
+                ordemServicoId={agendamento?.id}
                 servicosAtuais={servicos}
                 onOptimisticUpdate={aplicarAtualizacaoLocalServicos}
                 onRollback={aplicarAtualizacaoLocalServicos}
@@ -446,7 +589,7 @@ export function ModalOrdemServico({ isOpen, agendamento, onClose, onOrdemAtualiz
             <ModalRemoveServico
                 isOpen={showRemoveModal}
                 servico={selectedServico}
-                ordemServicoId={agendamento.id}
+                ordemServicoId={agendamento?.id}
                 servicosAtuais={servicos}
                 onOptimisticUpdate={aplicarAtualizacaoLocalServicos}
                 onRollback={aplicarAtualizacaoLocalServicos}

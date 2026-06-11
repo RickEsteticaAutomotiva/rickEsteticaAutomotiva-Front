@@ -67,16 +67,18 @@ export function HomeGerente(){
         return <p className="text-center py-6 text-red-600">{error}</p>;
     }
 
-    const proximoServico = resumo.proximoAgendamento?.servico || "Sem agendamento para hoje";
+    const proximoServico = resumo.proximoAgendamento?.servico || "Sem serviço para hoje";
     const proximoHorario = obterHoraProximoAgendamento(resumo.proximoAgendamento);
     const clienteNome = resumo.proximoAgendamento?.clienteNome || "Sem cliente";
     const veiculoDescricao = resumo.proximoAgendamento?.veiculoDescricao || "Sem veiculo";
 
     return(
         <>
-            <CardLargo text={`${resumo.agendamentosHoje} Agendamentos hoje`} icon={Calendar} />
+            <div className="mt-4">
+                <CardLargo text={`${resumo.agendamentosHoje} Agendamentos hoje`} icon={Calendar} />
+            </div>
 
-            <div className="flex gap-4 mb-6">
+            <div className="flex flex-row gap-4 mb-6 items-stretch">
                 <CardMedio valor={formatCurrency(resumo.faturamentoEstimadoHoje)} label="Faturamento estimado hoje" icon={BanknoteArrowUp} />
                 <CardMedio valor={formatCurrency(resumo.ticketMedioEstimadoHoje)} label="Ticket medio estimado" icon={ChartNoAxesColumnIncreasing} />
             </div>

@@ -5,8 +5,23 @@ import { useDashboardRefresh } from "../../../pages/gerente/dashboard/DashboardR
 
 const dashboardService = new DashboardService();
 
+const metricInfo = {
+  faturamento: 'Mês atual',
+  agendamentos: 'Mês atual',
+  servicos: 'Mês atual',
+  ticket: 'Mês atual',
+};
+
 export function DashboardMetrics() {
   const { refreshKey } = useDashboardRefresh();
+
+  const formatCurrency = (valor) =>
+    Number(valor || 0).toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
 
   const [faturamento, setFaturamento] = useState({ v: 0, p: 0, t: "up" });
   const [agendamentos, setAgendamentos] = useState({ v: 0, p: 0, t: "up" });
@@ -73,6 +88,7 @@ export function DashboardMetrics() {
         value={`R$${faturamento.v}`}
         percent={faturamento.p}
         trend={faturamento.t}
+        infoMessage={metricInfo.faturamento}
       />
 
       <MetricCard
@@ -80,6 +96,7 @@ export function DashboardMetrics() {
         value={agendamentos.v}
         percent={agendamentos.p}
         trend={agendamentos.t}
+        infoMessage={metricInfo.agendamentos}
       />
 
       <MetricCard
@@ -87,13 +104,15 @@ export function DashboardMetrics() {
         value={servicos.v}
         percent={servicos.p}
         trend={servicos.t}
+        infoMessage={metricInfo.servicos}
       />
 
       <MetricCard
         title="Ticket Médio"
-        value={`R$${ticket.v}`}
+        value={formatCurrency(ticket.v)}
         percent={ticket.p}
         trend={ticket.t}
+        infoMessage={metricInfo.ticket}
       />
     </div>
   );
