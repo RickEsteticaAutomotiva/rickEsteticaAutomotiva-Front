@@ -50,8 +50,10 @@ const ModalServico = ({ isOpen, onClose, modo, servico, onSuccess, categorias })
           imagem: null,
         });
         
-        if (servico.imagem || servico.imagemUrl) {
-          setImagemPreview(servico.imagem || servico.imagemUrl);
+        if (servico.imagem) {
+          setImagemPreview(`../public/servicos/${servico.imagem}.jpg`);
+        } else if (servico.imagemUrl) {
+          setImagemPreview(servico.imagemUrl);
         }
       } else {
         resetarFormulario();

@@ -103,14 +103,15 @@ export function Carrinho() {
                                         <Link to={ROUTES.SERVICO.replace(':id', item.idServico)}>
                                             {item.imagem ? (
                                                 <img
-                                                    src="/default-service.jpg"
+                                                    src={`../public/servicos/${item.imagem}.jpg`}
                                                     alt={item.nome}
                                                     className="h-20 w-20 object-cover rounded hover:opacity-80 transition-opacity"
                                                     onError={(e) => {
-                                                        e.target.src = "/default-service.jpg";
+                                                        e.target.style.display = 'none';
+                                                        e.target.nextElementSibling && (e.target.nextElementSibling.style.display = 'flex');
                                                     }}
                                                 />) : (
-                                                <div className="h-25 w-25 bg-gray-200 rounded flex items-center justify-center hover:opacity-80 transition-opacity">
+                                                <div className="h-20 w-20 bg-gray-200 rounded flex items-center justify-center hover:opacity-80 transition-opacity">
                                                     <i className="bi bi-gear text-4xl text-gray-400"></i>
                                                 </div>
                                             )}

@@ -90,7 +90,7 @@ export function FavoritosDropdown() {
                                             <div className="w-16 h-16 flex-shrink-0 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden">
                                                 {servico.imagem ? (
                                                     <img
-                                                        src={servico.imagem}
+                                                        src={`../public/servicos/${servico.imagem}.jpg`}
                                                         alt={servico.nome}
                                                         className="w-full h-full object-cover"
                                                     />
