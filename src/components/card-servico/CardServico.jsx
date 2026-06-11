@@ -3,10 +3,8 @@ import { Link } from "react-router-dom";
 import { formatarPreco } from "../../utils/index";
 
 export function CardServico({ id, nome, preco, imagem }) {
-    // Estado para controlar se a imagem falhou ao carregar
     const [imgErro, setImgErro] = useState(false);
 
-    // O caminho agora aponta para a pasta public (relativo à raiz)
     const caminhoImagem = `../public/servicos/${imagem}.jpg`;
 
     return (
